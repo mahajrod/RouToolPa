@@ -1,0 +1,7 @@
+__author__ = 'mahajrod'
+
+from RouToolPa.Tools.Samtools.Samtools import *
+
+
+SamtoolsV1 = SamtoolsV1()
+SamtoolsV0 = SamtoolsV0()
