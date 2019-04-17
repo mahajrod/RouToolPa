@@ -5,7 +5,7 @@ from Bio import SeqIO
 from RouToolPa.Routines import NCBIRoutines
 
 #from Routines.File import make_list_of_path_to_files
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
 
 

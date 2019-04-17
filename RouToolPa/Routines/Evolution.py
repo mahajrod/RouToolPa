@@ -2,7 +2,7 @@ __author__ = 'mahajrod'
 
 import os
 from collections import OrderedDict
-from CustomCollections.GeneralCollections import IdList
+from RouToolPa.Collections.General import IdList
 from RouToolPa.Routines.Phylogenetics import PhylogeneticsRoutines
 
 

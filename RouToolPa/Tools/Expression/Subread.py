@@ -2,7 +2,7 @@
 __author__ = 'Sergei F. Kliver'
 from math import ceil
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import SynDict, TwoLvlDict
+from RouToolPa.Collections.General import SynDict, TwoLvlDict
 
 
 

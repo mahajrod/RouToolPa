@@ -5,7 +5,7 @@ import shutil
 from collections import OrderedDict
 import numpy as np
 from RouToolPa.Tools.Abstract import JavaTool
-from CustomCollections.GeneralCollections import IdList
+from RouToolPa.Collections.General import IdList
 
 
 

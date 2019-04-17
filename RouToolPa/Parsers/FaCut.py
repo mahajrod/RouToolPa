@@ -3,9 +3,9 @@ __author__ = 'mahajrod'
 import numpy as np
 from collections import OrderedDict
 
-from Routines import MatplotlibRoutines
+from RouToolPa.Routines import MatplotlibRoutines
 
-from CustomCollections.GeneralCollections import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict
 
 
 class FaCutReport:

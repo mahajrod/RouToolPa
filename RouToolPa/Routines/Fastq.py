@@ -2,7 +2,7 @@ __author__ = 'mahajrod'
 import os
 from collections import OrderedDict
 from Bio.Seq import Seq
-from CustomCollections.GeneralCollections import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict
 from RouToolPa.Routines.File import FileRoutines
 
 

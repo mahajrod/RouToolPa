@@ -2,7 +2,7 @@
 import os
 from collections import OrderedDict
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import IdList
+from RouToolPa.Collections.General import IdList
 
 
 class Gblocks(Tool):

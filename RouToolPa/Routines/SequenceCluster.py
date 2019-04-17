@@ -4,7 +4,7 @@ from copy import deepcopy
 from collections import OrderedDict
 from Bio import SeqIO
 from RouToolPa.Routines.Sequence import SequenceRoutines
-from CustomCollections.GeneralCollections import SynDict, IdSet, IdList
+from RouToolPa.Collections.General import SynDict, IdSet, IdList
 
 
 

@@ -19,7 +19,7 @@ from RouToolPa.Tools.Abstract import Tool
 from Parsers.PAML import CodeMLReport
 from RouToolPa.Routines import FileRoutines
 
-from CustomCollections.GeneralCollections import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict
 
 print_mutex = mp.Lock()
 

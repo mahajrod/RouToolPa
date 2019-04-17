@@ -1,7 +1,7 @@
 __author__ = 'mahajrod'
 import os
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
-from CustomCollections.GeneralCollections import SynDict, IdList
+from RouToolPa.Collections.General import SynDict, IdList
 
 
 class GORoutines(SequenceClusterRoutines):

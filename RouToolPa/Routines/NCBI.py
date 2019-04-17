@@ -12,7 +12,7 @@ from Bio.SeqRecord import SeqRecord
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Annotations import AnnotationsRoutines
 from Parsers.GFF import CollectionGFF
-from CustomCollections.GeneralCollections import IdList, SynDict, TwoLvlDict, IdSet
+from RouToolPa.Collections.General import IdList, SynDict, TwoLvlDict, IdSet
 
 
 

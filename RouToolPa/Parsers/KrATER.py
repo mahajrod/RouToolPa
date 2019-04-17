@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'mahajrod'
 from collections import OrderedDict
-from CustomCollections.GeneralCollections import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict
 
 
 class KrATERReport(OrderedDict):

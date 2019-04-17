@@ -1,6 +1,6 @@
 __author__ = 'mahajrod'
 import re
-from Parsers.Abstract import Record, Header, Metadata, Collection
+from RouToolPa.Parsers.Abstract import Record, Header, Metadata, Collection
 
 
 class RecordFPKMTracing(Record):

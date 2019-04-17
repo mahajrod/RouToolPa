@@ -15,7 +15,7 @@ from BCBio import GFF
 
 from Bio import AlignIO
 
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 from RouToolPa.Routines.Matplotlib import MatplotlibRoutines
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Parsers.DESeq2 import CollectionPWC

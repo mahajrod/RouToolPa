@@ -10,7 +10,7 @@ import numpy as np
 from Bio import SeqIO, Entrez
 from Bio.SeqRecord import SeqRecord
 from RouToolPa.Routines.Sequence import SequenceRoutines
-from CustomCollections.GeneralCollections import IdList, SynDict, TwoLvlDict, IdSet
+from RouToolPa.Collections.General import IdList, SynDict, TwoLvlDict, IdSet
 
 
 

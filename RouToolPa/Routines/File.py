@@ -8,7 +8,7 @@ import bz2
 import gzip
 from collections import Iterable, OrderedDict
 
-from CustomCollections.GeneralCollections import IdSet,  IdList, SynDict
+from RouToolPa.Collections.General import IdSet,  IdList, SynDict
 
 
 class FileRoutines:

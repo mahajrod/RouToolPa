@@ -7,7 +7,7 @@ from BCBio import GFF
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Routines.Sequence import SequenceRoutines
-from CustomCollections.GeneralCollections import IdSet, SynDict, IdList
+from RouToolPa.Collections.General import IdSet, SynDict, IdList
 
 
 class AnnotationsRoutines(SequenceRoutines):

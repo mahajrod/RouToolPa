@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from collections import OrderedDict
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.Sequence import SequenceRoutines
 
 

@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 plt.ioff()
 import numpy as np
 
-from CustomCollections.GeneralCollections import TwoLvlDict, IdList, SynDict
-from Parsers.Abstract import Record, Collection
-from Routines import FileRoutines, MatplotlibRoutines
+from RouToolPa.Collections.General import TwoLvlDict, IdList, SynDict
+from RouToolPa.Parsers.Abstract import Record, Collection
+from RouToolPa.Routines import FileRoutines, MatplotlibRoutines
 from Bio import AlignIO
 
 

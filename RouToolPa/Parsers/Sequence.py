@@ -10,8 +10,8 @@ from copy import deepcopy
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from MACE.General import FileRoutines
-from MACE.Parsers.GFF import CollectionGFF
+from RouToolPa.Routines import FileRoutines
+from RouToolPa.Parsers.GFF import CollectionGFF
 
 
 class CollectionSequence:

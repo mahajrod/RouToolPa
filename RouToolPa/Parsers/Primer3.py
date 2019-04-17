@@ -2,11 +2,11 @@
 
 import re
 
-from CustomCollections.GeneralCollections import IdList
+from RouToolPa.Collections.General import IdList
 
-from Parsers.Abstract import Collection
+from RouToolPa.Parsers.Abstract import Collection
 
-from Routines import AnnotationsRoutines
+from RouToolPa.Routines import AnnotationsRoutines
 
 
 class PrimerEntryPrimer3:

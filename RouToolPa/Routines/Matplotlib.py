@@ -17,7 +17,7 @@ from matplotlib_venn import venn2, venn3
 
 import numpy as np
 
-from CustomCollections.GeneralCollections import IdList, SynDict, IdSet
+from RouToolPa.Collections.General import IdList, SynDict, IdSet
 
 
 class MatplotlibRoutines:

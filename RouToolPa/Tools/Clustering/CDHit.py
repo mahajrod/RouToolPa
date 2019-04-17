@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 
 
 

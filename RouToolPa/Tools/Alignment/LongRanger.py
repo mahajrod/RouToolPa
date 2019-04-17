@@ -6,7 +6,7 @@ from RouToolPa.Tools.Abstract import Tool
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from Bio.Seq import Seq
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 
 
 

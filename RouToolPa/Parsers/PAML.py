@@ -4,7 +4,7 @@ import sys
 from collections import OrderedDict
 
 from ete2 import Tree #, TreeStyle, AttrFace, faces, NodeStyle
-from CustomCollections.GeneralCollections import IdList, TwoLvlDict, SynDict
+from RouToolPa.Collections.General import IdList, TwoLvlDict, SynDict
 
 
 class CodeMLReport():

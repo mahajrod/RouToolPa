@@ -25,9 +25,9 @@ from matplotlib.ticker import FuncFormatter
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
-from MACE.General.GeneralCollections import IdList, IdSet, SynDict
-from MACE.Routines import DrawingRoutines
-from MACE.General.File import FileRoutines
+from RouToolPa.Collections.General import IdList, IdSet, SynDict
+from RouToolPa.Routines import DrawingRoutines
+from RouToolPa.Routines.File import FileRoutines
 
 
 ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]

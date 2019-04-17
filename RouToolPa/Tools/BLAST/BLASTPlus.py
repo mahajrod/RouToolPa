@@ -5,7 +5,7 @@ import os
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Tools.LinuxTools import CGAS
 from RouToolPa.Routines import FileRoutines
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 
 
 

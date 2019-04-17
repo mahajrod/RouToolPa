@@ -6,7 +6,7 @@ import shutil
 from RouToolPa.Tools.Abstract import Tool
 from Parsers.TRF import CollectionTRF
 from RouToolPa.Routines import FileRoutines, AnnotationsRoutines
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 
 
 

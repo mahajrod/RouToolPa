@@ -4,10 +4,8 @@ __author__ = 'mahajrod'
 import numpy as np
 from ete2 import Tree, TreeStyle, AttrFace, faces
 
-from Parsers.Abstract import Header
 
-
-class HeaderCAFE(list, Header):
+class HeaderCAFE(list):
     def __str__(self):
         return "#" + "\t".join(self)
 

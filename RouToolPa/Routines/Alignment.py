@@ -7,7 +7,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Align import MultipleSeqAlignment
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from Data.Nucleotides import back_degenerate_nucleotides
-from CustomCollections.GeneralCollections import SynDict, IdList
+from RouToolPa.Collections.General import SynDict, IdList
 
 
 class AlignmentRoutines(SequenceRoutines):

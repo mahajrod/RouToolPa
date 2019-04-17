@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'Sergei F. Kliver'
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import SynDict, TwoLvlDict
+from RouToolPa.Collections.General import SynDict, TwoLvlDict
 
 
 

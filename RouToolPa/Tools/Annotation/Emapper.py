@@ -2,7 +2,7 @@
 __author__ = 'Sergei F. Kliver'
 
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import SynDict, IdList
+from RouToolPa.Collections.General import SynDict, IdList
 
 
 class Emapper(Tool):

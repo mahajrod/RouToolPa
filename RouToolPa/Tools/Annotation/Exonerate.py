@@ -7,7 +7,7 @@ from multiprocessing import Pool
 from collections import OrderedDict
 from RouToolPa.Tools.Abstract import Tool
 from Bio import SeqIO
-from CustomCollections.GeneralCollections import SynDict, IdList
+from RouToolPa.Collections.General import SynDict, IdList
 
 
 

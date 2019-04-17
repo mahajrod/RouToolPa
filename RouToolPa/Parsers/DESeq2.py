@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.ioff()
 
-from Parsers.Abstract import Metadata, Header
+from RouToolPa.Parsers.Abstract import Metadata, Header
 
 
 class RecordPWC:

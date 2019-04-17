@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 from RouToolPa.Tools.Abstract import Tool
-from CustomCollections.GeneralCollections import IdSet
+from RouToolPa.Collections.General import IdSet
 from RouToolPa.Routines import FileRoutines
 
 

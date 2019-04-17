@@ -5,7 +5,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from RouToolPa.Tools.Abstract import JavaTool
 from RouToolPa.Routines import AnnotationsRoutines
-from CustomCollections.GeneralCollections import SynDict
+from RouToolPa.Collections.General import SynDict
 
 
 

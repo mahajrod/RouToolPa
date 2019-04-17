@@ -3,7 +3,8 @@
 from collections import OrderedDict
 
 
-from CustomCollections.GeneralCollections import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict
+
 class RecordBARRNAP():
     def __init__(self, start, end, strand, type, length, expected_length, partial):
 

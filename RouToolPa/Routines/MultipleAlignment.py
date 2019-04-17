@@ -8,7 +8,7 @@ from Bio.Seq import Seq
 from Bio.Data import CodonTable
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqRecord import SeqRecord
-from CustomCollections.GeneralCollections import SynDict, TwoLvlDict
+from RouToolPa.Collections.General import SynDict, TwoLvlDict
 from RouToolPa.Routines.Sequence import SequenceRoutines
 
 

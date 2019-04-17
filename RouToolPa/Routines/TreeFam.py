@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 from Bio import SeqIO
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
 
 

@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import FileRoutines, SequenceRoutines, MatplotlibRoutines, DrawingRoutines
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Tools.LinuxTools import CGAS
 
 

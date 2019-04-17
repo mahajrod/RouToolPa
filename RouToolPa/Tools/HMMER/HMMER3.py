@@ -4,7 +4,7 @@ import os
 import shutil
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Tools.LinuxTools import CGAS
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 
 class HMMER3(Tool):
     """

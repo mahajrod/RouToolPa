@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'mahajrod'
 import numpy as np
-from CustomCollections.GeneralCollections import IdList, SynDict
+from RouToolPa.Collections.General import IdList, SynDict
 
 
 class ExpressionRoutines:
