@@ -1,13 +1,13 @@
 __author__ = 'mahajrod'
 import os
-from RouToolPa.Routines.Functions import check_path
+from RouToolPa.Routines import FileRoutines
 
 #from Converters.Converters import gff22gff3, gff32gtf
 
 def RepeatModeler_search(query_file, db_name, output_file="run.out",
                          num_of_threads=5, RepeatModeler_dir=""):
     print("\nRepeatModeler search...\n")
-    repmod_dir = check_path(RepeatModeler_dir)
+    repmod_dir = FileRoutines.check_path(RepeatModeler_dir)
     os.system(repmod_dir + "BuildDatabase -engine ncbi  -name %s %s" % (db_name, query_file))
     os.system(repmod_dir + "RepeatModeler -engine ncbi -pa %i -database %s > %s"
               % (num_of_threads, db_name, output_file))
@@ -37,14 +37,14 @@ def TRF_search(query_file, match=2, mismatch=7, delta=7, PM=80,
     if flanked:
         flanking = "-f"
 
-    trf_path = check_path(TRF_dir)
+    trf_path = FileRoutines.check_path(TRF_dir)
     os.system(trf_path + "trf %s %i %i %i %i %i %i %i %s -d -m"
               % (query_file, match, mismatch, delta, PM, PI, minscore, max_period, flanking))
 
 
 def extract_repbase(species, output_file="RepBase.fasta", RepeatMaskerUtils_dir=""):
     print("\nExtracting RepBase for %s\n" % species)
-    repmaskutils_dir = check_path(RepeatMaskerUtils_dir)
+    repmaskutils_dir = FileRoutines.check_path(RepeatMaskerUtils_dir)
     os.system(repmaskutils_dir + "queryRepeatDatabase.pl -species %s > %s" % (species, output_file))
 
 
@@ -54,7 +54,7 @@ def RepeatMasker_search(query_file, species, custom_lib_path=None, RepeatMasker_
     #species: see list of possible species in repeatmasker.help coming with RepeatMasker
     #search type: "-s" (sensetive), "" (default), "-q" (fast), "-qq" (very fast)
 
-    repmask_dir = check_path(RepeatMasker_dir)
+    repmask_dir = FileRoutines.check_path(RepeatMasker_dir)
     custom_lib = ""
     if custom_lib_path:
         cuatom_lib = "-lib %s" % custom_lib_path
@@ -71,12 +71,12 @@ def RepeatMasker_search(query_file, species, custom_lib_path=None, RepeatMasker_
 
 
 def rmout2gff3(rmoutfile, outfile, RepeatMaskerUtils_dir=""):
-    repmaskutils_dir = check_path(RepeatMaskerUtils_dir)
+    repmaskutils_dir = FileRoutines.check_path(RepeatMaskerUtils_dir)
     os.system(repmaskutils_dir + "rmOutToGFF3.pl %s > %s" % (rmoutfile, outfile))
 
 
 def windowmasker_search(windowmasker_dir):
-    winmask_dir = check_path(windowmasker_dir)
+    winmask_dir = FileRoutines.check_path(windowmasker_dir)
     #TODO: write this function
     pass
 

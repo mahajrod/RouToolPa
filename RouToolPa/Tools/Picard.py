@@ -1,10 +1,10 @@
 __author__ = 'mahajrod'
 import os
-from RouToolPa.Routines.Functions import check_path
+from RouToolPa.Routines import FileRoutines
 
 
 def make_fasta_dict(fasta_file, dict_name, PICARD_dir=""):
-    picard_dir = check_path(PICARD_dir)
+    picard_dir = FileRoutines.check_path(PICARD_dir)
     os.system("java -jar %sCreateSequenceDictionary.jar R= %s O= %s"
               % (picard_dir, fasta_file, dict_name))
 

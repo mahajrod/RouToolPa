@@ -408,7 +408,7 @@ class CollectionVCF():
 
         # convert to 0-based representation
 
-        self.records['POS'] = self.records['POS'] - 1
+        self.records['POS'] -= 1
 
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("CHROM", "ROW"))

@@ -4,9 +4,7 @@ __author__ = 'mahajrod'
 
 import os
 from RouToolPa.Tools.Abstract import JavaTool
-from RouToolPa.Routines import VCFRoutines
-from RouToolPa.Routines.Functions import check_path
-
+from RouToolPa.Routines import VCFRoutines, FileRoutines
 
 
 class HaplotypeCaller(JavaTool):
@@ -221,6 +219,6 @@ class HaplotypeCaller(JavaTool):
         if default_base_qualities:
             default_qualities = "--defaultBaseQualities %i" % default_base_qualities
 
-        gatk_dir = check_path(GATK_dir)
+        gatk_dir = FileRoutines.check_path(GATK_dir)
         os.system(" java -jar %sGenomeAnalysisTK.jar -nt %i -l INFO -R %s -T HaplotypeCaller -I %s -stand_call_conf %i -stand_emit_conf %i -o %s --output_mode %s -glm %s %s"
                   % (gatk_dir, num_of_threads, reference_file, alignment, stand_call_conf, stand_emit_conf, output_file, output_mode, discovery_mode, default_qualities))
