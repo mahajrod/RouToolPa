@@ -53,8 +53,6 @@ class Tool(SequenceRoutines, AlignmentRoutines):
             with open(self.timelog, "a") as time_fd:
                 time_fd.write("Command\t%s\n" % exe_string)
 
-        exe_string = "time -f 'Time\\t%%E real,\\t%%U user,\\t%%S sys' -a -o %s %s" % (self.timelog, exe_string) if self.timelog else exe_string
-
         if generate_cmd_string_only:
             return exe_string
 
@@ -62,6 +60,8 @@ class Tool(SequenceRoutines, AlignmentRoutines):
             return Popen([exe_string], shell=True, stdout=PIPE).stdout  # returns file object
         else:
             subprocess.call(exe_string, shell=True, executable=SHELLPATH)
+            if self.timelog:
+                os.system("date >> %s" % self.timelog)
             return None
 
     def parallel_execute(self, options_list, cmd=None, capture_output=False, threads=None, dir_list=None,
@@ -572,8 +572,6 @@ class JavaTool(Tool):
             with open(self.timelog, "a") as time_fd:
                 time_fd.write("Command\t%s\n" % exe_string)
 
-        exe_string = "time -f 'Time\\t%%E real,\\t%%U user,\\t%%S sys' -a -o %s %s" % (self.timelog, exe_string) if self.timelog else exe_string
-
         if generate_cmd_string_only:
             return exe_string
 
@@ -581,6 +579,8 @@ class JavaTool(Tool):
             return Popen([exe_string], shell=True, stdout=PIPE, executable=SHELLPATH).stdout  # returns file object
         else:
             subprocess.call(exe_string, shell=True, executable=SHELLPATH)
+            if self.timelog:
+                os.system("date >> %s" % self.timelog)
             return None
 
     def parallel_execute(self, options_list, cmd=None, capture_output=False, threads=None, dir_list=None,
