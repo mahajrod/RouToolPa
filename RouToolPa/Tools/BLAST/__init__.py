@@ -1,7 +1,7 @@
 __author__ = 'mahajrod'
 
-from RouToolPa.Tools.BLAST import *
-from RouToolPa.Tools.BLAST import *
+from RouToolPa.Tools.BLAST.BLAST import *
+from RouToolPa.Tools.BLAST.BLASTPlus import *
 
 
 BLAST = BLAST()

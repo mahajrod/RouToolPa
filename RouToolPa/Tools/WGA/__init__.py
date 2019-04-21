@@ -1,3 +1,3 @@
-from RouToolPa.Tools import LAST
+from RouToolPa.Tools.WGA.LAST import LAST
 
 LAST = LAST()

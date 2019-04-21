@@ -11,7 +11,6 @@ from RouToolPa.Tools.Filter.Cookiecutter import Cookiecutter
 from RouToolPa.Tools.Filter.Cookiecutter import CookiecutterOld
 
 
-
 FaCut = FaCut()
 FastQC = FastQC()
 Cutadapt = Cutadapt()

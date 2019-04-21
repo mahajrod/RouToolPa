@@ -1,7 +1,7 @@
 __author__ = 'mahajrod'
 
-from RouToolPa.Tools.Phylogenetics import RAxML
-from RouToolPa.Tools.Phylogenetics import Gblocks
+from RouToolPa.Tools.Phylogenetics.RAxML import RAxML
+from RouToolPa.Tools.Phylogenetics.Gblocks import Gblocks
 
 
 RAxML = RAxML()

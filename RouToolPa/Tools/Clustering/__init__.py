@@ -1,4 +1,4 @@
 
-from RouToolPa.Tools.Clustering import CDHit
+from RouToolPa.Tools.Clustering.CDHit import CDHit
 
 CDHit = CDHit()

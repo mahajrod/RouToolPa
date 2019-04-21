@@ -1,7 +1,7 @@
 __author__ = 'mahajrod'
 
-from RouToolPa.Tools.Population import PSMC
-from RouToolPa.Tools.Population import PLINK
+from RouToolPa.Tools.Population.PSMC import PSMC
+from RouToolPa.Tools.Population.PLINK import PLINK
 
 PSMC = PSMC()
 PLINK = PLINK()
