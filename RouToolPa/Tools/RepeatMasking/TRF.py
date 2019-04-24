@@ -4,7 +4,7 @@ __author__ = 'Sergei F. Kliver'
 import os
 import shutil
 from RouToolPa.Tools.Abstract import Tool
-from Parsers.TRF import CollectionTRF
+from RouToolPa.Parsers.TRF import CollectionTRF
 from RouToolPa.Routines import FileRoutines, AnnotationsRoutines
 from RouToolPa.Collections.General import SynDict
 

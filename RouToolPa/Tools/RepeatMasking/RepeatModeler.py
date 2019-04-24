@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Collections.General import IdSet
 
 
 class RepeatModeler(Tool):
