@@ -3,6 +3,7 @@
 __author__ = 'mahajrod'
 
 from RouToolPa.Tools.GATK import ValidateVariants
+from RouToolPa.Tools.Picard import SortVcf
 from RouToolPa.Tools.Abstract import JavaTool
 from RouToolPa.Routines import VCFRoutines
 
@@ -90,7 +91,7 @@ class GenotypeGVCFs(JavaTool):
                           parsing_mode="parse", region_list=None,
                           extension_list=["g.vcf",],
                           disable_auto_index_creation_and_locking_when_reading_rods=True,
-                          max_alternate_alleles=None):
+                          max_alternate_alleles=None, picard_jar_path=None):
 
         self.safe_mkdir(splited_dir)
 
@@ -127,14 +128,20 @@ class GenotypeGVCFs(JavaTool):
             output_index += 1
 
         self.parallel_execute(options_list)
-
-        VCFRoutines.combine_same_samples_vcfs(output_vcf,
+        unsorted_vcf = "%s.unsorted.vcf"
+        VCFRoutines.combine_same_samples_vcfs(unsorted_vcf,
                                               vcf_list=region_vcf_list,
                                               order_vcf_files=True,
                                               close_fd_after=False,
                                               extension_list=[".vcf", ])
+        sequence_dict = reference[:-6] + ".dict"
 
-        ValidateVariants.jar_path = self.jar_path
-        ValidateVariants.jar = self.jar
+        SortVcf.jar_path = picard_jar_path
 
-        ValidateVariants.index_vcf(reference, output_vcf)
+        SortVcf.sort_vcf(unsorted_vcf, output_vcf, seq_dict=sequence_dict)
+
+
+        #ValidateVariants.jar_path = self.jar_path
+        #ValidateVariants.jar = self.jar
+
+        #ValidateVariants.index_vcf(reference, output_vcf)
