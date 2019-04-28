@@ -54,7 +54,7 @@ class VariantFiltration(JavaTool):
                             picard_memory="1g", picard_dir=None):
 
         from RouToolPa.Tools.GATK import SelectVariants
-        from RouToolPa.Tools import SortVcf
+        from RouToolPa.Tools.Picard import SortVcf
         snp_raw_vcf = "%s.snp.raw.vcf" % output_prefix
         indel_raw_vcf = "%s.indel.raw.vcf" % output_prefix
 
