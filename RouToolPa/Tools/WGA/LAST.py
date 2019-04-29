@@ -97,6 +97,25 @@ class LAST(Tool):
             print("Read %i lines" % read_line_counter)
             print("Written %i lines" % written_line_counter)
 
+    def plot(self, alignment, output, first_genome_seq_id_list=None,
+             second_genome_seq_id_list=None,
+             xsize=None, ysize=None):
 
+        options = ""
+
+        if first_genome_seq_id_list:
+            for seq_id in first_genome_seq_id_list:
+                options += " -1 %s" % seq_id
+
+        if second_genome_seq_id_list:
+            for seq_id in second_genome_seq_id_list:
+                options += " -2 %s" % seq_id
+
+        options += " -x %i" % xsize
+        options += " -y %i" % ysize
+        options += " %s" % alignment
+        options += " %s" % output
+
+        self.execute(options=options, cmd="last-dotplot")
 
 
