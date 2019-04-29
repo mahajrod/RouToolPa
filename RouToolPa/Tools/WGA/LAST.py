@@ -90,7 +90,7 @@ class LAST(Tool):
             for line_list in input_generator:
                 read_line_counter += 1
                 print AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]
-                print
+                print int(line_list[AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]])
                 if int(line_list[AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]]) >= min_hit_len:
                     out_fd.write("\t".join(line_list))
                     out_fd.write("\n")
