@@ -11,6 +11,13 @@ class LAST(Tool):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "last", path=path, max_threads=max_threads)
 
+        self.sequence_order_dict = {
+                                    "input":     "0",
+                                    "name":      "1",
+                                    "length":    "2",
+                                    "alignment": "3"
+                                    }
+
     def parse_lastdb_options(self, db_prefix, input_fasta_list, softmasking=True, seeding_scheme="YASS",
                              verbose=True, keep_preliminary_masking=True,
                              mask_simple_repeats=True):
@@ -115,22 +122,16 @@ class LAST(Tool):
 
         options += " -x %i" % xsize
         options += " -y %i" % ysize
-        options += " %s" % alignment
-        options += " %s" % output
-
-        sequence_order_dict = {
-                               "input":     "0",
-                               "name":      "1",
-                               "length":    "2",
-                               "alignment": "3"
-                               }
 
         if first_genome_seq_order:
 
-            options += " --sort1 %s" % sequence_order_dict[first_genome_seq_order]
+            options += " --sort1 %s" % self.sequence_order_dict[first_genome_seq_order]
 
         if second_genome_seq_order:
-            options += " --sort2 %s" % sequence_order_dict[second_genome_seq_order]
+            options += " --sort2 %s" % self.sequence_order_dict[second_genome_seq_order]
+
+        options += " %s" % alignment
+        options += " %s" % output
 
         self.execute(options=options, cmd="last-dotplot")
 
