@@ -9,6 +9,7 @@ from collections import OrderedDict, Iterable
 import numpy as np
 import pandas as pd
 
+import RouToolPa.Formats.AnnotationFormats as AnnotationFormats
 
 
 class CollectionGFF:
@@ -17,24 +18,8 @@ class CollectionGFF:
                  black_list=(), white_list=(), featuretype_separation=False):
 
         self.formats = ["gff", "gtf", "bed"]
-        self.GFF_COLS = OrderedDict({
-                                     "scaffold": 0,
-                                     "source":   1,
-                                     "featuretype": 2,
-                                     "start": 3,
-                                     "end": 4,
-                                     "score": 5,
-                                     "strand": 6,
-                                     "phase": 7,
-                                     "attributes": 8
-                                     })
-
-        self.BED_COLS = OrderedDict({
-                                     "scaffold": 0,
-                                     "start": 1,
-                                     "end": 2
-                                     })
-
+        self.GFF_COLS = AnnotationFormats.GFF_COLS
+        self.BED_COLS = AnnotationFormats.BED_COLS
         self.parsing_parameters = {"gff": {
                                            "only_coordinates": {
                                                                 "col_names": ["scaffold", "start", "end"],

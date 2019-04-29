@@ -5,10 +5,12 @@ Last output parser Module based on pandas
 __author__ = 'Sergei F. Kliver'
 import datetime
 from copy import deepcopy
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
+
+import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
 
 class CollectionLast:
@@ -18,22 +20,7 @@ class CollectionLast:
                  min_target_len=None, min_query_len=None):
 
         self.formats = ["tab"]
-        self.TAB_COLS = OrderedDict({
-                                     "score": 0,
-                                     "target_id":   1,
-                                     "target_start": 2,
-                                     "target_hit_len": 3,
-                                     "target_strand": 4,
-                                     "target_len": 5,
-                                     "query_id": 6,
-                                     "query_start": 7,
-                                     "query_hit_len": 8,
-                                     "query_strand": 9,
-                                     "query_len": 10,
-                                     "alignment": 11,
-                                     "EG2": 12,
-                                     "E": 13,
-                                     })
+        self.TAB_COLS = AlignmentFormats.LAST_TAB_COLS
         self.parsing_parameters = {"tab": {
                                            "all": {
                                                    "col_names": ["score", "target_id", "target_start", "target_hit_len",

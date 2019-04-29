@@ -28,7 +28,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import IdList, IdSet, SynDict
 from RouToolPa.Routines import DrawingRoutines
 from RouToolPa.Routines.File import FileRoutines
-
+import RouToolPa.Formats.VariantFormats as VariantFormats
 
 ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]
                     }
@@ -244,15 +244,7 @@ class CollectionVCF():
         """
         # vcf file columns
         self.formats = ["vcf"]
-        self.VCF_COLS = OrderedDict({"CHROM":  0,
-                                     "POS":    1,
-                                     "ID":     2,
-                                     "REF":    3,
-                                     "ALT":    4,
-                                     "QUAL":   5,
-                                     "FILTER": 6,
-                                     "INFO":   7,
-                                     "FORMAT": 8})
+        self.VCF_COLS = VariantFormats.VCF_COLS
         self.parsing_modes_with_genotypes = ["complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"]
         self.parsing_modes_with_sample_coverage = ["complete", "pos_gt_dp"]
         self.parsing_parameters = {

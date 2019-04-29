@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from RouToolPa.Tools.Abstract import Tool
-
+import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
 class LAST(Tool):
     """
@@ -80,3 +80,23 @@ class LAST(Tool):
         options += " > %s" % output_file
 
         self.execute(options=options, cmd="maf-convert")
+
+    def filter_tab_output_by_length(self, input_tab, min_hit_len, output_tab, mode="target", verbose=False):
+
+        input_generator = self.file_line_as_list_generator(input_tab)
+        read_line_counter = 0
+        written_line_counter = 0
+        with self.metaopen(output_tab, "w") as out_fd:
+            for line_list in input_generator:
+                read_line_counter += 1
+                if int(line_list[AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]]) >= min_hit_len:
+                    out_fd.write("\t".join(line_list))
+                    out_fd.write("\n")
+                    written_line_counter += 0
+        if verbose:
+            print("Read %i lines" % read_line_counter)
+            print("Written %i lines" % written_line_counter)
+
+
+
+
