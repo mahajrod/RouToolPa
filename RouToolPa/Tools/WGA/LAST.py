@@ -99,7 +99,9 @@ class LAST(Tool):
 
     def plot(self, alignment, output, first_genome_seq_id_list=None,
              second_genome_seq_id_list=None,
-             xsize=None, ysize=None):
+             first_genome_seq_order=None,
+             second_genome_seq_order=None,
+             xsize=None, ysize=None, ):
 
         options = ""
 
@@ -115,6 +117,12 @@ class LAST(Tool):
         options += " -y %i" % ysize
         options += " %s" % alignment
         options += " %s" % output
+
+        if first_genome_seq_order:
+            options += " --sort1 %s" % str(first_genome_seq_order)
+
+        if second_genome_seq_order:
+            options += " --sort2 %s" % str(second_genome_seq_order)
 
         self.execute(options=options, cmd="last-dotplot")
 
