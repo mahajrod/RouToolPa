@@ -118,11 +118,19 @@ class LAST(Tool):
         options += " %s" % alignment
         options += " %s" % output
 
+        sequence_order_dict = {
+                               "input":     "0",
+                               "name":      "1",
+                               "length":    "2",
+                               "alignment": "3"
+                               }
+
         if first_genome_seq_order:
-            options += " --sort1 %s" % str(first_genome_seq_order)
+
+            options += " --sort1 %s" % sequence_order_dict[first_genome_seq_order]
 
         if second_genome_seq_order:
-            options += " --sort2 %s" % str(second_genome_seq_order)
+            options += " --sort2 %s" % sequence_order_dict[second_genome_seq_order]
 
         self.execute(options=options, cmd="last-dotplot")
 
