@@ -89,12 +89,10 @@ class LAST(Tool):
         with self.metaopen(output_tab, "w") as out_fd:
             for line_list in input_generator:
                 read_line_counter += 1
-                print AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]
-                print int(line_list[AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]])
                 if int(line_list[AlignmentFormats.LAST_TAB_COLS["%s_hit_len" % mode]]) >= min_hit_len:
                     out_fd.write("\t".join(line_list))
                     out_fd.write("\n")
-                    written_line_counter += 0
+                    written_line_counter += 1
         if verbose:
             print("Read %i lines" % read_line_counter)
             print("Written %i lines" % written_line_counter)
