@@ -79,26 +79,28 @@ class FileRoutines:
                     if not (readme_text is None):
                         descr_fd.write(readme_text)
 
-    def recursive_mkdir(self, dir_dict, out_dir=None,
+    def recursive_mkdir(self, dir_dict=None, out_dir=None,
                         description_filename=None, description_text=None,
                         readme_filename=None, readme_text=None):
         if not(out_dir is None):
             self.safe_mkdir(out_dir)
-        for directory in dir_dict:
-            dirname = directory if out_dir is None else "%s/%s" % (out_dir, directory)
-            self.safe_mkdir(dirname,
-                            description_filename=description_filename,
-                            description_text=description_text,
-                            readme_filename=readme_filename,
-                            readme_text=readme_text)
 
-            if isinstance(dir_dict[directory], dict):
-                self.recursive_mkdir(dir_dict[directory],
-                                     out_dir=dirname,
-                                     description_filename=description_filename,
-                                     description_text=description_text,
-                                     readme_filename=readme_filename,
-                                     readme_text=readme_text)
+        if dir_dict:
+            for directory in dir_dict:
+                dirname = directory if out_dir is None else "%s/%s" % (out_dir, directory)
+                self.safe_mkdir(dirname,
+                                description_filename=description_filename,
+                                description_text=description_text,
+                                readme_filename=readme_filename,
+                                readme_text=readme_text)
+
+                if isinstance(dir_dict[directory], dict):
+                    self.recursive_mkdir(dir_dict[directory],
+                                         out_dir=dirname,
+                                         description_filename=description_filename,
+                                         description_text=description_text,
+                                         readme_filename=readme_filename,
+                                         readme_text=readme_text)
 
     def detect_filetype_by_extension(self, filename, filetypes_dict=None):
         filetypes = filetypes_dict if filetypes_dict else self.filetypes_dict
