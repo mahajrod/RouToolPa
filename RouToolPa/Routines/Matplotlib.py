@@ -1025,7 +1025,7 @@ class MatplotlibRoutines:
 
     def draw_bar_plot(self, input_data, output_prefix, extentions=["png"],
                       xlabel=None, ylabel=None, title=None, min_value=None, max_value=None, new_figure=True,
-                      figsize=(6, 6)):
+                      figsize=(6, 6), close_figure=True):
         
         data = np.array(input_data)
         if min_value and max_value:
@@ -1049,3 +1049,5 @@ class MatplotlibRoutines:
         
         for ext in extentions:
             plt.savefig("%s.%s" % (output_prefix, ext))
+
+        plt.close()
