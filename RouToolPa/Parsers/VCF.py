@@ -963,7 +963,7 @@ class CollectionVCF():
                                            extension_list=("png",), suptitle=None,
                                            xlabel=None, ylabel=None, show_median=True,
                                            show_mean=True, median_relative=False, mean_relative=False, dpi=200,
-                                           subplot_size=3, xlimit=None, verbose=False):
+                                           subplot_size=3, xlimit=None, verbose=False, ylogbase=10):
 
         param = self.records.xs(parameter, axis=1, level=1, drop_level=False)
         param_mean = param.apply(np.mean)
@@ -1009,6 +1009,10 @@ class CollectionVCF():
             else:
                 bins = np.arange(1, max(param_max), bin_width)
         bins = np.concatenate((bins, [bins[-1] + bin_width, bins[-1] + 2 * bin_width]))
+
+        print "Bins:"
+        print bins
+
         figure, subplot_array = plt.subplots(nrows=n, ncols=m, sharex=True, sharey=True,
                                              figsize=(m*subplot_size, n*subplot_size), dpi=dpi)
         #print subplot_array
@@ -1030,9 +1034,9 @@ class CollectionVCF():
                 # TODO: adjust function to deal not only with the first column inside parameter
                 subplot_array[row][col].hist(param[sample_id][parameter][0].dropna(), bins=bins, label=sample_id)
                 if show_median:
-                    subplot_array[row][col].axvline(x=float(param_median[sample_id]), label="median", color="orange")
+                    subplot_array[row][col].axvline(x=float(param_median[sample_id]), label="median %.2f" % param_median, color="orange")
                 if show_mean:
-                    subplot_array[row][col].axvline(x=float(param_mean[sample_id]), label="mean", color="red")
+                    subplot_array[row][col].axvline(x=float(param_mean[sample_id]), label="mean %.2f" % param_mean, color="red")
                 if row == 0 and col == m - 1:
                     subplot_array[row][col].legend()
                 subplot_array[row][col].set_title(sample_id)
@@ -1056,6 +1060,9 @@ class CollectionVCF():
         if output_prefix:
             for extension in extension_list:
                 plt.savefig("%s.xlim%i.%s" % (output_prefix, xlim, extension), bbox_inches='tight')
+            plt.yscale('log', basey=ylogbase)
+            for extension in extension_list:
+                plt.savefig("%s.xlim%i.ylog.%s" % (output_prefix, xlim, extension), bbox_inches='tight')
 
         plt.close()
 
