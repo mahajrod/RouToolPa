@@ -1023,3 +1023,29 @@ class MatplotlibRoutines:
         return self.venn_diagram_from_sets(set1, set2, set3=set3, set_labels=set_labels, set_colors=set_colors,
                                            output_prefix=output_prefix, extensions=extensions, title=title)
 
+    def draw_bar_plot(self, input_data, output_prefix, extentions=["png"],
+                      xlabel=None, ylabel=None, title=None, min_value=None, max_value=None, new_figure=True,
+                      figsize=(6,6)):
+        
+        data = np.array(input_data)
+        if min_value and max_value:
+            data = data[(data <= min_value) & (data >= max_value)]
+        elif max_value:
+            data = data[data <= max_value]
+        elif min_value:
+            data = data[data >= min_value]
+        if new_figure:
+            plt.figure(1, figsize=figsize)
+            plt.subplot(1, 1, 1)
+        plt.bar(np.arange(1, len(data) + 1, 1), data)
+        plt.xlim(xmin=0, xmax=len(data))
+        
+        if xlabel:
+            plt.xlabel(xlabel)
+        if ylabel:
+            plt.ylabel(ylabel)
+        if title:
+            plt.title(title)
+        
+        for ext in extentions:
+            plt.savefig("%s.%s" % (output_prefix, ext))
