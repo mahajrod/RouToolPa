@@ -291,10 +291,10 @@ class CollectionGFF:
             shape = np.shape(tmp_attr)
             column_number = 1 if len(shape) == 1 else shape[1]
 
-            tmp_attr.columns = pd.MultiIndex.from_arrays([
-                                                          ["attributes"] * column_number,
-                                                          tmp_attr.columns
-                                                         ])
+            #tmp_attr.columns = pd.MultiIndex.from_arrays([
+            #                                              ["attributes"] * column_number,
+            #                                              tmp_attr.columns
+            #                                             ])
             tmp_attr.index = self.records.index
             print("%s\tParsing attribute field finished..." % str(datetime.datetime.now()))
             return tmp_attr
