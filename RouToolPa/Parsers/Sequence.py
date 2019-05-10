@@ -10,7 +10,7 @@ from copy import deepcopy
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-from RouToolPa.Routines import FileRoutines
+
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 
@@ -49,6 +49,7 @@ class CollectionSequence:
 
     @staticmethod
     def sequence_generator(sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
+        from RouToolPa.Routines import FileRoutines
         if format == "fasta":
             with FileRoutines.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
@@ -186,6 +187,31 @@ class CollectionSequence:
 
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
+
+    def write_by_syn(self, outfile, syn_dict, max_symbols_per_line=60):
+        """
+        :param outfile: output fasta file
+        :param syn_dict: dictionary with synonyms to be used for sequence ids.
+               Note: sequence form collection will be written as many times as it appears in values of syn_dict
+        :param max_symbols_per_line: Maximum symbols per line in output fasta
+        :return:
+        """
+        if self.parsing_mode == "parse":
+            with FileRoutines.metaopen(outfile, "w") as out_fd:
+                for seq_id in syn_dict:
+                    out_fd.write(">%s\n" % seq_id)
+                    length = self.seq_lengths[syn_dict[seq_id]][0] if self.seq_lengths else len(self.records[syn_dict[seq_id]])
+                    line_number = length // max_symbols_per_line
+                    index = 0
+                    while index < line_number:
+                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
+                        index += 1
+                    if line_number * max_symbols_per_line < length:
+                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:-1])
+
+        else:
+            raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
+
 
     @staticmethod
     def count_window_number_in_scaffold(scaffold_length, window_size, window_step):
