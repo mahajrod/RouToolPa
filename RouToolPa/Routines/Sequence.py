@@ -6,7 +6,7 @@ import math
 import pickle
 from random import randint
 from copy import deepcopy
-from collections import OrderedDict
+from collections import OrderedDict, Iterable
 import numpy as np
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -14,6 +14,8 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
+
+from RouToolPa.Parsers.Sequence import CollectionSequence
 
 
 class SequenceRoutines(FileRoutines):
@@ -492,7 +494,15 @@ class SequenceRoutines(FileRoutines):
                                 syn_file=None, parsing_mode="parse", index_file="tmp.idx", invert_match=False):
 
         id_list = IdList()
-        id_list.read(id_file, column_number=id_column_number)
+
+        if isinstance(id_file, str):
+            if os.path.isfile(id_file):
+                id_list.read(id_file, column_number=id_column_number)
+            else:
+                id_list = id_file.split(",")
+
+        elif isinstance(id_file, Iterable):
+            id_list = list(id_file)
 
         converted_ids = IdList()
         if syn_file:
@@ -2496,7 +2506,7 @@ class SequenceRoutines(FileRoutines):
     def correct_sequences_from_file(self, seq_file, output_file, black_list_file=None, white_list_file=None,
                                     regions_to_trim_file=None, regions_to_mask_file=None, parsing_mode="parse",
                                     format="fasta"):
-        from Routines import AnnotationsRoutines
+        from RouToolPa.Routines import AnnotationsRoutines
         record_dict = self.parse_seq_file(seq_file, mode=parsing_mode)
 
         black_list_ids = IdList(filename=black_list_file) if black_list_file else None
@@ -2518,6 +2528,15 @@ class SequenceRoutines(FileRoutines):
         SeqIO.write(self.record_from_dict_generator(corrected_record_dict), output_file, format)
 
         return corrected_record_dict
+
+    @staticmethod
+    def make_fasta_by_correspondence(input_fasta, syn_file, output_fasta, key_column=0, value_column=1):
+        syn_dict = SynDict(filename=syn_file, key_index=key_column, value_index=value_column, comments_prefix="#")
+
+        fasta_collection = CollectionSequence(in_file=input_fasta, format="fasta")
+
+        fasta_collection.write_by_syn(output_fasta, syn_dict)
+
 
 def get_lengths(record_dict, out_file="lengths.t", write=False, write_header=True):
     lengths_dict = SynDict()
