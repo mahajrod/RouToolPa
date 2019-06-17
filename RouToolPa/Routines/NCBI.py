@@ -422,7 +422,7 @@ class NCBIRoutines(SequenceRoutines):
             with self.metaopen("%s.warnings" % output_prefix, "w") as warn_fd:
                 warn_fd.write("WARNING!!! Duplicated protein ids were detected...")
 
-        from Tools.Abstract import Tool
+        from RouToolPa.Tools.Abstract import Tool
         output_directory = self.check_dir_path(self.split_filename(output_prefix)[0])
         transcript_temp_dir = "%s%s_transcripts" % (output_directory, temp_dir_prefix)
         protein_temp_dir = "%s%s_proteins" % (output_directory, temp_dir_prefix)

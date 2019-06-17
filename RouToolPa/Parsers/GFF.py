@@ -9,10 +9,11 @@ from collections import OrderedDict, Iterable
 import numpy as np
 import pandas as pd
 
+from RouToolPa.Parsers.Abstract import Parser
 import RouToolPa.Formats.AnnotationFormats as AnnotationFormats
 
 
-class CollectionGFF:
+class CollectionGFF(Parser):
 
     def __init__(self, in_file=None, records=None, format="gff", parsing_mode="only_coordinates",
                  black_list=(), white_list=(), featuretype_separation=False):
@@ -301,57 +302,16 @@ class CollectionGFF:
         else:
             raise ValueError("ERROR!!! Unknown format of the records!")
 
-        """
-        print("\t%s\tSplitting parameters from attribute field..." % str(datetime.datetime.now()))
-        tmp_attr = self.records["attributes"].str.split(";", expand=True)
+    def get_attribute_names(self):
+        if self.featuretype_separation:
+            attributes_dict = OrderedDict()
+            for feature in self.records:
+                attributes_dict[feature] = list(self.records[feature][AnnotationFormats.GFF_COLS["attributes"] - 1:]) # -1 is necessary as scaffold column is part of index
 
-        print("\t%s\tSplitting parameters from attribute field finished..." % str(datetime.datetime.now()))
-        print("\t%s\tSplitting parameter and value..." % str(datetime.datetime.now()))
-        tmp_attr_list = [tmp_attr[column].str.split("=", expand=True) for column in tmp_attr.columns]
-        print("\t%s\tSplitting parameter and value finished..." % str(datetime.datetime.now()))
+            return attributes_dict
 
-        del tmp_attr
-        attr_df_list = []
+        return list(self.records[AnnotationFormats.GFF_COLS["attributes"] - 1:]) # -1 is necessary as scaffold column is part of index
 
-        parameter_set = set()
-        for dataframe in tmp_attr_list:
-            parameter_set |= set(dataframe[0].unique())
-
-        for param in parameter_set:
-            print ("\t%s\tParsing %s..." % (str(datetime.datetime.now()), param))
-            temp_list = []
-            for dataframe in tmp_attr_list:
-                print("\t\t%s\tParsing fragments..." % str(datetime.datetime.now()))
-                column = dataframe[dataframe[0] == param][1]
-                if column.empty:
-                    continue
-
-                column = self.parse_column(column, param)
-                temp_list.append(column)
-            if not temp_list:
-                continue
-            print("\t\t%s\tMerging fragments..." % str(datetime.datetime.now()))
-            tmp = pd.concat(temp_list)
-            print("\t\t%s\tMerging finished..." % str(datetime.datetime.now()))
-            del temp_list
-            # TODO: check if 3 lines below are redundant in all possible cases
-            shape = np.shape(tmp)
-            column_number = 1 if len(shape) == 1 else shape[1]
-            tmp = tmp.to_frame(param) if isinstance(tmp, pd.Series) else tmp
-            tmp.columns = pd.MultiIndex.from_arrays([
-                                                     ["attributes"] * column_number,
-                                                     [param] * column_number
-                                                     ])
-
-            attr_df_list.append(tmp)
-        #print attr_df_list
-        print("%s\tMerging parameters..." % str(datetime.datetime.now()))
-        attr = pd.concat(attr_df_list, axis=1)
-        print("%s\tMerging finished." % str(datetime.datetime.now()))
-        attr.sort_index(level=1, inplace=True)
-        print("%s\tParsing attribute finished." % str(datetime.datetime.now()))
-        return attr
-        """
     def total_length(self):
         return np.sum(self.records['end'] - self.records['start'])
 
@@ -433,38 +393,6 @@ class CollectionGFF:
 
         return new_gff_record
 
-    @staticmethod
-    def get_filtered_entry_list(entry_list,
-                                entry_black_list=[],
-                                sort_entries=False,
-                                entry_ordered_list=None,
-                                entry_white_list=[]):
-        white_set = set(entry_white_list)
-        black_set = set(entry_black_list)
-        entry_set = set(entry_list)
-
-        if white_set:
-            entry_set = entry_set & white_set
-        if black_set:
-            entry_set = entry_set - black_set
-
-        filtered_entry_list = list(entry_set)
-        if sort_entries:
-            filtered_entry_list.sort()
-
-        final_entry_list = []
-
-        if entry_ordered_list:
-            for entry in entry_ordered_list:
-                if entry in filtered_entry_list:
-                    final_entry_list.append(entry)
-                    filtered_entry_list.remove(entry)
-                else:
-                    print("WARNING!!!Entry(%s) from order list is absent in list of entries!" % entry)
-            return final_entry_list + filtered_entry_list
-        else:
-            return filtered_entry_list
-
     def sequence_generator(self, records, sequence_collection, expression=None):
         for entry in records.itertuples():
             if expression:
@@ -479,7 +407,7 @@ class CollectionGFF:
             if return_type == "collection":
                 selected_records = self.records[self.records.index.isin(record_type_white_list, level=1) & (~self.records.index.isin(record_type_black_list, level=1))]
 
-                from MACE.Parsers.Sequence import CollectionSequence
+                from RouToolPa.Parsers.Sequence import CollectionSequence
 
                 extracted_records = CollectionSequence()
 

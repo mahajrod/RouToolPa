@@ -19,3 +19,11 @@ BED_COLS = OrderedDict({
                         "start": 1,
                         "end": 2
                         })
+BUSCO_TABLE_COLS = OrderedDict({
+                                "id": 0,
+                                "status": 1,
+                                "contig": 2,
+                                "start": 3,
+                                "end": 4,
+                                "score": 5,
+                                "length": 6})

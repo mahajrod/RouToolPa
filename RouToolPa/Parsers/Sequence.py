@@ -11,10 +11,11 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
+from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 
-class CollectionSequence:
+class CollectionSequence(FileRoutines):
 
     def __init__(self, in_file=None, records=None, format="fasta",
                  parsing_mode="parse", black_list=(), white_list=(),
@@ -47,11 +48,10 @@ class CollectionSequence:
         self.scaffolds = None
         self.gaps = None          # None or pandas dataframe with seq_id as index
 
-    @staticmethod
-    def sequence_generator(sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
-        from RouToolPa.Routines import FileRoutines
+    def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
+
         if format == "fasta":
-            with FileRoutines.metaopen(sequence_file, "r") as seq_fd:
+            with self.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
                 seq = ""
                 for line in seq_fd:
@@ -170,7 +170,7 @@ class CollectionSequence:
 
     def write(self, outfile, expression=None, max_symbols_per_line=60):
         if self.parsing_mode == "parse":
-            with FileRoutines.metaopen(outfile, "w") as out_fd:
+            with self.metaopen(outfile, "w") as out_fd:
                 for seq_id in self.records:
                     if expression:
                         if not expression(seq_id, self.records[seq_id]):
@@ -183,12 +183,12 @@ class CollectionSequence:
                         out_fd.write(self.records[seq_id][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
                         index += 1
                     if line_number * max_symbols_per_line < length:
-                        out_fd.write(self.records[seq_id][index*max_symbols_per_line:-1])
+                        out_fd.write(self.records[seq_id][index*max_symbols_per_line:-1] + "\n")
 
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
 
-    def write_by_syn(self, outfile, syn_dict, max_symbols_per_line=60):
+    def write_by_syn(self, outfile, syn_dict, max_symbols_per_line=60, absent_symbol="."):
         """
         :param outfile: output fasta file
         :param syn_dict: dictionary with synonyms to be used for sequence ids.
@@ -197,8 +197,10 @@ class CollectionSequence:
         :return:
         """
         if self.parsing_mode == "parse":
-            with FileRoutines.metaopen(outfile, "w") as out_fd:
+            with self.metaopen(outfile, "w") as out_fd:
                 for seq_id in syn_dict:
+                    if syn_dict[seq_id] == ".":
+                        continue
                     out_fd.write(">%s\n" % seq_id)
                     length = self.seq_lengths[syn_dict[seq_id]][0] if self.seq_lengths else len(self.records[syn_dict[seq_id]])
                     line_number = length // max_symbols_per_line
@@ -207,7 +209,7 @@ class CollectionSequence:
                         out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
                         index += 1
                     if line_number * max_symbols_per_line < length:
-                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:-1])
+                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:-1] + "\n")
 
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")

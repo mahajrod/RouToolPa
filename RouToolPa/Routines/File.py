@@ -6,6 +6,7 @@ import os
 import sys
 import bz2
 import gzip
+import shutil
 from collections import Iterable, OrderedDict
 
 from RouToolPa.Collections.General import IdSet,  IdList, SynDict
@@ -740,8 +741,39 @@ class FileRoutines:
 
                     out_fd.write(separator.join(output_line_list) + "\n")
 
+    def rename_ncbi_genome_files(self, genome_dir):
+        species_list = os.listdir(genome_dir)
 
-
+        assembly_suffix = "_genomic.fna"
+        gff_suffix = "_genomic.gff"
+        protein_suffix = "_protein.faa"
+        rna_suffix = "_rna.fna"
+        tab_suffix = ".txt"
+        for species in species_list:
+            species_path = "%s/%s" % (genome_dir, species)
+            source_list = os.listdir(species_path)
+            for source in source_list:
+                species_source_path = "%s/%s" % (species_path, source)
+                if os.path.isdir(species_source_path):
+                    assembly_list = os.listdir(species_source_path)
+                    for assembly in assembly_list:
+                        species_source_assembly_path = "%s/%s" % (species_source_path, assembly)
+                        if os.path.isdir(species_source_assembly_path):
+                            os.system("gunzip %s/*" % species_source_assembly_path)
+                            file_list = os.listdir(species_source_assembly_path)
+                            for filename in file_list:
+                                filename_path = "%s/%s" % (species_source_assembly_path, filename)
+                                if os.path.isfile(filename_path):
+                                    if assembly_suffix in filename:
+                                        shutil.move(filename_path, "%s/%s.fasta" % (species_source_assembly_path, species))
+                                    elif gff_suffix in filename:
+                                        shutil.move(filename_path, "%s/%s.gff" % (species_source_assembly_path, species))
+                                    elif protein_suffix in filename:
+                                        shutil.move(filename_path, "%s/%s.pep" % (species_source_assembly_path, species))
+                                    elif rna_suffix in filename:
+                                        shutil.move(filename_path, "%s/%s.transcript" % (species_source_assembly_path, species))
+                                    elif tab_suffix in filename:
+                                        shutil.move(filename_path, "%s/%s.tab" % (species_source_assembly_path, species))
 
 
 
