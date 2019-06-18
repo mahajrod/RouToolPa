@@ -2,7 +2,7 @@
 __author__ = 'Sergei F. Kliver'
 
 from RouToolPa.Tools.Abstract import Tool
-from Parsers.Barrnap import CollectionBARRNAP
+from RouToolPa.Parsers.Barrnap import CollectionBARRNAP
 
 
 
