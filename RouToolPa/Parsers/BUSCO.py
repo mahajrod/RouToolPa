@@ -19,23 +19,27 @@ class BUSCOtable(Parser):
                  black_list=(), white_list=(), add_row_index=True):
 
         self.formats = ["busco_table"]
-        self.GFF_COLS = AnnotationFormats.GFF_COLS
-        self.BED_COLS = AnnotationFormats.BED_COLS
+
+        self.status_list = ["Complete",
+                            "Duplicated",
+                            "Fragmented",
+                            "Missing"]
+
         self.parsing_parameters = {"busco_table": {
 
                                            "complete": {
                                                    "col_names": ["id", "status", "scaffold", "start", "end",
                                                                  "score", "length"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6],
-                                                   "index_cols": ["id"],
+                                                   "index_cols": ["status"],
                                                    "converters": {
                                                                   "id":             str,
                                                                   "status":         str,
                                                                   "scaffold":       str,
-                                                                  "start":          lambda x: np.int32(x) - 1,
-                                                                  "end":            np.int32,
-                                                                  "score":          float,
-                                                                  "length":         np.int32,
+                                                                  "start":          str, #lambda x: np.int32(x) - 1,
+                                                                  "end":            str, #np.int32,
+                                                                  "score":          str, #float,
+                                                                  "length":         str, #np.int32,
                                                                   },
                                                    "col_name_indexes": {
                                                                         "id":           0,
@@ -101,3 +105,12 @@ class BUSCOtable(Parser):
 
         if sort:
             self.records.sort_values(by=["scaffold", "start", "end"])
+
+    def count_statuses(self):
+        status_dict = OrderedDict()
+        count_dict = OrderedDict()
+        for status in self.status_list:
+            status_dict[status] = set(self.records.loc[status]["id"].unique())
+            count_dict[status] = len(status_dict[status])
+
+        return status_dict, count_dict

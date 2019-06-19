@@ -2261,8 +2261,8 @@ class SequenceRoutines(FileRoutines):
         return output_string
 
     def prepare_reference_for_GATK(self, reference, picard_dir="", samtools_dir=""):
-        from Tools.Samtools import SamtoolsV1
-        from Tools.Picard import CreateSequenceDictionary
+        from RouToolPa.Tools.Samtools import SamtoolsV1
+        from RouToolPa.Tools.Picard import CreateSequenceDictionary
 
         SamtoolsV1.path = samtools_dir
         CreateSequenceDictionary.jar_path = picard_dir

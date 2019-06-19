@@ -1003,7 +1003,7 @@ class MatplotlibRoutines:
         if set3 is None:
             diagramm = venn2(subsets=(set1, set2), set_labels=set_labels, set_colors=set_colors)
         else:
-            diagramm = venn2(subsets=(set1, set2, set3), set_labels=set_labels, set_colors=set_colors)
+            diagramm = venn3(subsets=(set1, set2, set3), set_labels=set_labels, set_colors=set_colors)
 
         if title:
             plt.title(title)
