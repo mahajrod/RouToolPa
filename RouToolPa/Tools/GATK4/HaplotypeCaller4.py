@@ -14,30 +14,28 @@ class HaplotypeCaller4(Tool):
                       max_threads=max_threads, max_memory=max_memory, timelog=timelog)
 
     @staticmethod
-    def parse_options_for_parallel_run(reference, alignment, genotyping_mode="DISCOVERY", output_mode="EMIT_VARIANTS_ONLY",
+    def parse_options_for_parallel_run(reference, alignment, output_mode=None,
                                        stand_call_conf=30, gvcf_mode=False):
 
         options = " -R %s" % reference
         options += " -I %s" % alignment
-        options += " --genotyping_mode %s" % genotyping_mode if genotyping_mode else ""
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
         options += " -stand_call_conf %i" % stand_call_conf
-        options += " --emitRefConfidence GVCF" if gvcf_mode else ""
+        options += " --emit-ref-confidence GVCF" if gvcf_mode else ""
 
         return options
 
-    def parse_options(self, reference, alignment, output, genotyping_mode="DISCOVERY", output_mode="EMIT_VARIANTS_ONLY",
+    def parse_options(self, reference, alignment, output, output_mode=None,
                       stand_call_conf=30, gvcf_mode=False, include_region_id_file=None, exclude_region_id_file=None):
 
         options = " -nct %i" % self.threads
         options += " -R %s" % reference
         options += " -I %s" % alignment
-        options += " --genotyping_mode %s" % genotyping_mode if genotyping_mode else ""
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
         options += " -stand_call_conf %i" % stand_call_conf
-        options += " --emitRefConfidence GVCF" if gvcf_mode else ""
+        options += " --emit-ref-confidence GVCF" if gvcf_mode else ""
         options += " -L %s" % include_region_id_file if include_region_id_file else ""
         options += " -XL %s" % exclude_region_id_file if exclude_region_id_file else ""
 
@@ -45,18 +43,17 @@ class HaplotypeCaller4(Tool):
 
         return options
 
-    def call(self, reference, alignment, output, genotyping_mode="DISCOVERY", output_mode="EMIT_VARIANTS_ONLY",
+    def call(self, reference, alignment, output, output_mode=None,
              stand_call_conf=30, include_region_id_file=None, exclude_region_id_file=None):
         """
             gatk HaplotypeCaller \
               -R ${fasta} \
               -I ${bam%bam}realigned.bam \
-              --genotyping_mode DISCOVERY \
               --output_mode EMIT_VARIANTS_ONLY \
               -stand_call_conf 30 \
               -o ${bam%bam}raw.vcf
         """
-        options = self.parse_options(reference, alignment, output, genotyping_mode=genotyping_mode,
+        options = self.parse_options(reference, alignment, output,
                                      output_mode=output_mode,
                                      stand_call_conf=stand_call_conf, gvcf_mode=False,
                                      include_region_id_file=include_region_id_file,
@@ -65,18 +62,18 @@ class HaplotypeCaller4(Tool):
         self.execute(options,
                      cmd="gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
-    def gvcf_call(self, reference, alignment, output, genotyping_mode="DISCOVERY",
+    def gvcf_call(self, reference, alignment, output,
                   stand_call_conf=30, include_region_id_file=None, exclude_region_id_file=None):
         """
         gatk HaplotypeCaller \
          -R reference.fasta
          -I sample1.bam \
-         --emitRefConfidence GVCF \
+         --emit-ref-confidence GVCF \
          [--dbsnp dbSNP.vcf] \
          [-L targets.interval_list] \
          -o output.raw.snps.indels.g.vcf
         """
-        options = self.parse_options(reference, alignment, output, genotyping_mode=genotyping_mode,
+        options = self.parse_options(reference, alignment, output,
                                      stand_call_conf=stand_call_conf, gvcf_mode=True,
                                      include_region_id_file=include_region_id_file,
                                      exclude_region_id_file=exclude_region_id_file)
@@ -85,7 +82,6 @@ class HaplotypeCaller4(Tool):
                      cmd="gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
     def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix, output,
-                           genotyping_mode="DISCOVERY",
                            stand_call_conf=30, max_region_length=1000000, max_seqs_per_region=100,
                            length_dict=None, parsing_mode="parse", region_list=None,
                            region_file_format='simple',
@@ -117,7 +113,7 @@ class HaplotypeCaller4(Tool):
                                                                                         region_file_format=region_file_format if handling_mode != "slurm" else 'GATK') if region_list is None else region_list
 
         options = self.parse_options_for_parallel_run(reference, alignment,
-                                                      genotyping_mode=genotyping_mode,
+
                                                       stand_call_conf=stand_call_conf,
                                                       gvcf_mode=True)
         options += " -nct 1"
