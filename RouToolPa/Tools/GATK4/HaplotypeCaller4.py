@@ -29,8 +29,8 @@ class HaplotypeCaller4(Tool):
     def parse_options(self, reference, alignment, output, output_mode=None,
                       stand_call_conf=30, gvcf_mode=False, include_region_id_file=None, exclude_region_id_file=None):
 
-        options = " -nct %i" % self.threads
-        options += " -R %s" % reference
+        #options = " -nct %i" % self.threads
+        options = " -R %s" % reference
         options += " -I %s" % alignment
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
@@ -116,7 +116,7 @@ class HaplotypeCaller4(Tool):
 
                                                       stand_call_conf=stand_call_conf,
                                                       gvcf_mode=True)
-        options += " -nct 1"
+        #options += " -nct 1"
         options_list = []
 
         output_index = 1
