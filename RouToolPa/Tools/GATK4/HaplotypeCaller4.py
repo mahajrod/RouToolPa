@@ -21,7 +21,7 @@ class HaplotypeCaller4(Tool):
         options += " -I %s" % alignment
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
-        options += " -stand_call_conf %i" % stand_call_conf
+        options += " --standard-min-confidence-threshold-for-calling %i" % stand_call_conf
         options += " --emit-ref-confidence GVCF" if gvcf_mode else ""
 
         return options
@@ -34,7 +34,7 @@ class HaplotypeCaller4(Tool):
         options += " -I %s" % alignment
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
-        options += " -stand_call_conf %i" % stand_call_conf
+        options += " --standard-min-confidence-threshold-for-calling %i" % stand_call_conf
         options += " --emit-ref-confidence GVCF" if gvcf_mode else ""
         options += " -L %s" % include_region_id_file if include_region_id_file else ""
         options += " -XL %s" % exclude_region_id_file if exclude_region_id_file else ""
