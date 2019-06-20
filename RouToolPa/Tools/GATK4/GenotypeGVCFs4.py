@@ -11,7 +11,7 @@ from RouToolPa.Routines import VCFRoutines
 class GenotypeGVCFs4(Tool):
     def __init__(self, max_threads=4, max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options %s GenotypeGVCFs" % max_memory if max_memory else "gatk GenotypeGVCFs",
+                      "gatk --java-options -Xmx%s GenotypeGVCFs" % max_memory if max_memory else "gatk GenotypeGVCFs",
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 

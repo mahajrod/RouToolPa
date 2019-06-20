@@ -63,7 +63,7 @@ class HaplotypeCaller4(Tool):
                                      exclude_region_id_file=exclude_region_id_file)
 
         self.execute(options,
-                     cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
+                     cmd="gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
     def gvcf_call(self, reference, alignment, output, genotyping_mode="DISCOVERY",
                   stand_call_conf=30, include_region_id_file=None, exclude_region_id_file=None):
@@ -82,7 +82,7 @@ class HaplotypeCaller4(Tool):
                                      exclude_region_id_file=exclude_region_id_file)
 
         self.execute(options,
-                     cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
+                     cmd="gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
     def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix, output,
                            genotyping_mode="DISCOVERY",
@@ -147,7 +147,7 @@ class HaplotypeCaller4(Tool):
                 output_index += 1
 
             self.parallel_execute(options_list,
-                                  cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
+                                  cmd="gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
             VCFRoutines.combine_same_samples_vcfs(output,
                                                   vcf_list=output_file_list,
@@ -162,7 +162,7 @@ class HaplotypeCaller4(Tool):
             options += " -o %s" % output_file
             options += " -L %s" % region_file
 
-            slurm_cmd = "gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else "gatk HaplotypeCaller"
+            slurm_cmd = "gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else "gatk HaplotypeCaller"
             slurm_cmd += " %s" % options
 
             last_job_id = self.slurm_run_job(job_name,

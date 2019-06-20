@@ -13,7 +13,7 @@ class FastaAlternateReferenceMaker4(Tool):
 
     def __init__(self, max_threads=4,  max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options %s FastaAlternateReferenceMaker" % max_memory if max_memory else "gatk FastaAlternateReferenceMaker",
+                      "gatk --java-options -Xmx%s FastaAlternateReferenceMaker" % max_memory if max_memory else "gatk FastaAlternateReferenceMaker",
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 

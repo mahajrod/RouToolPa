@@ -7,7 +7,7 @@ class AnalyzeCovariates4(Tool):
 
     def __init__(self,  max_threads=4, max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options %s AnalyzeCovariates" % max_memory if max_memory else "gatk AnalyzeCovariates",
+                      "gatk --java-options -Xmx%s AnalyzeCovariates" % max_memory if max_memory else "gatk AnalyzeCovariates",
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 

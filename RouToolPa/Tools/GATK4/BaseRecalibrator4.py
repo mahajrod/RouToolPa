@@ -9,7 +9,7 @@ class BaseRecalibrator4(Tool):
 
     def __init__(self, max_threads=4, max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options %s BaseRecalibrator" % max_memory if max_memory else "gatk BaseRecalibrator",
+                      "gatk --java-options -Xmx%s BaseRecalibrator" % max_memory if max_memory else "gatk BaseRecalibrator",
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 
