@@ -39,7 +39,7 @@ class HaplotypeCaller4(Tool):
         options += " -L %s" % include_region_id_file if include_region_id_file else ""
         options += " -XL %s" % exclude_region_id_file if exclude_region_id_file else ""
 
-        options += " -o %s" % output
+        options += " -O %s" % output
 
         return options
 
@@ -126,7 +126,7 @@ class HaplotypeCaller4(Tool):
         if handling_mode == 'local':
             for regions in region_list:
                 output_file = "%s/%s_%i.g.vcf" % (splited_dir, output_prefix, output_index)
-                region_options = " -o %s" % output_file
+                region_options = " -O %s" % output_file
                 output_file_list.append(output_file)
                 #for region in regions:
                 #    region_options += " -L %s:%i-%i" % (region[0], region[1], region[2])
@@ -155,7 +155,7 @@ class HaplotypeCaller4(Tool):
             number_of_regions = len(region_list)
             region_file = "%s/splited/region_${SLURM_ARRAY_TASK_ID}.list" % regions_dir
             output_file = "%s/%s_${SLURM_ARRAY_TASK_ID}.g.vcf" % (splited_dir, output_prefix)
-            options += " -o %s" % output_file
+            options += " -O %s" % output_file
             options += " -L %s" % region_file
 
             slurm_cmd = "gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else "gatk HaplotypeCaller"
