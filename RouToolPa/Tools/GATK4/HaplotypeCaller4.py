@@ -10,7 +10,7 @@ from RouToolPa.Routines import VCFRoutines, FileRoutines
 class HaplotypeCaller4(Tool):
     def __init__(self,  max_threads=4,  max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options %s HaplotypeCaller" % max_memory if max_memory else "gatk HaplotypeCaller",
+                      "gatk HaplotypeCaller",
                       max_threads=max_threads, max_memory=max_memory, timelog=timelog)
 
     @staticmethod
@@ -48,8 +48,7 @@ class HaplotypeCaller4(Tool):
     def call(self, reference, alignment, output, genotyping_mode="DISCOVERY", output_mode="EMIT_VARIANTS_ONLY",
              stand_call_conf=30, include_region_id_file=None, exclude_region_id_file=None):
         """
-            java -Xmx100g -jar ~/tools/GenomeAnalysisTK-3.7/GenomeAnalysisTK.jar \
-              -T HaplotypeCaller \
+            gatk HaplotypeCaller \
               -R ${fasta} \
               -I ${bam%bam}realigned.bam \
               --genotyping_mode DISCOVERY \
@@ -63,14 +62,14 @@ class HaplotypeCaller4(Tool):
                                      include_region_id_file=include_region_id_file,
                                      exclude_region_id_file=exclude_region_id_file)
 
-        self.execute(options)
+        self.execute(options,
+                     cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
     def gvcf_call(self, reference, alignment, output, genotyping_mode="DISCOVERY",
                   stand_call_conf=30, include_region_id_file=None, exclude_region_id_file=None):
         """
-        java -jar GenomeAnalysisTK.jar \
-         -R reference.fasta \
-         -T HaplotypeCaller \
+        gatk HaplotypeCaller \
+         -R reference.fasta
          -I sample1.bam \
          --emitRefConfidence GVCF \
          [--dbsnp dbSNP.vcf] \
@@ -82,7 +81,8 @@ class HaplotypeCaller4(Tool):
                                      include_region_id_file=include_region_id_file,
                                      exclude_region_id_file=exclude_region_id_file)
 
-        self.execute(options)
+        self.execute(options,
+                     cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
     def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix, output,
                            genotyping_mode="DISCOVERY",
@@ -146,7 +146,8 @@ class HaplotypeCaller4(Tool):
                 options_list.append(options + region_options)
                 output_index += 1
 
-            self.parallel_execute(options_list)
+            self.parallel_execute(options_list,
+                                  cmd="gatk --java-options %s HaplotypeCaller" % self.max_memory if self.max_memory else None)
 
             VCFRoutines.combine_same_samples_vcfs(output,
                                                   vcf_list=output_file_list,
