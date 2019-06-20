@@ -38,7 +38,7 @@ class GenotypeGVCFs4(Tool):
                                                       disable_auto_index_creation_and_locking_when_reading_rods=disable_auto_index_creation_and_locking_when_reading_rods,
                                                       max_alternate_alleles=max_alternate_alleles)
 
-        options += " -o %s" % output
+        options += " -O %s" % output
 
         return options
 
@@ -72,7 +72,7 @@ class GenotypeGVCFs4(Tool):
             self.execute(options)
         elif handling_mode == "slurm":
             self.timelog = None
-            slurm_cmd = self.execute(options, capture_output=False, runtype="jar", generate_cmd_string_only=True)
+            slurm_cmd = self.execute(options, capture_output=False,  generate_cmd_string_only=True)
 
             last_job_id = self.slurm_run_job(job_name,
                                              log_prefix,
@@ -115,7 +115,7 @@ class GenotypeGVCFs4(Tool):
         region_vcf_list = []
 
         for regions in regions_list:
-            region_options = " -o %s/%s_%i.vcf" % (splited_dir, splited_prefix, output_index)
+            region_options = " -O %s/%s_%i.vcf" % (splited_dir, splited_prefix, output_index)
             region_vcf_list.append("%s/%s_%i.vcf" % (splited_dir, splited_prefix, output_index))
             for region in regions:
                 if isinstance(region, str):
