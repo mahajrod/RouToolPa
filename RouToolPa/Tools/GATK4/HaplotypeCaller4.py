@@ -81,7 +81,7 @@ class HaplotypeCaller4(Tool):
         self.execute(options,
                      cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
 
-    def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix, output,
+    def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix,
                            stand_call_conf=30, max_region_length=1000000, max_seqs_per_region=100,
                            length_dict=None, parsing_mode="parse", region_list=None,
                            region_file_format='simple',
@@ -97,8 +97,13 @@ class HaplotypeCaller4(Tool):
                            max_memmory_per_cpu=None,
                            modules_list=None,
                            environment_variables_dict=None):
+
         splited_dir = "%s/splited_gvcf/" % output_dir
         regions_dir = "%s/regions/" % output_dir
+
+        from RouToolPa.Tools.GATK4 import SortVcf4
+        sequence_dict = reference[:-5] + "dict"
+        SortVcf4.max_memory = self.max_memory
 
         for directory in output_dir, splited_dir:
             self.safe_mkdir(directory)
@@ -144,12 +149,15 @@ class HaplotypeCaller4(Tool):
 
             self.parallel_execute(options_list,
                                   cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
-
-            VCFRoutines.combine_same_samples_vcfs(output,
+            unsorted_combined_gvcf = "%s/%s.unsorted.g.vcf" % (output_dir, output_prefix)
+            sorted_combined_gvcf = "%s/%s.g.vcf" % (output_dir, output_prefix)
+            VCFRoutines.combine_same_samples_vcfs(unsorted_combined_gvcf,
                                                   vcf_list=output_file_list,
                                                   order_vcf_files=True,
                                                   close_fd_after=False,
                                                   extension_list=gvcf_extension_list)
+
+            SortVcf4.sort_vcf(unsorted_combined_gvcf, sorted_combined_gvcf, sequence_dict)
 
         elif handling_mode == 'slurm':
             number_of_regions = len(region_list)
