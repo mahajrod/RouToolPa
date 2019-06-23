@@ -11,7 +11,7 @@ from RouToolPa.Routines import VCFRoutines
 class GenotypeGVCFs4(Tool):
     def __init__(self, max_threads=4, max_memory=None, timelog=None):
         Tool.__init__(self,
-                      "gatk --java-options -Xmx%s GenotypeGVCFs" % max_memory if max_memory else "gatk GenotypeGVCFs",
+                      "gatk GenotypeGVCFs",
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 
@@ -69,10 +69,12 @@ class GenotypeGVCFs4(Tool):
                                      max_alternate_alleles=max_alternate_alleles)
 
         if handling_mode == 'local':
-            self.execute(options)
+            self.execute(options,
+                         cmd="gatk --java-options -Xmx%s GenotypeGVCFs" % self.max_memory if self.max_memory else None)
         elif handling_mode == "slurm":
             self.timelog = None
-            slurm_cmd = self.execute(options, capture_output=False,  generate_cmd_string_only=True)
+            slurm_cmd = self.execute(options, capture_output=False,  generate_cmd_string_only=True,
+                                     cmd="gatk --java-options -Xmx%s GenotypeGVCFs" % self.max_memory if self.max_memory else None)
 
             last_job_id = self.slurm_run_job(job_name,
                                              log_prefix,

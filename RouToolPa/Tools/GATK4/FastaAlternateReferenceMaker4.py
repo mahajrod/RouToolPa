@@ -21,7 +21,7 @@ class FastaAlternateReferenceMaker4(Tool):
     def parse_options(reference, new_reference, variants_vcf, raw_seq_per_line=False, vcf_with_masking=None,
                       override_vcf_by_mask=None, use_ambiguous_nuccleotides=None, interval_list=None):
         options = " -R %s" % reference
-        options += " -o %s" % new_reference
+        options += " -O %s" % new_reference
         options += " --variant %s" % variants_vcf
         options += " --rawOnelineSeq" if raw_seq_per_line else ""
         options += " --snpmask %s" % vcf_with_masking if vcf_with_masking else ""
