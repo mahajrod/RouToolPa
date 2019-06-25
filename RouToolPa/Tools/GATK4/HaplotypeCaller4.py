@@ -3,6 +3,7 @@
 __author__ = 'mahajrod'
 
 import os
+from RouToolPa.Collections.General import IdList
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import VCFRoutines, FileRoutines
 
@@ -96,7 +97,8 @@ class HaplotypeCaller4(Tool):
                            max_running_time=None,
                            max_memmory_per_cpu=None,
                            modules_list=None,
-                           environment_variables_dict=None):
+                           environment_variables_dict=None,
+                           black_list_scaffold_id_file=None):
 
         splited_dir = "%s/splited_gvcf/" % output_dir
         regions_dir = "%s/regions/" % output_dir
@@ -108,6 +110,12 @@ class HaplotypeCaller4(Tool):
         for directory in output_dir, splited_dir:
             self.safe_mkdir(directory)
 
+        if black_list_scaffold_id_file:
+            if isinstance(black_list_scaffold_id_file, str):
+                black_scaffolds_list = IdList(filename=black_list_scaffold_id_file)
+            else:
+                black_scaffolds_list = black_list_scaffold_id_file
+
         region_list, \
             scaffold_to_region_correspondence_dict = self.prepare_region_list_by_length(max_length=max_region_length,
                                                                                         max_seq_number=max_seqs_per_region,
@@ -115,6 +123,7 @@ class HaplotypeCaller4(Tool):
                                                                                         reference=None if length_dict is not None else reference,
                                                                                         parsing_mode=parsing_mode,
                                                                                         output_dir=regions_dir,
+                                                                                        black_list_scaffolds=black_scaffolds_list,
                                                                                         region_file_format=region_file_format if handling_mode != "slurm" else 'GATK') if region_list is None else region_list
 
         options = self.parse_options_for_parallel_run(reference, alignment,
