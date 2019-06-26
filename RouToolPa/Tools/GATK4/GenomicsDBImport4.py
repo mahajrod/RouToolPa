@@ -12,10 +12,10 @@ class GenomicsDBImport4(Tool):
                       max_threads=max_threads, max_memory=max_memory,
                       timelog=timelog)
 
-    def parse_options(self, gvcf_list, output_dbi_dir, interval_list=None, extension_list=["g.vcf",]):
+    def parse_options(self, gvcf_list, output_dbi_dir, interval_list, extension_list=["g.vcf",]):
 
         options = " --genomicsdb-workspace-path %s" % output_dbi_dir
-        options += " --intervals %s" % ",".join(interval_list) if interval_list else ""
+        options += " --intervals %s" % ",".join(interval_list)
 
         for gvcf in self.make_list_of_path_to_files_by_extension(gvcf_list,
                                                                  extension_list=extension_list,
@@ -24,7 +24,7 @@ class GenomicsDBImport4(Tool):
 
         return options
 
-    def create_db(self, gvcf_list, output_dbi_dir, interval_list=None, extension_list=["g.vcf",]):
+    def create_db(self, gvcf_list, output_dbi_dir, interval_list, extension_list=["g.vcf",]):
 
         options = self.parse_options(gvcf_list, output_dbi_dir,
                                      interval_list=interval_list,
