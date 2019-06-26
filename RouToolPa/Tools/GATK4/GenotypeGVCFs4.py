@@ -16,12 +16,12 @@ class GenotypeGVCFs4(Tool):
                       timelog=timelog)
 
     def parse_options_for_parallel_run(self, reference, gvcf_list, extension_list=["g.vcf",],
-                                       disable_auto_index_creation_and_locking_when_reading_rods=True,
+                                       #disable_auto_index_creation_and_locking_when_reading_rods=True,
                                        max_alternate_alleles=None, ):
 
         options = " -R %s" % reference
         options += " --max_alternate_alleles %i" % max_alternate_alleles if max_alternate_alleles else ""
-        options += " --disable_auto_index_creation_and_locking_when_reading_rods" if disable_auto_index_creation_and_locking_when_reading_rods else ""
+        #options += " --disable_auto_index_creation_and_locking_when_reading_rods" if disable_auto_index_creation_and_locking_when_reading_rods else ""
 
         for gvcf in self.make_list_of_path_to_files_by_extension(gvcf_list,
                                                                  extension_list=extension_list,
@@ -35,7 +35,7 @@ class GenotypeGVCFs4(Tool):
         options = self.parse_options_for_parallel_run(reference,
                                                       gvcf_list,
                                                       extension_list=extension_list,
-                                                      disable_auto_index_creation_and_locking_when_reading_rods=disable_auto_index_creation_and_locking_when_reading_rods,
+                                                      #disable_auto_index_creation_and_locking_when_reading_rods=disable_auto_index_creation_and_locking_when_reading_rods,
                                                       max_alternate_alleles=max_alternate_alleles)
 
         options += " -O %s" % output
@@ -93,7 +93,7 @@ class GenotypeGVCFs4(Tool):
                           max_scaffold_number_per_chunk=5, length_dict=None,
                           parsing_mode="parse", region_list=None,
                           extension_list=["g.vcf",],
-                          disable_auto_index_creation_and_locking_when_reading_rods=True,
+                          #disable_auto_index_creation_and_locking_when_reading_rods=True,
                           max_alternate_alleles=None, picard_jar_path=None):
 
         self.safe_mkdir(splited_dir)
@@ -109,7 +109,8 @@ class GenotypeGVCFs4(Tool):
 
         options = self.parse_options_for_parallel_run(reference, gvcf_list, extension_list=extension_list,
                                                       max_alternate_alleles=max_alternate_alleles,
-                                                      disable_auto_index_creation_and_locking_when_reading_rods=disable_auto_index_creation_and_locking_when_reading_rods)
+                                                      #disable_auto_index_creation_and_locking_when_reading_rods=disable_auto_index_creation_and_locking_when_reading_rods
+                                                     )
 
         output_index = 1
         options_list = []
