@@ -126,8 +126,6 @@ class SequenceRoutines(FileRoutines):
         else:
             len_dict = raw_len_dict
 
-
-
         number_of_scaffolds = len(len_dict)
         max_length_soft_threshold = None if max_length is None else int(1.5 * max_length)
         region_list = []
