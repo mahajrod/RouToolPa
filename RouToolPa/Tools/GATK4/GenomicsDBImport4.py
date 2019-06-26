@@ -15,7 +15,7 @@ class GenomicsDBImport4(Tool):
     def parse_options(self, gvcf_list, output_dbi_dir, interval_list=None, extension_list=["g.vcf",]):
 
         options = " --genomicsdb-workspace-path %s" % output_dbi_dir
-        options += " --intervals %s" % ",".join(interval_list)
+        options += " --intervals %s" % ",".join(interval_list) if interval_list else ""
 
         for gvcf in self.make_list_of_path_to_files_by_extension(gvcf_list,
                                                                  extension_list=extension_list,
