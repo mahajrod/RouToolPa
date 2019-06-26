@@ -19,7 +19,13 @@ class HaplotypeCaller4(Tool):
                                        stand_call_conf=30, gvcf_mode=False):
 
         options = " -R %s" % reference
-        options += " -I %s" % alignment
+
+        if isinstance(alignment, str):
+            options += " -I %s" % alignment
+        else:
+            for alignment_file in alignment:
+                options += " -I %s" % alignment_file
+
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
         options += " --standard-min-confidence-threshold-for-calling %i" % stand_call_conf
@@ -32,7 +38,11 @@ class HaplotypeCaller4(Tool):
 
         #options = " -nct %i" % self.threads
         options = " -R %s" % reference
-        options += " -I %s" % alignment
+        if isinstance(alignment, str):
+            options += " -I %s" % alignment
+        else:
+            for alignment_file in alignment:
+                options += " -I %s" % alignment_file
         options += " --output_mode %s" % output_mode if output_mode else ""
         #options += " -stand_emit_conf %i" % stand_emit_conf
         options += " --standard-min-confidence-threshold-for-calling %i" % stand_call_conf
@@ -82,25 +92,25 @@ class HaplotypeCaller4(Tool):
         self.execute(options,
                      cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
 
-    def parallel_gvcf_call(self, reference, alignment, output_dir, output_prefix,
-                           stand_call_conf=30, max_region_length=1000000, max_seqs_per_region=100,
-                           length_dict=None, parsing_mode="parse", region_list=None,
-                           region_file_format='simple',
-                           remove_intermediate_files=False,
-                           gvcf_extension_list=["g.vcf", ],
-                           cpus_per_task=1,
-                           handling_mode="local",
-                           job_name=None,
-                           log_prefix=None,
-                           error_log_prefix=None,
-                           max_running_jobs=None,
-                           max_running_time=None,
-                           max_memmory_per_cpu=None,
-                           modules_list=None,
-                           environment_variables_dict=None,
-                           black_list_scaffold_id_file=None):
+    def parallel_call(self, reference, alignment, output_dir, output_prefix,
+                      stand_call_conf=30, max_region_length=1000000, max_seqs_per_region=100,
+                      length_dict=None, parsing_mode="parse", region_list=None,
+                      region_file_format='simple',
+                      remove_intermediate_files=False,
+                      cpus_per_task=1,
+                      handling_mode="local",
+                      job_name=None,
+                      log_prefix=None,
+                      error_log_prefix=None,
+                      max_running_jobs=None,
+                      max_running_time=None,
+                      max_memmory_per_cpu=None,
+                      modules_list=None,
+                      environment_variables_dict=None,
+                      black_list_scaffold_id_file=None,
+                      gvcf_mode=False):
 
-        splited_dir = "%s/splited_gvcf/" % output_dir
+        splited_dir = "%s/splited/" % output_dir
         regions_dir = "%s/regions/" % output_dir
 
         from RouToolPa.Tools.GATK4 import SortVcf4
@@ -115,7 +125,8 @@ class HaplotypeCaller4(Tool):
                 black_scaffolds_list = IdList(filename=black_list_scaffold_id_file)
             else:
                 black_scaffolds_list = black_list_scaffold_id_file
-
+        else:
+            black_scaffolds_list = []
         region_list, \
             scaffold_to_region_correspondence_dict = self.prepare_region_list_by_length(max_length=max_region_length,
                                                                                         max_seq_number=max_seqs_per_region,
@@ -129,7 +140,7 @@ class HaplotypeCaller4(Tool):
         options = self.parse_options_for_parallel_run(reference, alignment,
 
                                                       stand_call_conf=stand_call_conf,
-                                                      gvcf_mode=True)
+                                                      gvcf_mode=gvcf_mode)
         #options += " -nct 1"
         options_list = []
 
@@ -137,9 +148,12 @@ class HaplotypeCaller4(Tool):
 
         output_file_list = []
 
+        output_extension = "g.vcf" if gvcf_mode else "vcf"
+
         if handling_mode == 'local':
             for regions in region_list:
-                output_file = "%s/%s_%i.g.vcf" % (splited_dir, output_prefix, output_index)
+
+                output_file = "%s/%s_%i.%s" % (splited_dir, output_prefix, output_index, output_extension)
                 region_options = " -O %s" % output_file
                 output_file_list.append(output_file)
                 #for region in regions:
@@ -158,20 +172,20 @@ class HaplotypeCaller4(Tool):
 
             self.parallel_execute(options_list,
                                   cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
-            unsorted_combined_gvcf = "%s/%s.unsorted.g.vcf" % (output_dir, output_prefix)
-            sorted_combined_gvcf = "%s/%s.g.vcf" % (output_dir, output_prefix)
-            VCFRoutines.combine_same_samples_vcfs(unsorted_combined_gvcf,
+            unsorted_combined_vcf = "%s/%s.unsorted.%s" % (output_dir, output_prefix, output_extension)
+            sorted_combined_vcf = "%s/%s.g.vcf" % (output_dir, output_prefix)
+            VCFRoutines.combine_same_samples_vcfs(unsorted_combined_vcf,
                                                   vcf_list=output_file_list,
                                                   order_vcf_files=True,
                                                   close_fd_after=False,
-                                                  extension_list=gvcf_extension_list)
+                                                  extension_list=[".vcf",])
 
-            SortVcf4.sort_vcf(unsorted_combined_gvcf, sorted_combined_gvcf, sequence_dict)
+            SortVcf4.sort_vcf(unsorted_combined_vcf, sorted_combined_vcf, sequence_dict)
 
         elif handling_mode == 'slurm':
             number_of_regions = len(region_list)
             region_file = "%s/splited/region_${SLURM_ARRAY_TASK_ID}.list" % regions_dir
-            output_file = "%s/%s_${SLURM_ARRAY_TASK_ID}.g.vcf" % (splited_dir, output_prefix)
+            output_file = "%s/%s_${SLURM_ARRAY_TASK_ID}.%s" % (splited_dir, output_prefix, output_extension)
             options += " -O %s" % output_file
             options += " -L %s" % region_file
 
