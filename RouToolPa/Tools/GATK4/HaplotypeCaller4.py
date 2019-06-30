@@ -116,6 +116,7 @@ class HaplotypeCaller4(Tool):
         from RouToolPa.Tools.GATK4 import SortVcf4
         sequence_dict = reference[:-5] + "dict"
         SortVcf4.max_memory = self.max_memory
+        SortVcf4.path = self.path
 
         for directory in output_dir, splited_dir:
             self.safe_mkdir(directory)
