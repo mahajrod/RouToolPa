@@ -122,7 +122,7 @@ class Jellyfish(Tool):
         options += " -c"    # column_format
         options += " %s" % in_file
         options += " | tee %s.counts | cut -f 1 " % output_prefix
-        options = " > %s.kmers" % output_prefix
+        options += " > %s.kmers" % output_prefix
 
         self.execute(options, cmd="jellyfish dump")
 
