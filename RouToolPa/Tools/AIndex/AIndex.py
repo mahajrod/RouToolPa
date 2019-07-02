@@ -78,8 +78,8 @@ class AIndex(Tool):
         counts_file = "%s.counts" % out_pref
         kmer_file = "%s.kmers" % out_pref
         pf_file = "%s.pf" % out_pref
-        reads_file = "%s.reads"
-        index_scheme_file = "%s.tf.bin"
+        reads_file = "%s.reads" % out_pref
+        index_scheme_file = "%s.tf.bin" % out_pref
 
         print("Extracting kmers from jf database...")
         Jellyfish.dump_kmers(jf_db, output_prefix, lower_count=lower_count,
