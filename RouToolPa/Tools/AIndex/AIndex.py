@@ -81,13 +81,15 @@ class AIndex(Tool):
         reads_file = "%s.reads"
         index_scheme_file = "%s.tf.bin"
 
+        print("Extracting kmers from jf database...")
         Jellyfish.dump_kmers(jf_db, output_prefix, lower_count=lower_count,
                              upper_count=upper_count)
-
+        print("Creating index...")
         EMPHF.compute_mphf_seq(kmer_file, pf_file)
         self.compute_index(counts_file, pf_file, output_prefix)
 
         if create_aindex:
+            print("Creating AIndex...")
             self.compute_reads(forward_file, reverse_file, reads_file, filetype=filetype)
             self.compute_aindex(reads_file, pf_file, output_prefix,
                                 output_prefix, kmer_length, index_scheme_file)
@@ -102,6 +104,8 @@ class AIndex(Tool):
         out_pref = "%s.%i" % (output_prefix, kmer_length)
         jf_db = "%s.jf" % out_pref
 
+        Jellyfish.threads = self.threads
+        print("Creating jf database...")
         Jellyfish.count([forward_file, reverse_file], jf_db,
                         kmer_length=kmer_length, hash_size=hash_size,
                         count_both_strands=True,
