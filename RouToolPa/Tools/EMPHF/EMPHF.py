@@ -15,7 +15,7 @@ class EMPHF(Tool):
         :param pf_file: pf file to create
         :return:
 
-        creates pf file
+        creates pf_file
 
         """
         options = " %s" % kmer_file
