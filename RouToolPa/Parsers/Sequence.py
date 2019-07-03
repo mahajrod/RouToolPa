@@ -234,6 +234,12 @@ class CollectionSequence(FileRoutines):
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
 
+    def convert_rna_to_dna(self):
+        if self.parsing_mode == "parse":
+            for seq_id in self.scaffolds:
+                self.records[seq_id] = self.records[seq_id].replace("U", "T").replace("u", "t")
+        else:
+            raise ValueError("ERROR!!! Convertation from RNA to DNA was implemented only for parsing mode yet!")
 
     @staticmethod
     def count_window_number_in_scaffold(scaffold_length, window_size, window_step):
