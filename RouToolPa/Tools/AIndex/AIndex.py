@@ -120,5 +120,6 @@ class AIndex(Tool):
                                   filetype=filetype,
                                   create_aindex=create_aindex)
 
+
 if __name__ == "__main__":
     pass
