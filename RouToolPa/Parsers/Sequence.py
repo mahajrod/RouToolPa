@@ -6,7 +6,6 @@ __author__ = 'Sergei F. Kliver'
 
 
 import re
-from copy import deepcopy
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
@@ -17,7 +16,9 @@ from RouToolPa.Parsers.GFF import CollectionGFF
 
 class CollectionSequence(FileRoutines):
 
-    def __init__(self, in_file=None, records=None, format="fasta",
+    def __init__(self, in_file=None, records=None, description=None,
+                 external_description=None,
+                 format="fasta",
                  parsing_mode="parse", black_list=(), white_list=(),
                  masking=None, masking_file=None, masking_filetype="gff",
                  verbose=False):
@@ -28,13 +29,20 @@ class CollectionSequence(FileRoutines):
         self.white_list = white_list
         self.black_list = black_list
 
+        self.description = OrderedDict()
+
         if in_file:
             self.read(in_file, format=format, parsing_mode=parsing_mode,
                       black_list=black_list,  white_list=white_list, verbose=verbose)
+
         elif records is None:
             self.records = OrderedDict()
+            self.description = description if description else OrderedDict()
         else:
             self.records = records
+            self.description = description if description else OrderedDict()
+
+        self.external_description = external_description if external_description else OrderedDict()
 
         if masking_file:
             print("Parsing masking...")
@@ -53,6 +61,7 @@ class CollectionSequence(FileRoutines):
         if format == "fasta":
             with self.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
+                description = None
                 seq = ""
                 for line in seq_fd:
                     if line[0] == ">":
@@ -60,8 +69,9 @@ class CollectionSequence(FileRoutines):
                             if (not white_list) or (seq_id in white_list):
                                 if verbose:
                                     print("Parsing %s" % seq_id)
-                                yield seq_id, seq
-                        seq_id = line[1:].split()[0]
+                                yield seq_id, description, seq
+                        seq_id, description = line[1:].split(None, 1)
+
                         seq = ""
                     else:
                         seq += line[:-1]
@@ -70,7 +80,7 @@ class CollectionSequence(FileRoutines):
                         if (not white_list) or (seq_id in white_list):
                             if verbose:
                                 print("Parsing %s" % seq_id)
-                            yield seq_id, seq
+                            yield seq_id, description, seq
 
     def reset_seq_generator(self):
         self.records = self.sequence_generator(self.seq_file, format=self.seq_file_format,
@@ -88,10 +98,11 @@ class CollectionSequence(FileRoutines):
         elif parsing_mode == "parse":
             print("Parsing sequences...")
             self.records = OrderedDict()
-            for seq_id, seq in self.sequence_generator(seq_file, format=format,
-                                                       black_list=black_list,
-                                                       white_list=white_list):
+            for seq_id, description, seq in self.sequence_generator(seq_file, format=format,
+                                                                    black_list=black_list,
+                                                                    white_list=white_list):
                 self.records[seq_id] = seq
+                self.description[seq_id] = description
 
             return self.records
 
@@ -111,7 +122,7 @@ class CollectionSequence(FileRoutines):
         length_list = []
         gaps_list = []
         if self.parsing_mode == "generator":
-            for seq_id, seq in self.records:
+            for seq_id, description, seq in self.records:
                 length_list.append([seq_id, len(seq)])
                 if count_gaps:
                     gaps_list.append(self.find_gaps_in_seq(seq, seq_id, min_gap_length=min_gap_length))
@@ -175,7 +186,7 @@ class CollectionSequence(FileRoutines):
                     if expression:
                         if not expression(seq_id, self.records[seq_id]):
                             continue
-                    out_fd.write(">%s\n" % seq_id)
+                    out_fd.write(">%s\n" % seq_id if seq_id not in self.description else ">%s %s\n" % (seq_id, self.description[seq_id]))
                     length = self.seq_lengths[seq_id][0] if self.seq_lengths else len(self.records[seq_id])
                     line_number = length // max_symbols_per_line
                     index = 0
@@ -199,9 +210,12 @@ class CollectionSequence(FileRoutines):
         if self.parsing_mode == "parse":
             with self.metaopen(outfile, "w") as out_fd:
                 for seq_id in syn_dict:
-                    if syn_dict[seq_id] == ".":
+                    if syn_dict[seq_id] == absent_symbol:
                         continue
-                    out_fd.write(">%s\n" % seq_id)
+                    #out_fd.write(">%s\n" % seq_id)
+
+                    out_fd.write(">%s\n" % seq_id if syn_dict[seq_id] not in self.description else ">%s %s\n" % (seq_id, self.description[syn_dict[seq_id]]))
+
                     length = self.seq_lengths[syn_dict[seq_id]][0] if self.seq_lengths else len(self.records[syn_dict[seq_id]])
                     line_number = length // max_symbols_per_line
                     index = 0
