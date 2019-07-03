@@ -119,7 +119,7 @@ class CollectionSequence(FileRoutines):
         """
         return len(self.scaffolds)
 
-    def get_stats_and_features(self, count_gaps=True, sort="True", min_gap_length=1):
+    def get_stats_and_features(self, count_gaps=True, sort=True, min_gap_length=1):
         length_list = []
         gaps_list = []
         if self.parsing_mode == "generator":
