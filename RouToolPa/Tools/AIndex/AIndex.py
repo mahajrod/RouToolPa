@@ -68,7 +68,7 @@ class AIndex(Tool):
         self.execute(options=options, cmd="compute_aindex.exe")
 
     def create_index_from_jf(self, jf_db, kmer_length, output_prefix=None,
-                             lower_count=2, upper_count=None,
+                             lower_count=1, upper_count=None,
                              forward_file=None, reverse_file=None,
                              filetype="fastq",
                              create_aindex=False,):
