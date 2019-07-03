@@ -174,7 +174,7 @@ class HaplotypeCaller4(Tool):
             self.parallel_execute(options_list,
                                   cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
             unsorted_combined_vcf = "%s/%s.unsorted.%s" % (output_dir, output_prefix, output_extension)
-            sorted_combined_vcf = "%s/%s.g.vcf" % (output_dir, output_prefix)
+            sorted_combined_vcf = "%s/%s.%s" % (output_dir, output_prefix, output_extension)
             VCFRoutines.combine_same_samples_vcfs(unsorted_combined_vcf,
                                                   vcf_list=output_file_list,
                                                   order_vcf_files=True,
