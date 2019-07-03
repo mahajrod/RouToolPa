@@ -70,7 +70,8 @@ class CollectionSequence(FileRoutines):
                                 if verbose:
                                     print("Parsing %s" % seq_id)
                                 yield seq_id, description, seq
-                        seq_id, description = line[1:].split(None, 1)
+                        tmp = line[1:].split(None, 1)
+                        seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
 
                         seq = ""
                     else:
