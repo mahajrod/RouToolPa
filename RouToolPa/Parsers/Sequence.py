@@ -83,6 +83,11 @@ class CollectionSequence(FileRoutines):
                                 print("Parsing %s" % seq_id)
                             yield seq_id, description, seq
 
+    def sequence_tuple_generator(self):
+        if self.parsing_mode == "parse":
+            for scaffold_id in self.scaffolds:
+                yield (scaffold_id, self.records[scaffold_id])
+
     def reset_seq_generator(self):
         self.records = self.sequence_generator(self.seq_file, format=self.seq_file_format,
                                                black_list=self.black_list,  white_list=self.white_list)
