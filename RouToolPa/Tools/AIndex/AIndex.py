@@ -87,17 +87,17 @@ class AIndex(Tool):
         #index_scheme_file = "%s.tf.bin" % out_pref
 
         print("Extracting kmers from jf database...")
-        Jellyfish.dump_kmers(jf_db, output_prefix, lower_count=lower_count,
+        Jellyfish.dump_kmers(jf_db, out_pref, lower_count=lower_count,
                              upper_count=upper_count)
         print("Creating index...")
         EMPHF.compute_mphf_seq(kmer_file, pf_file)
-        self.compute_index(counts_file, pf_file, output_prefix)
+        self.compute_index(counts_file, pf_file, out_pref)
 
         if create_aindex:
             print("Creating AIndex...")
             self.compute_reads(forward_file, reverse_file, reads_file, filetype=filetype)
-            self.compute_aindex(reads_file, pf_file, output_prefix,
-                                output_prefix, kmer_length, out_pref)
+            self.compute_aindex(reads_file, pf_file, out_pref,
+                                out_pref, kmer_length, out_pref)
 
     def create_index_from_fastq(self, forward_file, reverse_file,
                                 kmer_length, output_prefix,
