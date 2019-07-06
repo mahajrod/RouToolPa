@@ -75,6 +75,11 @@ class AIndex(Tool):
 
         out_pref = output_prefix if output_prefix else jf_db
 
+        if lower_count:
+            out_pref = "%s.l%i" % (out_pref, lower_count)
+        if upper_count:
+            out_pref = "%s.x%i" % (out_pref, upper_count)
+
         counts_file = "%s.counts" % out_pref
         kmer_file = "%s.kmers" % out_pref
         pf_file = "%s.pf" % out_pref
@@ -96,12 +101,18 @@ class AIndex(Tool):
 
     def create_index_from_fastq(self, forward_file, reverse_file,
                                 kmer_length, output_prefix,
-                                lower_count=2, upper_count=None,
+                                lower_count=1, upper_count=None,
                                 filetype="fastq",
                                 create_aindex=False,
                                 hash_size="10G"):
 
         out_pref = "%s.%i" % (output_prefix, kmer_length)
+
+        if lower_count:
+            out_pref = "%s.l%i" % (out_pref, lower_count)
+        if upper_count:
+            out_pref = "%s.x%i" % (out_pref, upper_count)
+
         jf_db = "%s.jf" % out_pref
 
         Jellyfish.threads = self.threads
