@@ -106,7 +106,7 @@ class AIndex(Tool):
                                 create_aindex=False,
                                 hash_size="10G"):
 
-        out_pref = "%s.%i" % (output_prefix, kmer_length)
+        out_pref = "%s.k%i" % (output_prefix, kmer_length)
 
         if lower_count:
             out_pref = "%s.l%i" % (out_pref, lower_count)
