@@ -84,7 +84,7 @@ class AIndex(Tool):
         kmer_file = "%s.kmers" % out_pref
         pf_file = "%s.pf" % out_pref
         reads_file = "%s.reads" % out_pref
-        #index_scheme_file = "%s.tf.bin" % out_pref
+        index_scheme_file = "%s.tf.bin" % out_pref
 
         print("Extracting kmers from jf database...")
         Jellyfish.dump_kmers(jf_db, out_pref, lower_count=lower_count,
@@ -97,7 +97,7 @@ class AIndex(Tool):
             print("Creating AIndex...")
             self.compute_reads(forward_file, reverse_file, reads_file, filetype=filetype)
             self.compute_aindex(reads_file, pf_file, out_pref,
-                                out_pref, kmer_length, out_pref)
+                                out_pref, kmer_length, index_scheme_file)
 
     def create_index_from_fastq(self, forward_file, reverse_file,
                                 kmer_length, output_prefix,
