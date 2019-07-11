@@ -15,7 +15,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
 
-from RouToolPa.Parsers.Sequence import CollectionSequence
+
 
 
 class SequenceRoutines(FileRoutines):
@@ -2530,7 +2530,7 @@ class SequenceRoutines(FileRoutines):
     @staticmethod
     def make_fasta_by_correspondence(input_fasta, syn_file, output_fasta, key_column=0, value_column=1):
         syn_dict = SynDict(filename=syn_file, key_index=key_column, value_index=value_column, comments_prefix="#")
-
+        from RouToolPa.Parsers.Sequence import CollectionSequence
         fasta_collection = CollectionSequence(in_file=input_fasta, format="fasta")
 
         fasta_collection.write_by_syn(output_fasta, syn_dict)
