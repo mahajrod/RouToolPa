@@ -1,16 +1,20 @@
 __author__ = 'mahajrod'
 
-import os
 from collections import OrderedDict
 import numpy as np
-import matplotlib
+#import matplotlib
 
-matplotlib.use('Agg')
-os.environ['MPLCONFIGDIR'] = '/tmp/'
+import pandas as pd
+
+#matplotlib.use('Agg')
+#os.environ['MPLCONFIGDIR'] = '/tmp/'
 
 import matplotlib.pyplot as plt
 plt.ioff()
 from matplotlib.patches import Rectangle, Circle
+from matplotlib.lines import Line2D
+from matplotlib.collections import LineCollection
+
 from BCBio import GFF
 
 from Bio import AlignIO
@@ -551,4 +555,128 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         else:
             plt.show()
 
+    def draw_dot_plot_from_last_alignment(self, last_collection,
+                                          output_prefix=None,
+                                          extension_list=("png", ),
+                                          target_black_list=(), target_white_list=(),
+                                          target_ordered_list=(), target_reverse_list=(),
+                                          query_black_list=(), query_white_list=(),
+                                          query_ordered_list=(), query_reverse_list=(),
+                                          figsize=(16, 16), dpi=300,
+                                          grid_color='black',
+                                          bar_color='grey',
+                                          same_strand_color='blue',
+                                          diff_strand_color='red',
+                                          title=None,
+                                          xlabel=None,
+                                          ylabel=None):
 
+        target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
+                                                               scaffold_black_list=target_black_list,
+                                                               sort_scaffolds=False,
+                                                               scaffold_ordered_list=target_ordered_list,
+                                                               scaffold_white_list=target_white_list)
+
+        query_scaffold_list = self.get_filtered_scaffold_list(last_collection.query_scaffold_list,
+                                                              scaffold_black_list=query_black_list,
+                                                              sort_scaffolds=False,
+                                                              scaffold_ordered_list=query_ordered_list,
+                                                              scaffold_white_list=query_white_list)
+
+        target_length_df = last_collection.target_scaffold_lengths.loc[target_scaffold_list]
+        target_length_df["cum_end"] = target_length_df["length"].cumsum()
+        target_length_df["cum_start"] = target_length_df["cum_end"] - target_length_df["length"]
+
+        total_target_len = target_length_df["length"].sum()
+
+        query_length_df = last_collection.query_scaffold_lengths.loc[query_scaffold_list]
+        query_length_df["cum_end"] = query_length_df["length"].cumsum()
+        query_length_df["cum_start"] = query_length_df["cum_end"] - query_length_df["length"]
+
+        total_query_len = query_length_df["length"].sum()
+
+        bar_width_fraction = 0.02
+        bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
+
+        figure = plt.figure(figsize=figsize, dpi=dpi)
+        ax = plt.subplot(1, 1, 1)
+
+        ax.add_patch(Rectangle((0, total_query_len), total_target_len, bar_width, color=bar_color))  # top bar
+        ax.add_patch(Rectangle((0, -bar_width), total_target_len, bar_width, color=bar_color))       # bottom bar
+        ax.add_patch(Rectangle((-bar_width, 0), bar_width, total_query_len, color=bar_color))        # left bar
+        ax.add_patch(Rectangle((total_target_len, 0), bar_width, total_query_len, color=bar_color))  # right bar
+
+        for query_cum_start in query_length_df["cum_start"]:
+            ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start), color=grid_color))
+
+        ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (total_query_len, total_query_len), color=grid_color))
+
+        for target_cum_start in target_length_df["cum_start"]:
+            ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, total_query_len + bar_width), color=grid_color))
+        ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width), color=grid_color))
+
+        def line_segments_generator(dataframe):
+            for row_tuple in dataframe.itertuples(index=False):
+                yield (row_tuple[:2], row_tuple[2:])
+
+        for query_scaffold_id in query_scaffold_list:
+            for target_scaffold_id in target_scaffold_list:
+                same_strand_records = \
+                    last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
+                                            & last_collection.records["query_id"].isin([query_scaffold_id])
+                                            & (last_collection.records["query_strand"] == last_collection.records["target_strand"])]
+                data = pd.DataFrame()
+
+                data["x1"] = same_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                data["y1"] = same_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+
+                data["x2"] = data["x1"] + same_strand_records["target_hit_len"] - 1
+                data["y2"] = data["y1"] + same_strand_records["query_hit_len"] - 1
+
+                lines = LineCollection(line_segments_generator(data), colors=same_strand_color, linestyle='solid')
+
+                ax.add_collection(lines)
+                
+                diff_strand_records = \
+                    last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
+                                            & last_collection.records["query_id"].isin([query_scaffold_id])
+                                            & (last_collection.records["query_strand"] != last_collection.records["target_strand"])]
+
+                data = pd.DataFrame()
+                data["x1"] = diff_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                data["y1"] = data["y1"] + diff_strand_records["query_hit_len"] - 1
+
+                data["x2"] = data["x1"] + diff_strand_records["target_hit_len"] - 1
+                data["y2"] = diff_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+
+                print data
+
+                lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid')
+
+                ax.add_collection(lines)
+
+        if title:
+            plt.title(title)
+        if xlabel:
+            plt.xlabel(xlabel)
+        if ylabel:
+            plt.ylabel(ylabel)
+
+        plt.xlim(xmin=-bar_width * 2, xmax=total_target_len + 2 * bar_width)
+        plt.ylim(ymin=-bar_width * 2, ymax=total_query_len + 2 * bar_width)
+
+        ax.spines['bottom'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['top'].set_color('none')
+        ax.get_yaxis().set_visible(False)
+        ax.get_xaxis().set_visible(False)
+
+        #plt.subplots_adjust()
+
+        if output_prefix:
+            print extension_list
+            print type(extension_list)
+            for extension in extension_list:
+                print extension
+                plt.savefig("%s.%s" % (output_prefix, extension))
