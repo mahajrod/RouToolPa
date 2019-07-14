@@ -2,9 +2,9 @@ __author__ = 'mahajrod'
 import os
 from collections import Iterable, OrderedDict
 from math import sqrt
-import matplotlib
+#import matplotlib
 
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.ioff()
 import numpy as np

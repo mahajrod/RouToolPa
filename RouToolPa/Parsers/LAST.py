@@ -15,13 +15,49 @@ import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
 class CollectionLast:
 
-    def __init__(self, in_file=None, records=None, format="tab", parsing_mode="only_coordinates",
-                 black_list=(), white_list=(), min_target_hit_len=None, min_query_hit_len=None,
+    def __init__(self, in_file=None, records=None, format="tab", parsing_mode="all",
+                 target_black_list=(), target_white_list=(),
+                 query_black_list=(), query_white_list=(),
+                 target_syn_dict=None, query_syn_dict=None,
+                 min_target_hit_len=None, min_query_hit_len=None,
                  min_target_len=None, min_query_len=None):
 
         self.formats = ["tab"]
         self.TAB_COLS = AlignmentFormats.LAST_TAB_COLS
         self.parsing_parameters = {"tab": {
+                                           "coordinates_only": {
+                                                   "col_names": ["target_id", "target_start", "target_hit_len",
+                                                                 "target_strand", "target_len", "query_id",
+                                                                 "query_start", "query_hit_len", "query_strand",
+                                                                 "query_len"],
+                                                   "cols":      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                                                   "index_cols": None,
+                                                   "converters": {
+                                                                  "target_id":      str,
+                                                                  "target_start":   np.int64,
+                                                                  "target_hit_len": np.int64,
+                                                                  "target_strand":  str,
+                                                                  "target_len":     np.int64,
+                                                                  "query_id":       str,
+                                                                  "query_start":    np.int64,
+                                                                  "query_hit_len":  np.int64,
+                                                                  "query_strand":   str,
+                                                                  "query_len":      np.int64,
+                                                                  },
+                                                   "col_name_indexes": {
+                                                                        "target_id":   0,
+                                                                        "target_start": 1,
+                                                                        "target_hit_len": 2,
+                                                                        "target_strand": 3,
+                                                                        "target_len": 4,
+                                                                        "query_id": 5,
+                                                                        "query_start": 6,
+                                                                        "query_hit_len": 7,
+                                                                        "query_strand": 8,
+                                                                        "query_len": 9,
+                                                                        },
+                                                                 },
+
                                            "all": {
                                                    "col_names": ["score", "target_id", "target_start", "target_hit_len",
                                                                  "target_strand", "target_len", "query_id",
@@ -109,9 +145,13 @@ class CollectionLast:
         self.alignment_parsing_modes = ["all", "complete"]
         #self.attributes_parsing_modes = ["complete", "coord_and_attr"]
         self.format = format
-        self.black_list = black_list
-        self.white_list = white_list
+        self.target_black_list = target_black_list
+        self.target_white_list = target_white_list
+        self.target_syn_dict = target_syn_dict
 
+        self.query_black_list = query_black_list
+        self.query_white_list = query_white_list
+        self.query_syn_dict = query_syn_dict
         # attributes type conversion parameters
 
         self.converters = OrderedDict()
@@ -123,12 +163,17 @@ class CollectionLast:
                                                            })
 
         # init aliases
-        self.record_id_col = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["scaffold"]
-        self.record_start_col = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["start"]
-        self.record_end_col = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["end"]
-
         self.col_names = self.parsing_parameters[self.format][self.parsing_mode]["col_names"]
         self.index_cols = self.parsing_parameters[self.format][self.parsing_mode]["index_cols"]
+        self.target_id_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["target_id"]
+        self.target_start_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["target_start"]
+        self.target_hit_len_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["target_hit_len"]
+        self.target_strand_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["target_strand"]
+
+        self.query_id_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_id"]
+        self.query_start_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_start"]
+        self.query_hit_len_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_hit_len"]
+        self.query_strand_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_strand"]
 
         #
         self.target_scaffold_list = None
@@ -137,15 +182,26 @@ class CollectionLast:
         self.query_scaffold_lengths = None
 
         if in_file:
-            self.read(in_file, format=format, parsing_mode=parsing_mode, black_list=black_list, white_list=white_list,
-                      min_target_hit_len=min_target_hit_len, min_query_hit_len=min_query_hit_len, 
-                      min_target_len=min_target_len, min_query_len=min_query_len)
+            self.read(in_file,
+                      format=format,
+                      parsing_mode=parsing_mode,
+                      target_black_list=target_black_list,
+                      target_white_list=target_white_list,
+                      query_black_list=query_black_list,
+                      query_white_list=query_white_list,
+                      min_target_hit_len=min_target_hit_len,
+                      min_query_hit_len=min_query_hit_len,
+                      min_target_len=min_target_len,
+                      min_query_len=min_query_len)
 
         else:
             self.records = records
 
-    def read(self, in_file, format="tab", parsing_mode="only_coordinates",
-             black_list=(), white_list=(), min_target_hit_len=None, min_query_hit_len=None,
+    def read(self, in_file,
+             format="tab", parsing_mode="only_coordinates",
+             target_black_list=(), target_white_list=(),
+             query_black_list=(), query_white_list=(),
+             min_target_hit_len=None, min_query_hit_len=None,
              min_target_len=None, min_query_len=None):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
@@ -160,11 +216,23 @@ class CollectionLast:
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
 
-        if white_list or black_list:
-            scaffolds_to_keep = self.get_filtered_entry_list(self.records.index, entry_black_list=black_list,
-                                                             entry_white_list=white_list)
-            self.records = self.records[self.records.index.get_level_values('scaffold').isin(scaffolds_to_keep)]
+        if target_white_list or target_black_list:
+            target_scaffolds_to_keep = self.get_filtered_entry_list(self.records["target_id"].tolist(),
+                                                                    entry_black_list=target_black_list,
+                                                                    entry_white_list=target_white_list)
+            #print target_scaffolds_to_keep
+            self.records = self.records[self.records["target_id"].isin(target_scaffolds_to_keep)]
 
+        if query_white_list or query_black_list:
+            query_scaffolds_to_keep = self.get_filtered_entry_list(self.records["query_id"].tolist(),
+                                                                   entry_black_list=query_black_list,
+                                                                   entry_white_list=query_white_list)
+            #print query_scaffolds_to_keep
+            self.records = self.records[self.records["query_id"].isin(query_scaffolds_to_keep)]
+        if self.target_syn_dict:
+            self.records["target_id"].replace(self.target_syn_dict, inplace=True)
+        if self.query_syn_dict:
+            self.records["query_id"].replace(self.query_syn_dict, inplace=True)
         # retain only automatically generated index by row number
         #self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
         #                                               names=("scaffold", "row"))
@@ -185,11 +253,13 @@ class CollectionLast:
             self.records = self.records[self.records["query_hit_len"] >= min_query_hit_len]
 
         self.target_scaffold_lengths = self.records[["target_id", "target_len"]].drop_duplicates()
-        self.target_scaffold_lengths.set_index("target_id")
+        self.target_scaffold_lengths.columns = ["id", "length"]
+        self.target_scaffold_lengths.set_index("id", inplace=True)
         self.query_scaffold_lengths = self.records[["query_id", "query_len"]].drop_duplicates()
-        self.query_scaffold_lengths.set_index("query_id")
-        self.target_scaffold_list = self.target_scaffold_lengths.index.to_list()
-        self.query_scaffold_list = self.query_scaffold_lengths.index.to_list()
+        self.query_scaffold_lengths.columns = ["id", "length"]
+        self.query_scaffold_lengths.set_index("id", inplace=True)
+        self.target_scaffold_list = self.target_scaffold_lengths.index.tolist()
+        self.query_scaffold_list = self.query_scaffold_lengths.index.tolist()
 
         retained_columns = deepcopy(self.parsing_parameters[self.format][self.parsing_mode]["col_names"])
         for entry in "target_len", "query_len":
@@ -200,6 +270,10 @@ class CollectionLast:
         if parsing_mode == "complete":
             self.records["EG2"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["EG2"]))
             self.records["E"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["E"]))
+
+    def sort(self, inplace=False,
+             sorting_order=("target_id", "query_id", "target_start", "target_hit_len", "query_start", "query_hit_len")):
+        return self.records.sort_values(by=sorting_order, inplace=inplace)
 
     @staticmethod
     def get_filtered_entry_list(entry_list,
@@ -240,4 +314,111 @@ class CollectionLast:
 
     def get_coordinates_from_(self):
         pass
+
+    def write(self, output, separator="\t", header=False):
+        self.records.to_csv(output,
+                            sep=separator,
+                            header=header,
+                            index=False)
+
+    def merge_adjucent_blocks(self, max_dist_to_collapse=None):
+        """
+        ONLY COORDINATES ARE MERGED. OTHER FIELDS HAVE NO SENSE AFTER THIS PROCEDUREAND ARE RETAINED ONLY FOR PARSING COMPATIBILITY!
+        :return:
+        """
+        row_iterator = self.records.itertuples(index=False)
+        merged_row_list = []
+
+        for row in row_iterator:
+            curr_row = list(row)
+            for index in self.target_id_index, self.target_strand_index, self.query_id_index, self.query_strand_index:
+
+                if prev_row[index] != curr_row[index]:
+                    merged_row_list.append(prev_row)
+                    prev_row = curr_row
+                    break
+            else:
+                if max_dist_to_collapse:
+                    if (curr_row[self.target_start_index] - prev_row[self.target_start_index] -
+                                prev_row[self.target_hit_len_index] + 1 <= max_dist_to_collapse) and \
+                            (curr_row[self.query_start_index] - prev_row[self.query_start_index] -
+                                 prev_row[self.query_hit_len_index] <= max_dist_to_collapse):
+                        prev_row[self.target_hit_len_index] += curr_row[self.target_hit_len_index]
+                        prev_row[self.query_hit_len_index] += curr_row[self.query_hit_len_index]
+                    else:
+                        merged_row_list.append(prev_row)
+                        prev_row = curr_row
+                else:
+                    prev_row[self.target_hit_len_index] += curr_row[self.target_hit_len_index]
+                    prev_row[self.query_hit_len_index] += curr_row[self.query_hit_len_index]
+
+        merged_row_list.append(prev_row)
+
+    def extract_coordinates(self):
+
+        return self.records[["target_id", "target_start", "target_hit_len", "target_strand",
+                             "query_id", "query_start", "query_hit_len", "query_strand"]]
+
+    def extract_coordinates_to_file(self, output, separator="\t", header=False):
+        self.records.to_csv(output,
+                            columns=["target_id", "target_start", "target_hit_len", "target_strand",
+                                     "query_id", "query_start", "query_hit_len", "query_strand"],
+                            sep=separator,
+                            header=header,
+                            index=False)
+
+    def extract_and_convert_coordinates(self, output=None, separator="\t", header=False):
+        coords = deepcopy(self.records[["target_id", "target_start", "target_hit_len", "target_strand",
+                                        "query_id", "query_start", "query_hit_len", "query_strand"]])
+        coords.columns = ["target_id", "target_start", "target_end", "target_strand",
+                        "query_id", "query_start", "query_end", "query_strand"]
+        coords["target_end"] = coords["target_start"] + coords["target_end"]
+        coords["query_end"] = coords["query_start"] + coords["query_end"]
+        if output:
+            coords.to_csv(output, sep=separator, header=header,
+                          index=False)
+
+        return coords
+
+    def collapse_coordinates(self, output=None, max_dist_to_collapse=1000, separator="\t", header=False):
+
+        coords = self.extract_and_convert_coordinates()
+        row_iterator = coords.itertuples(index=False)
+
+        prev_row = list(row_iterator.next())
+        collapsed_row_list = []
+
+        for row in row_iterator:
+            curr_row = list(row)
+            for index in 0, 3, 4, 7:
+                if prev_row[index] != curr_row[index]:
+                    collapsed_row_list.append(prev_row)
+                    prev_row = curr_row
+                    break
+            else:
+                if max_dist_to_collapse:
+                    if (curr_row[1] - prev_row[2] <= max_dist_to_collapse) and (curr_row[5] - prev_row[6] <= max_dist_to_collapse):
+                        prev_row[2] = curr_row[2]
+                        prev_row[6] = curr_row[6]
+                    else:
+                        collapsed_row_list.append(prev_row)
+                        prev_row = curr_row
+                else:
+                    prev_row[2] = curr_row[2]
+                    prev_row[6] = curr_row[6]
+
+        collapsed_row_list.append(prev_row)
+
+        collapsed_row_list = pd.DataFrame.from_records(collapsed_row_list, columns=coords.columns)
+
+        if output:
+            collapsed_row_list.to_csv(output, sep=separator, header=header, index=False)
+
+        return collapsed_row_list
+
+    def rename_target_ids(self, syn_dict):
+        self.records[["target_id"]].replace(syn_dict, inplace=True)
+
+    def rename_query_ids(self, syn_dict):
+        self.records[["query_id"]].replace(syn_dict, inplace=True)
 

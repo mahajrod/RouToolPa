@@ -570,6 +570,43 @@ class SequenceRoutines(FileRoutines):
         return gaps_dict
 
     @staticmethod
+    def get_filtered_scaffold_list(raw_scaffold_list,
+                                   scaffold_black_list=[],
+                                   sort_scaffolds=False,
+                                   scaffold_ordered_list=None,
+                                   scaffold_white_list=[]):
+        white_set = set(scaffold_white_list)
+        black_set = set(scaffold_black_list)
+
+        scaffold_set = set(raw_scaffold_list)
+
+        if white_set:
+            scaffold_set = scaffold_set & white_set
+
+        if black_set:
+            scaffold_set = scaffold_set - black_set
+
+        scaffold_list = list(scaffold_set)
+
+        if sort_scaffolds:
+            scaffold_list.sort()
+
+        final_scaffold_list = []
+
+        if scaffold_ordered_list:
+            for entry in scaffold_ordered_list:
+                if entry in scaffold_list:
+                    final_scaffold_list.append(entry)
+                    scaffold_list.remove(entry)
+                else:
+                    print("WARNING!!!Entry(%s) from order list is absent in list of scaffolds!" % entry)
+            final_scaffold_list = final_scaffold_list + scaffold_list
+        else:
+            final_scaffold_list = scaffold_list
+
+        return final_scaffold_list
+
+    @staticmethod
     def record_by_expression_generator(record_dict, expression=None, id_file="passed_records.ids"):
         """
         :param record_dict: dictionary containing Biopython SeqRecords as values

@@ -1,5 +1,5 @@
 __author__ = 'mahajrod'
-
+import datetime
 from collections import OrderedDict
 import numpy as np
 #import matplotlib
@@ -565,11 +565,19 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           figsize=(16, 16), dpi=300,
                                           grid_color='black',
                                           bar_color='grey',
-                                          same_strand_color='blue',
-                                          diff_strand_color='red',
+                                          same_strand_color='red',
+                                          diff_strand_color='blue',
                                           title=None,
-                                          xlabel=None,
-                                          ylabel=None):
+                                          target_label=None,
+                                          query_label=None,
+                                          gridwidth=1,
+                                          linewidth=0.01,
+                                          scafold_label_fontsize=13,
+                                          axes_label_fontstyle="italic",
+                                          axes_label_weight="normal",
+                                          axes_label_fontsize=15,
+                                          axes_label_distance=6,
+                                          antialiased_lines=None):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,
@@ -597,7 +605,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         bar_width_fraction = 0.02
         bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
-
+        print("%s\tDrawing..." % str(datetime.datetime.now()))
         figure = plt.figure(figsize=figsize, dpi=dpi)
         ax = plt.subplot(1, 1, 1)
 
@@ -607,60 +615,104 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.add_patch(Rectangle((total_target_len, 0), bar_width, total_query_len, color=bar_color))  # right bar
 
         for query_cum_start in query_length_df["cum_start"]:
-            ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start), color=grid_color))
+            ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start),
+                               color=grid_color, linewidth=gridwidth))
 
-        ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (total_query_len, total_query_len), color=grid_color))
+        ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (total_query_len, total_query_len),
+                           color=grid_color, linewidth=gridwidth))
 
         for target_cum_start in target_length_df["cum_start"]:
-            ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, total_query_len + bar_width), color=grid_color))
-        ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width), color=grid_color))
+            ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, total_query_len + bar_width),
+                               color=grid_color, linewidth=gridwidth))
+        ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width),
+                           color=grid_color, linewidth=gridwidth))
+
+        for target_scaffold_id in target_scaffold_list:
+            ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
+                    total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scafold_label_fontsize, rotation=45,
+                    horizontalalignment='center',
+                    verticalalignment='bottom',)
+            ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
+                    -1.5 * bar_width, target_scaffold_id, fontsize=scafold_label_fontsize, rotation=45,
+                    horizontalalignment='center',
+                    verticalalignment='top',)
+
+        for query_scaffold_id in query_scaffold_list:
+            ax.text(total_target_len + 1.5 * bar_width,
+                    (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
+                     query_scaffold_id, fontsize=scafold_label_fontsize,
+                    verticalalignment='center')
+            ax.text(-1.5 * bar_width,
+                    (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
+                     query_scaffold_id, fontsize=scafold_label_fontsize,
+                    horizontalalignment='right',
+                    verticalalignment='center',)
 
         def line_segments_generator(dataframe):
             for row_tuple in dataframe.itertuples(index=False):
                 yield (row_tuple[:2], row_tuple[2:])
-
         for query_scaffold_id in query_scaffold_list:
             for target_scaffold_id in target_scaffold_list:
                 same_strand_records = \
                     last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
                                             & last_collection.records["query_id"].isin([query_scaffold_id])
                                             & (last_collection.records["query_strand"] == last_collection.records["target_strand"])]
-                data = pd.DataFrame()
 
-                data["x1"] = same_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
-                data["y1"] = same_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                if not same_strand_records.empty:
+                    data = pd.DataFrame()
 
-                data["x2"] = data["x1"] + same_strand_records["target_hit_len"] - 1
-                data["y2"] = data["y1"] + same_strand_records["query_hit_len"] - 1
+                    data["x1"] = same_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                    data["y1"] = same_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
 
-                lines = LineCollection(line_segments_generator(data), colors=same_strand_color, linestyle='solid')
+                    data["x2"] = data["x1"] + same_strand_records["target_hit_len"] - 1
+                    data["y2"] = data["y1"] + same_strand_records["query_hit_len"] - 1
 
-                ax.add_collection(lines)
+                    lines = LineCollection(line_segments_generator(data), colors=same_strand_color, linestyle='solid',
+                                           linewidths=linewidth, antialiased=antialiased_lines)
+
+                    ax.add_collection(lines)
                 
                 diff_strand_records = \
                     last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
                                             & last_collection.records["query_id"].isin([query_scaffold_id])
                                             & (last_collection.records["query_strand"] != last_collection.records["target_strand"])]
 
-                data = pd.DataFrame()
-                data["x1"] = diff_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
-                data["y1"] = data["y1"] + diff_strand_records["query_hit_len"] - 1
+                if not diff_strand_records.empty:
 
-                data["x2"] = data["x1"] + diff_strand_records["target_hit_len"] - 1
-                data["y2"] = diff_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                    data = pd.DataFrame()
+                    data["x1"] = diff_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                    data["x2"] = data["x1"] + diff_strand_records["target_hit_len"] - 1
 
-                print data
+                    data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                    data["y2"] = data["y1"] - diff_strand_records["query_hit_len"] + 1
+                    data = data[["x1", "y1", "x2", "y2"]]
 
-                lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid')
+                    lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
+                                           linewidths=linewidth, antialiased=antialiased_lines)
 
-                ax.add_collection(lines)
+                    ax.add_collection(lines)
 
         if title:
             plt.title(title)
-        if xlabel:
-            plt.xlabel(xlabel)
-        if ylabel:
-            plt.ylabel(ylabel)
+        if target_label:
+            ax.text(total_target_len/2,
+                    -bar_width*axes_label_distance,
+                    target_label,
+                    fontsize=axes_label_fontsize,
+                    fontstyle=axes_label_fontstyle,
+                    fontweight=axes_label_weight,
+                    horizontalalignment='center',
+                    verticalalignment='center')
+        if query_label:
+            ax.text(-bar_width*axes_label_distance,
+                    total_query_len/2,
+                    query_label,
+                    fontsize=axes_label_fontsize,
+                    fontstyle=axes_label_fontstyle,
+                    fontweight=axes_label_weight,
+                    rotation=90,
+                    horizontalalignment='center',
+                    verticalalignment='center')
 
         plt.xlim(xmin=-bar_width * 2, xmax=total_target_len + 2 * bar_width)
         plt.ylim(ymin=-bar_width * 2, ymax=total_query_len + 2 * bar_width)
@@ -672,11 +724,11 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.get_yaxis().set_visible(False)
         ax.get_xaxis().set_visible(False)
 
-        #plt.subplots_adjust()
+        print("%s\tDrawing finished..." % str(datetime.datetime.now()))
 
         if output_prefix:
-            print extension_list
-            print type(extension_list)
+            print("%s\tWriting to file..." % str(datetime.datetime.now()))
             for extension in extension_list:
-                print extension
                 plt.savefig("%s.%s" % (output_prefix, extension))
+
+            print("%s\tWriting to file finished..." % str(datetime.datetime.now()))

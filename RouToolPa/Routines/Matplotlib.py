@@ -3,8 +3,8 @@ import os
 
 from itertools import cycle, islice
 from collections import Iterable
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 os.environ['MPLCONFIGDIR'] = '/tmp/'
 import matplotlib.pyplot as plt
 plt.ioff()

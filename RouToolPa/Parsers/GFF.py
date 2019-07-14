@@ -72,8 +72,8 @@ class CollectionGFF(Parser):
                                                                                    "featuretype":   1,
                                                                                    "start":         2,
                                                                                    "end":           3,
-                                                                                   "strand":        6,
-                                                                                   "attributes":    8,
+                                                                                   "strand":        4,
+                                                                                   "attributes":    5,
                                                                                    },
                                                               },
                                            "all": {
