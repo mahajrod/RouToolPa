@@ -268,7 +268,8 @@ class CollectionGFF(Parser):
         if isinstance(self.records, (OrderedDict, dict)):
             tmp_attr_dict = OrderedDict()
             for entry in self.records:
-                tmp_attr = map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))), list(self.records[entry]["attributes"]))
+                tmp_attr = map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))),
+                               list(self.records[entry]["attributes"]))
                 tmp_attr = pd.DataFrame(tmp_attr)
 
                 shape = np.shape(tmp_attr)
@@ -286,7 +287,8 @@ class CollectionGFF(Parser):
 
         elif isinstance(self.records, (pd.DataFrame,)):
 
-            tmp_attr = map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))), list(self.records["attributes"]))
+            tmp_attr = map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))),
+                           list(self.records["attributes"]))
             tmp_attr = pd.DataFrame(tmp_attr)
 
             shape = np.shape(tmp_attr)
