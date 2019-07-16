@@ -6,9 +6,11 @@ __author__ = 'Sergei F. Kliver'
 
 import os
 import re
+import datetime
 
 from math import sqrt
 from copy import deepcopy
+
 from collections import OrderedDict, Iterable
 
 import numpy as np
@@ -387,16 +389,15 @@ class CollectionVCF():
             if self.parsing_mode in ("genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
                 self.parsing_parameters[self.parsing_mode]["cols"] += [i for i in range(9, 9 + len(self.samples))]
 
-        #print self.parsing_parameters[self.parsing_mode]["cols"]
-        #print self.parsing_parameters[self.parsing_mode]["converters"]
-        #print self.parsing_parameters[self.parsing_mode]["col_names"]
-
+        print("%s\tReading file..." % str(datetime.datetime.now()))
         self.records = pd.read_csv(fd, sep='\t', header=None, na_values=".",
                                    usecols=self.parsing_parameters[self.parsing_mode]["cols"],
                                    converters=self.parsing_parameters[self.parsing_mode]["converters"],
                                    names=self.parsing_parameters[self.parsing_mode]["col_names"],
                                    index_col=self.VCF_COLS["CHROM"])
         fd.close()
+
+        print("%s\tReading file finished..." % str(datetime.datetime.now()))
 
         # convert to 0-based representation
 
@@ -444,7 +445,7 @@ class CollectionVCF():
                                                                   ])
 
             self.records = pd.concat([self.records[["POS", "ID", "REF", "ALT", "QUAL", "FILTER"]],
-                                      info] + sample_list, axis=1)
+                                      info] + sample_list, axis=1) #
 
     def parse_column(self, column, param, param_group):
         if self.parsing_mode == "all":
@@ -462,6 +463,7 @@ class CollectionVCF():
             if self.metadata.converters[param_group][param] == str:
                 return col
             if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
+
                 col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
             else:
                 col = col.apply(self.metadata.converters[param_group][param])
@@ -469,12 +471,50 @@ class CollectionVCF():
         return col
     
     def parse_info(self):
-        print "Parsing info field..."
-        tmp_info = self.records["INFO"].str.split(";", expand=True)
-        tmp_info_list = [tmp_info[column].str.split("=", expand=True) for column in tmp_info.columns]
+        print("%s\tParsing info field..." % str(datetime.datetime.now()))
+        tmp_info = pd.DataFrame(map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))), list(self.records["INFO"])))
+        tmp_info.index = self.records.index
 
-        del tmp_info
+        #print tmp_info
         info_df_list = []
+        for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
+            if param in tmp_info:
+
+                column_df = self.parse_column(tmp_info[param], param, "INFO")
+                shape = np.shape(column_df)
+                column_number = 1 if len(shape) == 1 else shape[1]
+                if self.parsing_mode == "all":
+                    column_df.columns = pd.MultiIndex.from_arrays([
+                                                  ["INFO"] * column_number,
+                                                  [param] * column_number
+                                                  ])
+                if self.parsing_mode == "complete":
+
+                    column_df.columns = pd.MultiIndex.from_arrays([
+                                                     ["INFO"] * column_number,
+                                                     [param] * column_number,
+                                                     np.arange(0, column_number)
+                                                     ])
+
+
+
+                info_df_list.append(column_df)
+
+        info = pd.concat(info_df_list, axis=1)
+        info.sort_index(level=1, inplace=True)
+
+        del info_df_list
+        #print info
+
+        print("%s\tParsing info field finished..." % str(datetime.datetime.now()))
+        return info
+
+        """
+        #tmp_info = self.records["INFO"].str.split(";", expand=True)
+        #tmp_info_list = [tmp_info[column].str.split("=", expand=True) for column in tmp_info.columns]
+
+        #del tmp_info
+        #info_df_list = []
 
         for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
             temp_list = []
@@ -509,10 +549,12 @@ class CollectionVCF():
                 #print(info_df_list[-1])
         info = pd.concat(info_df_list, axis=1)
         info.sort_index(level=1, inplace=True)
+
         return info
+        """
 
     def parse_samples(self, parameter_list=[]):
-        print "Parsing samples..."
+        print("%s\tParsing samples..." % str(datetime.datetime.now()))
         uniq_format_set = self.records['FORMAT'].drop_duplicates()
         uniq_format_dict = OrderedDict([(format_entry, format_entry.split(":")) for format_entry in uniq_format_set])
         sample_data_dict = {}
@@ -522,17 +564,29 @@ class CollectionVCF():
 
         for format_entry in uniq_format_dict:
             present_parameter_dict[format_entry] = []
-            for parameter in parameter_list:
-                if parameter in uniq_format_dict[format_entry]:
-                    #print parameter, uniq_format_dict[format_entry]
-                    present_parameter_dict[format_entry].append(parameter)
+            if parameter_list:
+                for parameter in parameter_list:
+                    if parameter in uniq_format_dict[format_entry]:
+                        #print parameter, uniq_format_dict[format_entry]
+                        present_parameter_dict[format_entry].append(parameter)
+            else:
+                present_parameter_dict[format_entry] = uniq_format_dict[format_entry]
+
         #print present_parameter_dict
+
         for sample in self.samples:
+
+            #splited_sample_df = pd.DataFrame(map(lambda s: s.split(":"), list(self.records[sample])))
             sample_data_dict[sample] = OrderedDict()
             for format_entry in uniq_format_dict:
                 sample_data_dict[sample][format_entry] = list()
                 #print self.records
-                tmp = self.records[self.records['FORMAT'] == format_entry][sample].str.split(":", expand=True)
+
+                tmp = self.records[self.records['FORMAT'] == format_entry][sample]
+                tmp_index = deepcopy(tmp.index)
+                tmp = pd.DataFrame(map(lambda s: s.split(":"), list(tmp)))
+                tmp.index = tmp_index
+                #########tmp = self.records[self.records['FORMAT'] == format_entry][sample].str.split(":", expand=True)
                 #print self.records[sample]
                 #print self.records[self.records['FORMAT'] == format_entry][sample]
                 tmp.columns = uniq_format_dict[format_entry]
@@ -541,6 +595,7 @@ class CollectionVCF():
                 for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
                     #print parameter
                     #print self.metadata.converters["FORMAT"][parameter]
+                    #print parameter, tmp[parameter]
                     parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
                     #print parameter_col
                     sample_data_dict[sample][format_entry].append(parameter_col)
@@ -554,6 +609,13 @@ class CollectionVCF():
                                                                   [uniq_format_dict[format_entry][i]] * column_number
                                                                   ],)
                     elif self.parsing_mode in ("complete",):
+                        #print i
+                        #print uniq_format_dict
+                        #print sample
+                        #print column_number
+                        #print format_entry
+                        #print present_parameter_dict[format_entry]
+
                         column_index = pd.MultiIndex.from_arrays([
                                                                   [sample] * column_number,
                                                                   [present_parameter_dict[format_entry][i]] * column_number,
@@ -583,6 +645,7 @@ class CollectionVCF():
                 sample_data_dict[sample].sort_index(level=1, inplace=True)
             else:
                 sample_data_dict.pop(sample, None)
+        print("%s\tParsing sample finished..." % str(datetime.datetime.now()))
         return list(sample_data_dict.values())
 
     def write(self, outfile, format='simple_bed', type="0-based"):
