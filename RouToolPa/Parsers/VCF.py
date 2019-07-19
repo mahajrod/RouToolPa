@@ -360,6 +360,8 @@ class CollectionVCF():
         self.number_of_scaffolds = len(self.scaffold_list)
         self.threads = threads
 
+    # ========================================= Parsing section=========================================================
+
     def read(self, in_file, external_metadata=None, parsing_mode=None):
         """
         Reads collection from vcf file
@@ -509,50 +511,6 @@ class CollectionVCF():
         print("%s\tParsing info field finished..." % str(datetime.datetime.now()))
         return info
 
-        """
-        #tmp_info = self.records["INFO"].str.split(";", expand=True)
-        #tmp_info_list = [tmp_info[column].str.split("=", expand=True) for column in tmp_info.columns]
-
-        #del tmp_info
-        #info_df_list = []
-
-        for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
-            temp_list = []
-            for dataframe in tmp_info_list:
-                column = dataframe[dataframe[0] == param][1]
-                if column.empty:
-                    continue
-                column = self.parse_column(column, param, "INFO")
-                temp_list.append(column)
-            if not temp_list:
-                continue
-            tmp = pd.concat(temp_list)
-
-            del temp_list
-            # TODO: check if 3 lines below are redundant in all possible cases
-            shape = np.shape(tmp)
-            column_number = 1 if len(shape) == 1 else shape[1]
-            tmp = tmp.to_frame(param) if isinstance(tmp, pd.Series) else tmp
-            if self.parsing_mode == "all":
-                tmp.columns = pd.MultiIndex.from_arrays([
-                                                      ["INFO"] * column_number,
-                                                      [param] * column_number
-                                                      ])
-            if self.parsing_mode == "complete":
-
-                tmp.columns = pd.MultiIndex.from_arrays([
-                                                         ["INFO"] * column_number,
-                                                         [param] * column_number,
-                                                         np.arange(0, column_number)
-                                                         ])
-            info_df_list.append(tmp)
-                #print(info_df_list[-1])
-        info = pd.concat(info_df_list, axis=1)
-        info.sort_index(level=1, inplace=True)
-
-        return info
-        """
-
     def parse_samples(self, parameter_list=[]):
         print("%s\tParsing samples..." % str(datetime.datetime.now()))
         uniq_format_set = self.records['FORMAT'].drop_duplicates()
@@ -648,6 +606,35 @@ class CollectionVCF():
         print("%s\tParsing sample finished..." % str(datetime.datetime.now()))
         return list(sample_data_dict.values())
 
+    @staticmethod
+    def _split_by_equal_sign(string):
+        try:
+            index = string.index("=")
+        except ValueError:
+            return string, None
+        return string[:index], string[index+1:]
+
+    def _split_by_comma_sign(self, string):
+        return self._split_by_sign(string, sign=",")
+
+    @staticmethod
+    def _split_by_sign(string, sign=","):
+        #IMPORTANT!!! ignores sign in "
+        index_list = [-1]
+        i = 1
+        while (i < len(string)):
+            if string[i] == "\"":
+                i += 1
+                while string[i] != "\"":
+                    i += 1
+            if string[i] == sign:
+                index_list.append(i)
+            i += 1
+        index_list.append(len(string))
+        return [string[index_list[j] + 1: index_list[j + 1]] for j in range(0, len(index_list) - 1)]
+    # ========================================= Parsing section end ====================================================
+
+    # ============================================ Writing section =====================================================
     def write(self, outfile, format='simple_bed', type="0-based"):
         if format == 'simple_bed':
             if type == "0-based":
@@ -681,33 +668,9 @@ class CollectionVCF():
                 df["POS"] += 1
                 df.to_csv(outfile, sep='\t', index=False, header=False)
 
-    @staticmethod
-    def _split_by_equal_sign(string):
-        try:
-            index = string.index("=")
-        except ValueError:
-            return string, None
-        return string[:index], string[index+1:]
+    # ========================================= Writing section end ====================================================
 
-    def _split_by_comma_sign(self, string):
-        return self._split_by_sign(string, sign=",")
-
-    @staticmethod
-    def _split_by_sign(string, sign=","):
-        #IMPORTANT!!! ignores sign in "
-        index_list = [-1]
-        i = 1
-        while (i < len(string)):
-            if string[i] == "\"":
-                i += 1
-                while string[i] != "\"":
-                    i += 1
-            if string[i] == sign:
-                index_list.append(i)
-            i += 1
-        index_list.append(len(string))
-        return [string[index_list[j] + 1: index_list[j + 1]] for j in range(0, len(index_list) - 1)]
-
+    # =========================================== Filtering section ====================================================
     def check_records_by_expression(self, expression):
         """
         Checks records in collection by expression. Expression must be a function with one argument - record entry,
@@ -735,6 +698,7 @@ class CollectionVCF():
                CollectionVCF(metadata=self.metadata, records=filtered_out_records,
                              header=self.header, samples=self.samples, )
 
+    # ========================================= Filtering section end ==================================================
     def count_records(self, expression):
         """
         Counts records passed expression in collection based on expression.
