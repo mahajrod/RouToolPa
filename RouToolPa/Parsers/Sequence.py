@@ -242,7 +242,7 @@ class CollectionSequence(FileRoutines):
                         out_fd.write(self.records[seq_id][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
                         index += 1
                     if line_number * max_symbols_per_line < length:
-                        out_fd.write(self.records[seq_id][index*max_symbols_per_line:-1] + "\n")
+                        out_fd.write(self.records[seq_id][index*max_symbols_per_line] + "\n")
 
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
