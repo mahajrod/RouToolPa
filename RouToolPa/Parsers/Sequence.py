@@ -6,7 +6,9 @@ __author__ = 'Sergei F. Kliver'
 
 
 import re
+from copy import deepcopy
 from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
 
@@ -21,19 +23,21 @@ class CollectionSequence(FileRoutines):
                  format="fasta",
                  parsing_mode="parse", black_list=(), white_list=(),
                  masking=None, masking_file=None, masking_filetype="gff",
-                 verbose=False):
+                 verbose=False, seq_expression=None):
         self.formats = ["fasta"]
+        self.format = self.format
         self.parsing_mode = parsing_mode
         self.seq_file = in_file
         self.seq_file_format = format
         self.white_list = white_list
         self.black_list = black_list
-
+        self.seq_file = in_file
         self.description = OrderedDict()
 
         if in_file:
             self.read(in_file, format=format, parsing_mode=parsing_mode,
-                      black_list=black_list,  white_list=white_list, verbose=verbose)
+                      black_list=black_list,  white_list=white_list, verbose=verbose,
+                      seq_expression=seq_expression)
 
         elif records is None:
             self.records = OrderedDict()
@@ -56,7 +60,8 @@ class CollectionSequence(FileRoutines):
         self.scaffolds = None
         self.gaps = None          # None or pandas dataframe with seq_id as index
 
-    def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
+    def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False,
+                           expression=None):
 
         if format == "fasta":
             with self.metaopen(sequence_file, "r") as seq_fd:
@@ -83,6 +88,34 @@ class CollectionSequence(FileRoutines):
                                 print("Parsing %s" % seq_id)
                             yield seq_id, description, seq
 
+    def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta", black_list=(), white_list=(), verbose=False,
+                           ):
+
+        if format == "fasta":
+            with self.metaopen(sequence_file, "r") as seq_fd:
+                seq_id = None
+                description = None
+                seq = ""
+                for line in seq_fd:
+                    if line[0] == ">":
+                        if seq_id and (seq_id not in black_list):
+                            if (not white_list) or (seq_id in white_list):
+                                if verbose:
+                                    print("Parsing %s" % seq_id)
+                                yield seq_id, description, seq
+                        tmp = line[1:].split(None, 1)
+                        seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
+
+                        seq = ""
+                    else:
+                        seq += line[:-1]
+                else:
+                    if seq_id and (seq_id not in black_list):
+                        if (not white_list) or (seq_id in white_list):
+                            if verbose:
+                                print("Parsing %s" % seq_id)
+                            yield seq_id, description, seq_expression(seq)
+
     def sequence_tuple_generator(self):
         if self.parsing_mode == "parse":
             for scaffold_id in self.scaffolds:
@@ -93,14 +126,24 @@ class CollectionSequence(FileRoutines):
                                                black_list=self.black_list,  white_list=self.white_list)
 
     def read(self, seq_file, format="fasta", parsing_mode="generator", black_list=(), white_list=(),
-             verbose=False):
+             verbose=False, seq_expression=None):
         if format not in self.formats:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         if parsing_mode == "generator":
             print("Creating sequence generator...")
-            self.records = self.sequence_generator(seq_file, format=format,
-                                                   black_list=black_list,  white_list=white_list,
-                                                   verbose=verbose)
+            if seq_expression:
+                self.records = self.sequence_generator_with_expression(seq_file,
+                                                                       seq_expression,
+                                                                       format=format,
+                                                                       black_list=black_list,
+                                                                       white_list=white_list,
+                                                                       verbose=verbose)
+            else:
+                self.records = self.sequence_generator(seq_file,
+                                                       format=format,
+                                                       black_list=black_list,
+                                                       white_list=white_list,
+                                                       verbose=verbose)
         elif parsing_mode == "parse":
             print("Parsing sequences...")
             self.records = OrderedDict()
@@ -253,3 +296,30 @@ class CollectionSequence(FileRoutines):
             return self.count_window_number_in_scaffold(scaffold_length, window_size, window_step)
 
         return self.length.apply(count)
+
+    def expression_unmask(self, s):
+        return s.upper()
+
+    def unmask(self, in_place=False, verbose=None):
+
+        if in_place:
+            collection = self
+        else:
+            collection = deepcopy(self)
+
+        if collection.parsing_mode == "generator":
+            print("Creating unmasked sequence generator...")
+
+            collection.records = collection.sequence_generator_with_expression(collection.seq_file,
+                                                                               collection.expression_unmask,
+                                                                               format=collection.format,
+                                                                               black_list=collection.black_list,
+                                                                               white_list=collection.white_list,
+                                                                               verbose=verbose)
+        elif collection.parsing_mode == "parse":
+            print("Parsing sequences...")
+            for seq_id in collection.records:
+                collection.records[seq_id] = collection.records[seq_id].upper()
+
+        if not in_place:
+            return collection
