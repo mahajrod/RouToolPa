@@ -25,7 +25,7 @@ class CollectionSequence(FileRoutines):
                  masking=None, masking_file=None, masking_filetype="gff",
                  verbose=False, seq_expression=None):
         self.formats = ["fasta"]
-        self.format = self.format
+        self.format = format
         self.parsing_mode = parsing_mode
         self.seq_file = in_file
         self.seq_file_format = format
