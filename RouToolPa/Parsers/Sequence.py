@@ -317,7 +317,7 @@ class CollectionSequence(FileRoutines):
                                                                                white_list=collection.white_list,
                                                                                verbose=verbose)
         elif collection.parsing_mode == "parse":
-            print("Parsing sequences...")
+            print("Unmasking sequences...")
             for seq_id in collection.records:
                 collection.records[seq_id] = collection.records[seq_id].upper()
 
