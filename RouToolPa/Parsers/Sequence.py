@@ -79,7 +79,7 @@ class CollectionSequence(FileRoutines):
 
                         seq = ""
                     else:
-                        seq += line.strip()
+                        seq += line[:-1]
                 else:
                     if seq_id and (seq_id not in black_list):
                         if (not white_list) or (seq_id in white_list):
@@ -87,9 +87,8 @@ class CollectionSequence(FileRoutines):
                                 print("Parsing %s" % seq_id)
                             yield seq_id, description, seq
 
-    def sequence_generator_with_expression(self, sequence_file,
-                                           seq_expression, format="fasta", black_list=(),
-                                           white_list=(), verbose=False):
+    def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta", black_list=(), white_list=(), verbose=False,
+                           ):
 
         if format == "fasta":
             with self.metaopen(sequence_file, "r") as seq_fd:
@@ -108,7 +107,7 @@ class CollectionSequence(FileRoutines):
 
                         seq = ""
                     else:
-                        seq += line.strip()
+                        seq += line[:-1]
                 else:
                     if seq_id and (seq_id not in black_list):
                         if (not white_list) or (seq_id in white_list):
@@ -272,7 +271,7 @@ class CollectionSequence(FileRoutines):
                         out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
                         index += 1
                     if line_number * max_symbols_per_line < length:
-                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:-1] + "\n")
+                        out_fd.write(self.records[syn_dict[seq_id]][index*max_symbols_per_line:] + "\n")
 
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
