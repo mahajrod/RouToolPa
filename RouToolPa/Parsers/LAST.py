@@ -216,6 +216,8 @@ class CollectionLast:
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
 
+        print("%s\tReading input finished..." % str(datetime.datetime.now()))
+        print("%s\tFiltering..." % str(datetime.datetime.now()))
         if target_white_list or target_black_list:
             target_scaffolds_to_keep = self.get_filtered_entry_list(self.records["target_id"].tolist(),
                                                                     entry_black_list=target_black_list,
@@ -236,7 +238,7 @@ class CollectionLast:
         # retain only automatically generated index by row number
         #self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
         #                                               names=("scaffold", "row"))
-        print("%s\tReading input finished..." % str(datetime.datetime.now()))
+        print("%s\tFiltering finished..." % str(datetime.datetime.now()))
 
         if min_target_len and min_query_len:
             self.records = self.records[(self.records["target_len"] >= min_target_len) & (self.records["query_len"] >= min_query_len)]
