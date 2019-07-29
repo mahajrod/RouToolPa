@@ -580,7 +580,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           query_label=None,
                                           gridwidth=1,
                                           linewidth=0.01,
-                                          scafold_label_fontsize=13,
+                                          scaffold_label_fontsize=13,
                                           axes_label_fontstyle="italic",
                                           axes_label_weight="normal",
                                           axes_label_fontsize=15,
@@ -645,22 +645,22 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("\t%s\tAdding labels..." % str(datetime.datetime.now()))
         for target_scaffold_id in target_scaffold_list:
             ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
-                    total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scafold_label_fontsize, rotation=45,
+                    total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize, rotation=45,
                     horizontalalignment='center',
                     verticalalignment='bottom',)
             ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
-                    -1.5 * bar_width, target_scaffold_id, fontsize=scafold_label_fontsize, rotation=45,
+                    -1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize, rotation=45,
                     horizontalalignment='center',
                     verticalalignment='top',)
 
         for query_scaffold_id in query_scaffold_list:
             ax.text(total_target_len + 1.5 * bar_width,
                     (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
-                     query_scaffold_id, fontsize=scafold_label_fontsize,
+                     query_scaffold_id, fontsize=scaffold_label_fontsize,
                     verticalalignment='center')
             ax.text(-1.5 * bar_width,
                     (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
-                     query_scaffold_id, fontsize=scafold_label_fontsize,
+                     query_scaffold_id, fontsize=scaffold_label_fontsize,
                     horizontalalignment='right',
                     verticalalignment='center',)
 
