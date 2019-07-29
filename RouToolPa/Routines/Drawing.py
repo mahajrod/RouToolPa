@@ -615,13 +615,13 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
 
         print("%s\tDrawing..." % str(datetime.datetime.now()))
-        print("\t%s\tInitializing figure..." % str(datetime.datetime.now()))
+        print("%s\t\tInitializing figure..." % str(datetime.datetime.now()))
 
         figure = plt.figure(figsize=figsize, dpi=dpi)
         ax = plt.subplot(1, 1, 1)
 
-        print("\t%s\tInitializing figure finished..." % str(datetime.datetime.now()))
-        print("\t%s\tDrawing grid..." % str(datetime.datetime.now()))
+        print("%s\t\tInitializing figure finished..." % str(datetime.datetime.now()))
+        print("%s\t\tDrawing grid..." % str(datetime.datetime.now()))
 
         ax.add_patch(Rectangle((0, total_query_len), total_target_len, bar_width, color=bar_color))  # top bar
         ax.add_patch(Rectangle((0, -bar_width), total_target_len, bar_width, color=bar_color))       # bottom bar
@@ -641,8 +641,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width),
                            color=grid_color, linewidth=gridwidth))
 
-        print("\t%s\tDrawing grid finished..." % str(datetime.datetime.now()))
-        print("\t%s\tAdding labels..." % str(datetime.datetime.now()))
+        print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
+        print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
         for target_scaffold_id in target_scaffold_list:
             ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
                     total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize, rotation=45,
@@ -696,8 +696,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.get_yaxis().set_visible(False)
         ax.get_xaxis().set_visible(False)
 
-        print("\t%s\tAdding labels finished..." % str(datetime.datetime.now()))
-        print("\t%s\tDrawing alignments..." % str(datetime.datetime.now()))
+        print("%s\t\tAdding labels finished..." % str(datetime.datetime.now()))
+        print("%s\t\tDrawing alignments..." % str(datetime.datetime.now()))
 
         def line_segments_generator(dataframe):
             for row_tuple in dataframe.itertuples(index=False):
@@ -743,7 +743,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
                     ax.add_collection(lines)
 
-        print("\t%s\tDrawng alignments finished..." % str(datetime.datetime.now()))
+        print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))
 
         if output_prefix:
