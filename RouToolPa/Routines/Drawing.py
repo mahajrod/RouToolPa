@@ -29,6 +29,14 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
     def __init__(self):
         MatplotlibRoutines.__init__(self)
 
+    @staticmethod
+    def millions(x, pos):
+        return '%1.1fMbp' % (x*1e-6)
+
+    @staticmethod
+    def billions(x, pos):
+        return '%1.1fGbp' % (x*1e-9)
+
     def draw_chromosomes_with_features_simple(self, chromosomes_gff, genes_gff, output_prefix, figsize=(10, 10),
                                               sense_feature_color="green", antisense_feature_color="red",
                                               chromosome_color="black", label_fontsize=15,
@@ -605,9 +613,15 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         bar_width_fraction = 0.02
         bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
+
         print("%s\tDrawing..." % str(datetime.datetime.now()))
+        print("\t%s\tInitializing figure..." % str(datetime.datetime.now()))
+
         figure = plt.figure(figsize=figsize, dpi=dpi)
         ax = plt.subplot(1, 1, 1)
+
+        print("\t%s\tInitializing figure finished..." % str(datetime.datetime.now()))
+        print("\t%s\tDrawing grid..." % str(datetime.datetime.now()))
 
         ax.add_patch(Rectangle((0, total_query_len), total_target_len, bar_width, color=bar_color))  # top bar
         ax.add_patch(Rectangle((0, -bar_width), total_target_len, bar_width, color=bar_color))       # bottom bar
@@ -627,6 +641,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width),
                            color=grid_color, linewidth=gridwidth))
 
+        print("\t%s\tDrawing grid finished..." % str(datetime.datetime.now()))
+        print("\t%s\tAdding labels..." % str(datetime.datetime.now()))
         for target_scaffold_id in target_scaffold_list:
             ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
                     total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scafold_label_fontsize, rotation=45,
@@ -647,6 +663,41 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                      query_scaffold_id, fontsize=scafold_label_fontsize,
                     horizontalalignment='right',
                     verticalalignment='center',)
+
+        if title:
+            plt.title(title)
+        if target_label:
+            ax.text(total_target_len/2,
+                    -bar_width*axes_label_distance,
+                    target_label,
+                    fontsize=axes_label_fontsize,
+                    fontstyle=axes_label_fontstyle,
+                    fontweight=axes_label_weight,
+                    horizontalalignment='center',
+                    verticalalignment='center')
+        if query_label:
+            ax.text(-bar_width*axes_label_distance,
+                    total_query_len/2,
+                    query_label,
+                    fontsize=axes_label_fontsize,
+                    fontstyle=axes_label_fontstyle,
+                    fontweight=axes_label_weight,
+                    rotation=90,
+                    horizontalalignment='center',
+                    verticalalignment='center')
+
+        plt.xlim(xmin=-bar_width * 2, xmax=total_target_len + 2 * bar_width)
+        plt.ylim(ymin=-bar_width * 2, ymax=total_query_len + 2 * bar_width)
+
+        ax.spines['bottom'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['top'].set_color('none')
+        ax.get_yaxis().set_visible(False)
+        ax.get_xaxis().set_visible(False)
+
+        print("\t%s\tAdding labels finished..." % str(datetime.datetime.now()))
+        print("\t%s\tDrawing alignments..." % str(datetime.datetime.now()))
 
         def line_segments_generator(dataframe):
             for row_tuple in dataframe.itertuples(index=False):
@@ -692,38 +743,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
                     ax.add_collection(lines)
 
-        if title:
-            plt.title(title)
-        if target_label:
-            ax.text(total_target_len/2,
-                    -bar_width*axes_label_distance,
-                    target_label,
-                    fontsize=axes_label_fontsize,
-                    fontstyle=axes_label_fontstyle,
-                    fontweight=axes_label_weight,
-                    horizontalalignment='center',
-                    verticalalignment='center')
-        if query_label:
-            ax.text(-bar_width*axes_label_distance,
-                    total_query_len/2,
-                    query_label,
-                    fontsize=axes_label_fontsize,
-                    fontstyle=axes_label_fontstyle,
-                    fontweight=axes_label_weight,
-                    rotation=90,
-                    horizontalalignment='center',
-                    verticalalignment='center')
-
-        plt.xlim(xmin=-bar_width * 2, xmax=total_target_len + 2 * bar_width)
-        plt.ylim(ymin=-bar_width * 2, ymax=total_query_len + 2 * bar_width)
-
-        ax.spines['bottom'].set_color('none')
-        ax.spines['right'].set_color('none')
-        ax.spines['left'].set_color('none')
-        ax.spines['top'].set_color('none')
-        ax.get_yaxis().set_visible(False)
-        ax.get_xaxis().set_visible(False)
-
+        print("\t%s\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))
 
         if output_prefix:
