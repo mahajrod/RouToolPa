@@ -663,13 +663,13 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                      query_scaffold_id, fontsize=scaffold_label_fontsize,
                     rotation=query_scaffold_labels_angle,
                     horizontalalignment='left',
-                    verticalalignment='center')
+                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'bottom')
             ax.text(-1.5 * bar_width,
                     (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
                      query_scaffold_id, fontsize=scaffold_label_fontsize,
                     rotation=query_scaffold_labels_angle,
                     horizontalalignment='right',
-                    verticalalignment='center',)
+                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'bottom')
 
         if title:
             plt.title(title)
