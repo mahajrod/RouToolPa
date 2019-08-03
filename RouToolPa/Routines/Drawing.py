@@ -669,7 +669,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                      query_scaffold_id, fontsize=scaffold_label_fontsize,
                     rotation=query_scaffold_labels_angle,
                     horizontalalignment='right',
-                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'bottom')
+                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'top')
 
         if title:
             plt.title(title)
