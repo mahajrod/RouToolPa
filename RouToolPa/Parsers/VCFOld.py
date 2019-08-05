@@ -1,129 +1,270 @@
 #!/usr/bin/env python
 """
-VCF Parser Module based on pandas
+VCF Parser Module
 """
 __author__ = 'Sergei F. Kliver'
 
 import os
 import re
-import datetime
-
 from math import sqrt
 from copy import deepcopy
-
 from collections import OrderedDict, Iterable
 
 import numpy as np
-import pandas as pd
-
 from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet, fcluster
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 
-from RouToolPa.Collections.General import IdList, IdSet, SynDict
-from RouToolPa.Routines import DrawingRoutines
-from RouToolPa.Routines.File import FileRoutines
-import RouToolPa.Formats.VariantFormats as VariantFormats
+from RouToolPa.Parsers.Abstract import Record, Collection, Metadata, Header
+from RouToolPa.General.GeneralCollections import IdList, IdSet, SynDict, TwoLvlDict
+from MACE.Routines import DrawingRoutines
 
 ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]
                     }
 
 
-class MetadataVCF(OrderedDict):
+class RecordVCF(Record):
+    """
+    RecordVCF class
+    """
+    __slots__ = ["pos", "id", "ref", "alt_list", "qual", "filter_list", "info_dict", "samples_list", "flags"]
+
+    def __init__(self, pos, id, ref, alt_list, qual, filter_list, info_dict, samples_list,
+                 flags=None):
+        """
+        Initializes record
+        :param pos: coordinate of mutation in chromosome
+        :param id: id of mutation
+        :param ref: reference variant
+        :param alt_list: list of alternative variants
+        :param qual: quality of mutation
+        :param filter_list: list of filters
+        :param info_dict: dictionary containing non flag data from vcf file
+        :param samples_list: list of samples
+        :param flags: flags from INFO field of vcf file
+        :return: None
+        """
+
+        self.pos = pos                                  #int
+        self.id = id                                    #str
+        self.ref = ref                                  #str
+        self.alt_list = alt_list                        #list, entries are strings
+        self.qual = qual                                #real or "."
+        self.filter_list = sorted(filter_list)          #list, entries are strings
+        self.info_dict = info_dict                      #dict
+        self.samples_list = samples_list                #list entries are dicts with keys from format_list and
+                                                        #values are lists
+        #self.description = description if description else {}
+        self.flags = set(flags) if flags is not None else set([])
+
+    def __str__(self):
+        """
+
+        :return: string representation of record (vcf string without chromosome name)
+        """
+        alt_string = ",".join(self.alt_list)
+        filter_string = ";".join(self.filter_list)
+        if self.info_dict:
+            key_string_list = []
+            for key in sorted(list(self.info_dict.keys())):
+                if self.info_dict[key]:
+                    key_string_list.append(key + "=" + ",". join(map(lambda x: str(x), self.info_dict[key])))
+                else:
+                    key_string_list.append(key)
+            info_string = ";".join(key_string_list)
+            info_string = "%s;%s" % (info_string, ";".join(self.flags)) if self.flags else info_string
+        else:
+            info_string = "."
+        for sample in self.samples_list:
+            if len(sample.keys()) > 1:
+                format_string = ":".join(sample.keys())
+                break
+        else:
+            format_string = list(self.samples_list[0].keys())[0]
+
+        samples_string = "\t".join([":".join([",".join(map(lambda x: str(x), sample[key])) for key in sample.keys()]) for sample in self.samples_list])
+        return '\t'.join(map(lambda x: str(x), [self.pos, self.id, self.ref, alt_string,
+                                                self.qual, filter_string, info_string, format_string, samples_string]))
+
+    def check_ref_alt_list(self, ref_alt_list, flag):
+        """
+        Sets flag in record if mutations is in list
+        :param ref_alt_list: list of references and corresponding to them alternatives
+        :param flag: flag to set if mutation is in ref_alt_list
+        :return: None
+        """
+        # structure of ref_alt_list:  [[ref1,[alt1.1, alt1.M1]], ..., [refN,[altN.1, ..., altN.MN]]]
+        self.set_flag(lambda record: (record.ref, record.alt_list) in ref_alt_list, flag)
+
+    def count_samples(self):
+        """
+        Counts samples with mutations
+        :return: number of samples with mutation
+        """
+        #
+        number = 0
+        for sample in self.samples_list:
+            if sample["GT"][0] != "./." and sample["GT"][0] != "0/0":
+                number += 1
+        return number
+
+    def set_filter(self, expression, filter_name):
+        """
+        Adds filter in RecordVCF.filter_list if expression is True
+        :param expression: expression to check
+        :param filter_name: filter to set
+        :return: None
+        """
+        if expression(self):
+            self.filter_list.append(filter_name)
+            self.filter_list.sort()
+
+    def add_info(self, info_name, info_value=None):
+        """
+        Adds parameter to RecordVCF.info_dict
+        :param info_name: name of parameter
+        :param info_value: value of parameter
+        :return: None
+        """
+        value = info_value if isinstance(info_value, list) else [] if info_value is None else [info_value]
+        if info_name in self.info_dict:
+            self.info_dict[info_name] += value
+        else:
+            self.info_dict[info_name] = value
+
+    def check_indel(self):
+        """
+        Checks if record is indel
+        :return: True if at least one variant of alternatives is indel
+        """
+        if len(self.ref) > 1 or len("".join(self.alt_list)) > len(self.alt_list):
+            return True
+        return False
+
+    def find_location(self, scaffold, annotation_dict, key="Ftype", strand_key="Fstrand", genes_key="Genes",
+                      genes_strand_key="Gstrand", feature_type_black_list=[],
+                      use_synonym=False, synonym_dict=None, add_intergenic_label=True):
+        """
+        Finds location of mutations in annotations. Adds four parameters to RecordVCF.info_dict. By default their names are "Ftype", "Fstrand", "Genes", "Gstrand"
+        "Ftype" contains list types of annotation within mutation is located,
+        "Fstrand" - summary of strands(N for no annotation, P or M if annotation is located in plus or minus strand respectively and B if annotations from both strands are overlapped)
+        "Genes" - list of gene names within mutation is located,
+        "Gstrand" - list of gene strands
+        :param scaffold: scaffold of variant
+        :param annotation_dict: dictionary of Biopython SeqRecord objects (keys are record ids, i.e. names of chromosomes)
+        :param key: key to use for annotation type
+        :param strand_key: key to use for summary strand of annotations
+        :param genes_key: key to use for genes list
+        :param genes_strand_key: key to use for list of gene strands
+        :param feature_type_black_list: list of annotation types to skip
+        :param use_synonym: use or not synonyms for annotations
+        :param synonym_dict: dictionary of synonyms
+        :param add_intergenic_label: label to use if mutation is located not in any gene
+        :return:
+        """
+        """
+        This method is written for old variant (with sub_feature)s rather then new (with CompoundLocation)
+        id of one SeqRecord in record_dict must be equal to record.pos
+        locations will be written to description dictionary of record using "key" as key
+        """
+        if key not in self.info_dict:
+            self.info_dict[key] = set([])
+
+        # strandness values:
+        # N - not defined
+        # B - both
+        # P - plus
+        # M - minus
+        strands = ["B", "P", "M"]
+        if strand_key not in self.info_dict:
+            self.info_dict[strand_key] = ["N"]
+        for flag_key in (genes_key, genes_strand_key):
+            if flag_key not in self.info_dict:
+                self.info_dict[flag_key] = []
+
+        for feature in annotation_dict[scaffold].features:
+            if feature.type in feature_type_black_list:
+                continue
+
+            if (self.pos - 1) in feature:
+                if feature.type == "gene" or feature.type == "ncRNA":
+                    self.info_dict[genes_key].append(feature.qualifiers["Name"][0])
+                    self.info_dict[genes_strand_key].append(strands[feature.strand])
+
+                self.info_dict[key].add(self.get_synonym(feature.type, use_synonym=use_synonym,
+                                                         synonym_dict=synonym_dict))
+                if self.info_dict[strand_key][0] == "N":
+                    self.info_dict[strand_key][0] = strands[feature.strand]
+                elif strands[feature.strand] != self.info_dict[strand_key][0]:
+                    self.info_dict[strand_key][0] = "B"
+            else:
+                continue
+
+            for sub_feature in feature.sub_features:
+                if sub_feature.type in feature_type_black_list:
+                    continue
+                if (self.pos - 1) in sub_feature:
+                    self.info_dict[key].add(self.get_synonym(sub_feature.type, use_synonym=use_synonym,
+                                                             synonym_dict=synonym_dict))
+                    if self.info_dict[strand_key][0] == "N":
+                        self.info_dict[strand_key][0] = strands[sub_feature.strand]
+                    elif strands[sub_feature.strand] != self.info_dict[strand_key][0]:
+                        self.info_dict[strand_key][0] = "B"
+
+        if not self.info_dict[genes_key]:
+            self.info_dict.pop(genes_key)
+            self.info_dict.pop(genes_strand_key)
+
+        if add_intergenic_label and (not self.info_dict[key]): # or ("gene" not in self.info_dict[key])):
+            # igc == intergenic
+            self.info_dict[key].add("igc")
+
+    def is_homozygous(self):
+        """
+        Checks if variant in all samples is homozygous
+        :return: True if variant in all samples is homozygous, otherwise False
+        """
+        for sample_dict in self.samples_list:
+            zyg = sample_dict["GT"][0].split("/")
+            if zyg[0] != zyg[1]:
+                return False
+        return True
+
+    def is_homozygous_sample(self, sample_index):
+        zyg = self.samples_list[sample_index]["GT"][0].split("/")
+        if zyg[0] != zyg[1]:
+            return False
+        return True
+
+    def is_homozygous_list(self):
+        zyg_list = [sample_dict["GT"][0].split("/") for sample_dict in self.samples_list]
+        return [None if (zyg[0] == ".") or (zyg[1] == ".") else True if zyg[0] == zyg[1] else False for zyg in zyg_list]
+
+    def no_reference_allel_and_multiallel(self, sample_index=None, max_allels=None):
+        if max_allels:
+            if len(self.alt_list) > max_allels:
+                return False
+
+        if sample_index:
+            if "0" in self.samples_list[sample_index]["GT"][0].split("/"):
+                return False
+        else:
+            for sample in self.samples_list:
+                if "0" in sample["GT"][0].split("/"):
+                    return False
+        return True
+
+
+class MetadataVCF(OrderedDict, Metadata):
     """
     MetadataVCF class
     """
-    def __init__(self, metadata=[], from_file=False, in_file=None,
-                 parsing_mode="all"):
-        OrderedDict.__init__(self)
-        if from_file:
-            self.metadata = []
-            self.read(in_file)
-        else:
-            self.metadata = metadata
-        self.converters = OrderedDict()
-        self.info_flag_list = []
-        self.info_nonflag_list = []
-        self.format_flag_list = []
-        self.format_nonflag_list = []
-        if (metadata or from_file) and (parsing_mode in ("all", "complete")):
-            self.create_converters(parsing_mode=parsing_mode)
-        self.parameter_separator_dict = OrderedDict({
-                                                     "GT": "/"
-                                                     })
-        self.parameter_replace_dict = OrderedDict({
-                                                   "GT": {
-                                                          ".": None,
-                                                          }
-                                                   })
-        self.default_replace_dict = OrderedDict({
-                                                 ".": None
-                                                 })
-        self.pandas_int_type_correspondence = OrderedDict({
-                                                           "Int8": np.float16,
-                                                           "Int16": np.float16,
-                                                           "Int32": np.float32,
-                                                           "Int64": np.float64,
-                                                           })
-
-    def create_converters(self, parsing_mode="all"):
-        if parsing_mode in ("genotypes", "coordinates_and_genotypes"):
-            self.converters["FORMAT"] = OrderedDict()
-            self.converters["FORMAT"]["GT"] = "Int8"
-        elif parsing_mode == "pos_gt_dp":
-            self.converters["FORMAT"] = OrderedDict()
-            self.converters["FORMAT"]["GT"] = "Int8"
-            self.converters["FORMAT"]["DP"] = "Int32"
-        elif parsing_mode in ("all", "complete"):
-            for field in "INFO", "FORMAT":
-                self.converters[field] = OrderedDict()
-                for entry in self[field]:
-                    try:
-                        a = int(self[field][entry]["Number"])
-                    except:
-                        a = 2
-                    if self[field][entry]["Type"] == "Flag":
-                        a = 1
-                        self.info_flag_list.append(entry) if field == "INFO" else self.format_flag_list.append(entry)
-                    self.info_nonflag_list.append(entry) if field == "INFO" else self.format_nonflag_list.append(entry)
-
-                    if entry == "GT":
-                        self.converters[field][entry] = "Int8" if parsing_mode == "complete" else str
-                    else:
-                        if a == 1:
-                            if self[field][entry]["Type"] == "Integer":
-                                self.converters[field][entry] = "Int32"
-                            elif self[field][entry]["Type"] == "Float":
-                                self.converters[field][entry] = np.float32
-                            elif self[field][entry]["Type"] == "String":
-                                self.converters[field][entry] = str
-                            elif self[field][entry]["Type"] == "Flag":
-                                self.converters[field][entry] = lambda s: True
-                            else:
-                                raise ValueError("ERROR!!! Unknown value type in metadata: %s, %s, %s" % (field,
-                                                                                                          entry,
-                                                                                                          self[field][entry]))
-                        else:
-                            if self[field][entry]["Type"] == "Integer":
-                                self.converters[field][entry] = "Int32" if parsing_mode == "complete" else str
-                            elif self[field][entry]["Type"] == "Float":
-                                self.converters[field][entry] = np.float32 if parsing_mode == "complete" else str
-                            elif self[field][entry]["Type"] == "String":
-                                self.converters[field][entry] = str
-                            elif self[field][entry]["Type"] == "Flag":
-                                self.converters[field][entry] = lambda s: True
-                            else:
-                                raise ValueError("ERROR!!! Unknown value type in metadata: %s, %s, %s" % (field,
-                                                                                                          entry,
-                                                                                                          self[field][entry]))
-
     def read(self, in_file):
         with open(in_file, "r") as fd:
             for line in fd:
@@ -132,6 +273,7 @@ class MetadataVCF(OrderedDict):
                     # self.samples = self.header[9:]
                     break
                 self.metadata.add_metadata(line)
+
 
     @staticmethod
     def _split_by_equal_sign(string):
@@ -207,10 +349,9 @@ class MetadataVCF(OrderedDict):
         return metadata_string[:-1]
 
 
-class HeaderVCF(list):
+class HeaderVCF(list, Header):
     """
     HeaderVCF class
-    #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SB6536
     """
 
     def __str__(self):
@@ -219,18 +360,15 @@ class HeaderVCF(list):
         """
         return "#" + "\t".join(self)
 
-    def get_samples_list(self):
-        return self[9:]
 
-
-class CollectionVCF():
+class CollectionVCF(Collection):
     """
     CollectionVCF class
 
     """
 
-    def __init__(self, in_file=None, metadata=None, records=None, header=None, samples=None,
-                 external_metadata=None, threads=1, parsing_mode="all",):
+    def __init__(self, metadata=None, records_dict=None, header=None, in_file=None, samples=None,
+                 from_file=True, external_metadata=None, threads=1, dont_parse_info_and_data=False, parse_only_coordinates=False):
         """
         Initializes collection. If from_file is True collection will be read from file (arguments other then in_file, external_metadata and threads are ignored)
         Otherwise collection will be initialize from meta, records_dict, header, samples
@@ -244,367 +382,108 @@ class CollectionVCF():
         :param threads:
         :return:
         """
-        # vcf file columns
-        self.formats = ["vcf"]
-        self.VCF_COLS = VariantFormats.VCF_COLS
-        self.parsing_modes_with_genotypes = ["complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"]
-        self.parsing_modes_with_sample_coverage = ["complete", "pos_gt_dp"]
-        self.parsing_parameters = {
-                                   "only_coordinates": {
-                                                        "col_names": ["CHROM", "POS"],
-                                                        "cols":   [0, 1],
-                                                        "index_cols": "CHROM",
-                                                        "converters": {
-                                                                       "CHROM":  str,
-                                                                       "POS":    np.int32,
-                                                                       },
-                                                        },
-                                   "coordinates_and_genotypes": {
-                                                                 "col_names": ["CHROM", "POS", "FORMAT"],
-                                                                 "cols": [0, 1, 8],
-                                                                 "index_cols": "CHROM",
-                                                                 "converters": {
-                                                                                "CHROM":  str,
-                                                                                "POS":    np.int32,
-                                                                                "FORMAT": str
-                                                                                 },
-                                                                 },
-                                   "pos_gt_dp": {
-                                                 "col_names": ["CHROM", "POS", "FORMAT"],
-                                                 "cols": [0, 1, 8],
-                                                 "index_cols": "CHROM",
-                                                 "converters": {
-                                                                "CHROM":  str,
-                                                                "POS":    np.int32,
-                                                                "FORMAT": str
-                                                                },
-                                                 },
-                                   "except_data":      {
-                                                        "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER"],
-                                                        "cols":   [0, 1, 2, 3, 4, 5, 6],
-                                                        "index_cols": "CHROM",
-                                                        "converters": {
-                                                                       "CHROM":  str,
-                                                                       "POS":    np.int32,
-                                                                       "ID":     str,
-                                                                       "REF":    str,
-                                                                       "ALT":    lambda s: s.split(","),
-                                                                       "QUAL":   np.float16,
-                                                                       "FILTER": lambda s: s.split(","),
-                                                                       },
-                                                        },
-                                   "genotypes":        {
-                                                        "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "FORMAT"],
-                                                        "cols": [0, 1, 2, 3, 4, 5, 6, 8],
-                                                        "index_cols": "CHROM",
-                                                        "converters": {
-                                                                       "CHROM":  str,
-                                                                       "POS":    np.int32,
-                                                                       "ID":     str,
-                                                                       "REF":    str,
-                                                                       "ALT":    lambda s: s.split(","),
-                                                                       "QUAL":   np.float16,
-                                                                       "FILTER": lambda s: s.split(","),
-                                                                       "FORMAT": str #lambda s: s.split(":")
-                                                                       },
-                                                        },
-                                   "all":              {
-                                                        "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
-                                                        "cols": None,
-                                                        "index_cols": "CHROM",
-                                                        "converters": {
-                                                                       "CHROM":  str,
-                                                                       "POS":    np.int32,
-                                                                       "ID":     str,
-                                                                       "REF":    str,
-                                                                       "ALT":    lambda s: s.split(","),
-                                                                       "QUAL":   np.float16,
-                                                                       "FILTER": lambda s: s.split(","),
-                                                                       "INFO":   str, #self.parse_info_field,
-                                                                       "FORMAT": str #lambda s: s.split(":")
-                                                                       },
-                                                        },
-                                   "complete":         {
-                                                        "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
-                                                        "cols": None,
-                                                        "index_cols": "CHROM",
-                                                        "converters": {
-                                                                       "CHROM":  str,
-                                                                       "POS":    np.int32,
-                                                                       "ID":     str,
-                                                                       "REF":    str,
-                                                                       "ALT":    lambda s: s.split(","),
-                                                                       "QUAL":   np.float16,
-                                                                       "FILTER": lambda s: s.split(","),
-                                                                       "INFO":   str, #self.parse_info_field,
-                                                                       "FORMAT": str #lambda s: s.split(":")
-                                                                       },
-                                                        },
-                                   }
-
         self.linkage_dict = None
-        self.parsing_mode = parsing_mode
-        
-        if in_file:
+        if from_file:
             self.read(in_file, external_metadata=external_metadata,
-                      parsing_mode=self.parsing_mode)
+                      dont_parse_info_and_data=dont_parse_info_and_data,
+                      parse_only_coordinates=parse_only_coordinates)
         else:
             self.metadata = metadata
-            self.records = None if records is None else records
+            self.records = {} if records_dict is None else records_dict
             self.header = header
             self.samples = samples
-        self.record_number = len(self.records)
-        self.sample_number = len(self.samples)
-        self.per_scaffold_record_number = self.records.groupby(self.records.index).size() # pandas Series with scaffold ids as index
-        self.scaffold_list = self.records.index.get_level_values('CHROM').unique().to_list()
+        self.scaffold_list = self.scaffolds()
+        self.scaffold_length = self.scaffold_len()
         self.number_of_scaffolds = len(self.scaffold_list)
+        self.record_index = self.rec_index()
         self.threads = threads
 
-    # ========================================= Parsing section=========================================================
-
-    def read(self, in_file, external_metadata=None, parsing_mode=None):
+    def read(self, in_file, external_metadata=None, dont_parse_info_and_data=False, parse_only_coordinates=False):
         """
         Reads collection from vcf file
         :param in_file: path to file
         :param external_metadata: external(not from input file) metadata that could be used to parse records
         :return: None
         """
-        if parsing_mode is not None:
-            self.parsing_mode = parsing_mode
-
         self.metadata = MetadataVCF()
-        self.records = None
+        self.records = OrderedDict({})
+        with open(in_file, "r") as fd:
+            for line in fd:
+                if line[:2] != "##":
+                    self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
+                    self.samples = self.header[9:]
+                    break
+                self.metadata.add_metadata(line)
+            for line in fd:
+                scaffold, record = self.add_record(line, external_metadata=external_metadata,
+                                                   dont_parse_info_and_data=dont_parse_info_and_data,
+                                                   parse_only_coordinates=parse_only_coordinates)
+                if scaffold not in self.records:
+                    self.records[scaffold] = []
+                self.records[scaffold].append(record)
 
-        fd = FileRoutines.metaopen(in_file, "r")
-        while True:
-            line = fd.readline()
-            if line[:2] != "##":
-                self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
-                self.samples = self.header[9:]
-                break
-            self.metadata.add_metadata(line)
-        if self.parsing_mode in ("all", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
-            self.metadata.create_converters(parsing_mode=self.parsing_mode)
-            self.parsing_parameters[self.parsing_mode]["col_names"] = self.header
-            for sample_col in range(9, 9 + len(self.samples)):
-                self.parsing_parameters[self.parsing_mode]["converters"][self.header[sample_col]] = str # self.parse_sample_field_simple
-            if self.parsing_mode in ("genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
-                self.parsing_parameters[self.parsing_mode]["cols"] += [i for i in range(9, 9 + len(self.samples))]
+    def add_record(self, line, external_metadata=None, dont_parse_info_and_data=False, parse_only_coordinates=False):
+        """
+        Adds record to collection from line
+        :param line: record line from vcf file
+        :param external_metadata: external(not from input file) metadata that could be used to parse records
+        :return: None
+        """
+        line_list = line.strip().split("\t")
+        #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	Sample_1
+        position = int(line_list[1])
+        if parse_only_coordinates:
+            return line_list[0], RecordVCF(position, ".", ".",[], ".", [], {}, [], flags=set())
+        quality = "."
 
-        print("%s\tReading file..." % str(datetime.datetime.now()))
-        self.records = pd.read_csv(fd, sep='\t', header=None, na_values=".",
-                                   usecols=self.parsing_parameters[self.parsing_mode]["cols"],
-                                   converters=self.parsing_parameters[self.parsing_mode]["converters"],
-                                   names=self.parsing_parameters[self.parsing_mode]["col_names"],
-                                   index_col=self.VCF_COLS["CHROM"])
-        fd.close()
+        if quality != line_list[5]:
+            quality = float(line_list[5])
+        alt_list = line_list[4].split(",")
+        filter_list = line_list[6].split(",")          # list, entries are strings
 
-        print("%s\tReading file finished..." % str(datetime.datetime.now()))
+        if dont_parse_info_and_data:
+            return line_list[0], RecordVCF(position, line_list[2], line_list[3],
+                                           alt_list, quality, filter_list,
+                                           {}, [], flags=set())
+        info_dict = OrderedDict()
+        metadata = self.metadata if self.metadata else external_metadata
+        flag_set = set([])
 
-        # convert to 0-based representation
-
-        self.records['POS'] -= 1
-
-        self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
-                                                       names=("CHROM", "ROW"))
-        if self.parsing_mode in ("genotypes", "coordinates_and_genotypes"):
-            sample_genotypes = self.parse_samples(["GT"])
-            self.records.columns = pd.MultiIndex.from_arrays([
-                                                              self.records.columns,
-                                                              self.records.columns,
-                                                              self.records.columns
-                                                              ])
-            if self.parsing_mode == "coordinates_and_genotypes":
-
-                self.records = pd.concat([self.records[["POS"]],
-                                          ] + sample_genotypes, axis=1)
+        if line_list[7] != ".":
+            info_tuple_list = [self._split_by_equal_sign(entry) for entry in line_list[7].split(";")]
+            #print line_list
+            for entry in info_tuple_list:
+                if entry[0] not in metadata["INFO"]:
+                    # do not parse data from INFO field that are not described in metadata
+                    continue
+                if metadata["INFO"][entry[0]]["Type"] == "Flag":
+                    flag_set.add(entry[0]) #info_dict[entry[0]] = []
+                elif metadata["INFO"][entry[0]]["Type"] == "Integer":
+                    info_dict[entry[0]] = list(map(lambda x: int(x), entry[1].split(",")))
+                elif metadata["INFO"][entry[0]]["Type"] == "Float":
+                    #print entry
+                    info_dict[entry[0]] = list(map(lambda x: float(x), entry[1].split(",")))
+                else:
+                    info_dict[entry[0]] = entry[1].split(",")
+        samples_list = []
+        for sample_string in line_list[9:]:
+            sample_dict = OrderedDict()
+            if sample_string == "./.":
+                sample_dict["GT"] = ["./."]
             else:
-                self.records = pd.concat([self.records[["POS", "ID", "REF", "ALT", "QUAL", "FILTER"]],
-                                          ] + sample_genotypes, axis=1)
-        elif parsing_mode == "pos_gt_dp":
-            sample_data = self.parse_samples(["GT", "DP"])
-            self.records.columns = pd.MultiIndex.from_arrays([
-                                                              self.records.columns,
-                                                              self.records.columns,
-                                                              self.records.columns
-                                                              ])
-            self.records = pd.concat([self.records[["POS"]],
-                                          ] + sample_data, axis=1)
+                for key, value_list in zip(line_list[8].split(":"), sample_string.split(":")):
+                    if metadata["FORMAT"][key]["Type"] == "Integer":
+                        #print key, value_list
+                        sample_dict[key] = list(map(lambda x: x if x == "." else int(x), value_list.split(",")))
+                    elif metadata["FORMAT"][key]["Type"] == "Float":
+                        sample_dict[key] = list(map(lambda x: x if x == "." else float(x), value_list.split(",")))
+                    else:
+                        sample_dict[key] = value_list.split(",")
 
-        elif self.parsing_mode in ("all", "complete"):
-            info = self.parse_info()
-            sample_list = self.parse_samples()
-            if self.parsing_mode == "all":
-                self.records.columns = pd.MultiIndex.from_arrays([
-                                                                  self.records.columns,
-                                                                  self.records.columns
-                                                                  ])
-            elif self.parsing_mode == "complete":
-                self.records.columns = pd.MultiIndex.from_arrays([
-                                                                  self.records.columns,
-                                                                  self.records.columns,
-                                                                  self.records.columns
-                                                                  ])
-
-            self.records = pd.concat([self.records[["POS", "ID", "REF", "ALT", "QUAL", "FILTER"]],
-                                      info] + sample_list, axis=1) #
-
-    def parse_column(self, column, param, param_group):
-        if self.parsing_mode == "all":
-            if self.metadata.converters[param_group][param] == str:
-                return column
-            col = column.replace(self.metadata.default_replace_dict)
-            if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
-                col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
-            else:
-                col = col.apply(self.metadata.converters["INFO"][param])
-        elif self.parsing_mode in ("complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
-            col = column.str.split(self.metadata.parameter_separator_dict[param] if param in self.metadata.parameter_separator_dict else ",",
-                                   expand=True)
-            col.replace(self.metadata.default_replace_dict, inplace=True)
-            if self.metadata.converters[param_group][param] == str:
-                return col
-            if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
-
-                col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
-            else:
-                col = col.apply(self.metadata.converters[param_group][param])
-
-        return col
-    
-    def parse_info(self):
-        print("%s\tParsing info field..." % str(datetime.datetime.now()))
-        tmp_info = pd.DataFrame(map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))), list(self.records["INFO"])))
-        tmp_info.index = self.records.index
-
-        #print tmp_info
-        info_df_list = []
-        for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
-            if param in tmp_info:
-
-                column_df = self.parse_column(tmp_info[param], param, "INFO")
-                shape = np.shape(column_df)
-                column_number = 1 if len(shape) == 1 else shape[1]
-                if self.parsing_mode == "all":
-                    column_df.columns = pd.MultiIndex.from_arrays([
-                                                  ["INFO"] * column_number,
-                                                  [param] * column_number
-                                                  ])
-                if self.parsing_mode == "complete":
-
-                    column_df.columns = pd.MultiIndex.from_arrays([
-                                                     ["INFO"] * column_number,
-                                                     [param] * column_number,
-                                                     np.arange(0, column_number)
-                                                     ])
-
-
-
-                info_df_list.append(column_df)
-
-        info = pd.concat(info_df_list, axis=1)
-        info.sort_index(level=1, inplace=True)
-
-        del info_df_list
-        #print info
-
-        print("%s\tParsing info field finished..." % str(datetime.datetime.now()))
-        return info
-
-    def parse_samples(self, parameter_list=[]):
-        print("%s\tParsing samples..." % str(datetime.datetime.now()))
-        uniq_format_set = self.records['FORMAT'].drop_duplicates()
-        uniq_format_dict = OrderedDict([(format_entry, format_entry.split(":")) for format_entry in uniq_format_set])
-        sample_data_dict = {}
-        #print parameter_list
-
-        present_parameter_dict = OrderedDict()
-
-        for format_entry in uniq_format_dict:
-            present_parameter_dict[format_entry] = []
-            if parameter_list:
-                for parameter in parameter_list:
-                    if parameter in uniq_format_dict[format_entry]:
-                        #print parameter, uniq_format_dict[format_entry]
-                        present_parameter_dict[format_entry].append(parameter)
-            else:
-                present_parameter_dict[format_entry] = uniq_format_dict[format_entry]
-
-        #print present_parameter_dict
-
-        for sample in self.samples:
-
-            #splited_sample_df = pd.DataFrame(map(lambda s: s.split(":"), list(self.records[sample])))
-            sample_data_dict[sample] = OrderedDict()
-            for format_entry in uniq_format_dict:
-                sample_data_dict[sample][format_entry] = list()
-                #print self.records
-
-                tmp = self.records[self.records['FORMAT'] == format_entry][sample]
-                tmp_index = deepcopy(tmp.index)
-                tmp = pd.DataFrame(map(lambda s: s.split(":"), list(tmp)))
-                tmp.index = tmp_index
-                #########tmp = self.records[self.records['FORMAT'] == format_entry][sample].str.split(":", expand=True)
-                #print self.records[sample]
-                #print self.records[self.records['FORMAT'] == format_entry][sample]
-                tmp.columns = uniq_format_dict[format_entry]
-                sample_data_dict[sample][format_entry] = []
-
-                for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
-                    #print parameter
-                    #print self.metadata.converters["FORMAT"][parameter]
-                    #print parameter, tmp[parameter]
-                    parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
-                    #print parameter_col
-                    sample_data_dict[sample][format_entry].append(parameter_col)
-
-                for i in range(0, len(present_parameter_dict[format_entry])) if parameter_list else range(0, len(uniq_format_dict[format_entry])):
-                    shape = np.shape(sample_data_dict[sample][format_entry][i])
-                    column_number = 1 if len(shape) == 1 else shape[1]
-                    if self.parsing_mode == "all":
-                        column_index = pd.MultiIndex.from_arrays([
-                                                                  [sample] * column_number,
-                                                                  [uniq_format_dict[format_entry][i]] * column_number
-                                                                  ],)
-                    elif self.parsing_mode in ("complete",):
-                        #print i
-                        #print uniq_format_dict
-                        #print sample
-                        #print column_number
-                        #print format_entry
-                        #print present_parameter_dict[format_entry]
-
-                        column_index = pd.MultiIndex.from_arrays([
-                                                                  [sample] * column_number,
-                                                                  [present_parameter_dict[format_entry][i]] * column_number,
-                                                                  np.arange(0, column_number)
-                                                                  ],)
-                    elif self.parsing_mode in ("genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
-                        column_index = pd.MultiIndex.from_arrays([
-                                                                  [sample] * column_number,
-                                                                  [present_parameter_dict[format_entry][i]] * column_number,
-                                                                  np.arange(0, column_number)
-                                                                  ],)
-
-                    sample_data_dict[sample][format_entry][i].columns = column_index
-                if sample_data_dict[sample][format_entry]:
-                    sample_data_dict[sample][format_entry] = pd.concat(sample_data_dict[sample][format_entry],
-                                                                       axis=1)
-            if sample_data_dict[sample]:
-                sample_data_dict[sample] = pd.concat(sample_data_dict[sample].values(),
-                                                     axis=0)
-                if self.parsing_mode == "all":
-                    column_index = pd.MultiIndex.from_arrays([
-                                                              [sample] * len(sample_data_dict[sample].columns),
-                                                              sample_data_dict[sample].columns
-                                                              ],)
-                    sample_data_dict[sample].columns = column_index
-                # sort by row number
-                sample_data_dict[sample].sort_index(level=1, inplace=True)
-            else:
-                sample_data_dict.pop(sample, None)
-        print("%s\tParsing sample finished..." % str(datetime.datetime.now()))
-        return list(sample_data_dict.values())
+            samples_list.append(sample_dict)
+        return line_list[0], RecordVCF(position, line_list[2], line_list[3],
+                                      alt_list, quality, filter_list,
+                                      info_dict, samples_list, flags=flag_set)
 
     @staticmethod
     def _split_by_equal_sign(string):
@@ -619,7 +498,7 @@ class CollectionVCF():
 
     @staticmethod
     def _split_by_sign(string, sign=","):
-        #IMPORTANT!!! ignores sign in "
+        # ignores sign in "
         index_list = [-1]
         i = 1
         while (i < len(string)):
@@ -632,537 +511,19 @@ class CollectionVCF():
             i += 1
         index_list.append(len(string))
         return [string[index_list[j] + 1: index_list[j + 1]] for j in range(0, len(index_list) - 1)]
-    # ========================================= Parsing section end ====================================================
-
-    # ============================================ Writing section =====================================================
-    def write(self, outfile, format='simple_bed', type="0-based"):
-        if format == 'simple_bed':
-            if type == "0-based":
-                self.records[["POS"]].reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = self.records[["POS"]].reset_index(level='CHROM')
-                df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
-        elif format == 'bed':
-            if type == "0-based":
-                self.records.reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = self.records.reset_index(level='CHROM')
-                df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
-
-    @staticmethod
-    def write_df(dataframe, outfile, format='simple_bed', type="0-based"):
-        if format == 'simple_bed':
-            if type == "0-based":
-                dataframe[["POS"]].reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = dataframe[["POS"]].reset_index(level='CHROM')
-                df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
-        elif format == 'bed':
-            if type == "0-based":
-                dataframe.reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = dataframe.reset_index(level='CHROM')
-                df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
-
-    # ========================================= Writing section end ====================================================
-
-    # =========================================== Filtering section ====================================================
-    def check_records_by_expression(self, expression):
-        """
-        Checks records in collection by expression. Expression must be a function with one argument - record entry,
-        returning boolean
-        :param expression:  expression to check
-        :return: array of booleans with length of record number.
-        """
-        return self.records.apply(expression, axis=1)
-
-    def filter_records(self, expression):
-        boolean_array = self.records.apply(expression, axis=1)
-
-        return self.records[boolean_array], self.records[~boolean_array]
 
     def filter(self, expression):
         """
-        Splits collection based on expression. Expression must be a function with one argument - record entry
+        Splits collection based on expression. Expression should be a function with one argument - record entry
         :param expression: filtering expression
         :return: tuple of two CollectionVCF. First contains records for which expression is True, second - False.
         """
         #
         filtered_records, filtered_out_records = self.filter_records(expression)
-        return CollectionVCF(metadata=self.metadata, records=filtered_records,
-                             header=self.header, samples=self.samples, ),\
-               CollectionVCF(metadata=self.metadata, records=filtered_out_records,
-                             header=self.header, samples=self.samples, )
-
-    # ========================================= Filtering section end ==================================================
-    def count_records(self, expression):
-        """
-        Counts records passed expression in collection based on expression.
-        Expression must be a function with one argument - record entryreturning boolean
-        :param expression: filtering expression
-        :return: tuple of two numbers. First is number of records for which expression is True, second - False.
-        """
-        return np.sum(self.check_records_by_expression(expression))
-
-    def rainfall_plot(self, plot_name, dpi=300, figsize=(20, 20), facecolor="#D6D6D6",
-                      ref_genome=None, min_masking_length=10, suptitle=None,
-                      masking_color="#777777", logbase=2,
-                      extension_list=("pdf", "png"),
-                      scaffold_black_list=None, scaffold_white_list=None,
-                      scaffold_ordered_list=None, sort_scaffolds=False,
-                      color_expression=None,
-                      default_point_color='blue',
-                      dot_size=None,
-                      label_fontsize=None, draw_masking=False):
-        """
-
-        :param plot_name:
-        :param base_colors:
-        :param single_fig:
-        :param dpi:
-        :param figsize:
-        :param facecolor:
-        :param ref_genome:
-        :param masked_scaffolds:
-        :param min_gap_length:
-        :param draw_gaps:
-        :param suptitle:
-        :param gaps_color:
-        :param masked_scaffolds_color:
-        :param logbase:
-        :param extension_list:
-        :param scaffold_black_list:
-        :param scaffold_white_list=:
-        :param scaffold_order_list=None
-        :return:
-
-        """
-        # TODO: add multithreading drawing if possible and multipicture drawing
-        print("Drawing rainfall plot...")
-        plot_dir = "rainfall_plot"
-
-        os.system("mkdir -p %s" % plot_dir)
-
-        fig = plt.figure(1, dpi=dpi, figsize=figsize ) #, facecolor=facecolor)
-        fig.suptitle(suptitle if suptitle else "Rainfall plot", fontweight='bold', y=0.94, fontsize=label_fontsize) #
-        sub_plot_dict = OrderedDict({})
-        index = 1
-
-        final_scaffold_list = DrawingRoutines.get_filtered_scaffold_list(self.scaffold_list,
-                                                                         scaffold_black_list=scaffold_black_list,
-                                                                         sort_scaffolds=sort_scaffolds,
-                                                                         scaffold_ordered_list=scaffold_ordered_list,
-                                                                         scaffold_white_list=scaffold_white_list,
-                                                                         sample_level=False)
-        num_of_scaffolds = len(final_scaffold_list)
-        distances_dict = OrderedDict()
-        height = 0
-
-        if (ref_genome is not None) and draw_masking:
-            masking_df = ref_genome.get_merged_gaps_and_masking()
-            if min_masking_length > 1:
-                masking_df.remove_small_records(min_masking_length)
-
-        for scaffold in final_scaffold_list: # self.records
-            print("Handling scaffold: %s ..." % scaffold)
-            distances_dict[scaffold] = self.records.loc[scaffold, "POS"].diff()
-            height = max(np.max(distances_dict[scaffold]), height)
-            # pandas DataFrame diff methods return differences between consecutive elements in array,
-            # and first distance is NaN always, so it is replaced by 0
-            distances_dict[scaffold][0] = 0
-            distances_dict[scaffold].name = 'DIST'
-            if color_expression:
-                colors = self.records.loc[scaffold].apply(color_expression, axis=1)
-                colors.name = 'COLOR'
-                distances_dict[scaffold] = pd.concat([self.records.loc[scaffold, "POS"],
-                                                      distances_dict[scaffold],
-                                                      colors],
-                                                     axis=1)
-                distances_dict[scaffold] = distances_dict[scaffold].set_index('COLOR')
-                color_list = colors.index.values.unique().to_list()
-            else:
-                distances_dict[scaffold] = pd.concat([self.records.loc[scaffold, "POS"],
-                                                      distances_dict[scaffold]],
-                                                     axis=1)
-
-        length = np.max(ref_genome.seq_lengths['length']) if ref_genome is not None else np.max(self.records["POS"])
-
-        length *= 1.1
-        if length // (10 ** 9) > 2:
-            def tick_formater(x, pos):
-                return '%1.1f Gbp' % (x*1e-9)
-        elif length // (10 ** 6) > 200:
-            def tick_formater(x, pos):
-                return '%.0f Mbp' % (x*1e-6)
-        elif length // (10 ** 6) > 2:
-            def tick_formater(x, pos):
-                return '%.1f Mbp' % (x*1e-6)
-
-        formatter = FuncFormatter(tick_formater)
-
-        for scaffold in final_scaffold_list:
-            if not sub_plot_dict:
-                sub_plot_dict[scaffold] = plt.subplot(num_of_scaffolds, 1, index) #, axisbg=facecolor)
-
-            else:
-                sub_plot_dict[scaffold] = plt.subplot(num_of_scaffolds, 1, index,
-                                                      sharey=sub_plot_dict[final_scaffold_list[0]])
-                                                      #sharex=sub_plot_dict[keys[0]],
-                                                      #)
-                                                      #facecolor=facecolor)
-            sub_plot_dict[scaffold].xaxis.set_major_formatter(formatter)
-            index += 1
-
-            if ref_genome is not None:
-                print("\tScaffold length:%i" % ref_genome.seq_lengths.loc[scaffold])
-                plt.gca().add_patch(plt.Rectangle((1, 0),
-                                                  ref_genome.seq_lengths.loc[scaffold],
-                                                  height, facecolor=facecolor, edgecolor='none', alpha=0.5))
-                if draw_masking:
-                    for masked_region in masking_df.records.loc[scaffold].itertuples(index=False):
-                        plt.gca().add_patch(plt.Rectangle((masked_region[0] + 1, 1),
-                                                          masked_region[1] - masked_region[0],
-                                                          height, facecolor=masking_color, edgecolor='none'))
-
-            print("Drawing scaffold: %s ..." % scaffold)
-
-            if color_expression:
-                for color in color_list:
-                    plt.scatter(distances_dict[scaffold].loc[color]['POS'],
-                                distances_dict[scaffold]['DIST'],
-                                color=color,
-                                marker='.', s=dot_size)
-            else:
-                #print distances_dict[scaffold]
-                #print distances_dict[scaffold]['POS']
-                #print distances_dict[scaffold]['DIST']
-                #print "UUUUUUUU"
-                plt.scatter(distances_dict[scaffold]['POS'],
-                            distances_dict[scaffold]['DIST'],
-                            color=default_point_color,
-                            marker='.', s=dot_size)
-
-            plt.text(-0.13, 0.5, scaffold, rotation=0, fontweight="bold", transform=sub_plot_dict[scaffold].transAxes,
-                     fontsize=label_fontsize,
-                     horizontalalignment='center',
-                     verticalalignment='center')
-            plt.ylabel("Distanse")
-            #plt.axhline(y=100, color="#000000")
-            #plt.axhline(y=1000, color="#000000")
-            #plt.axhline(y=500, color="purple")
-            #plt.axhline(y=10, color="#000000")
-            sub_plot_dict[scaffold].set_yscale('log', basey=logbase)
-            sub_plot_dict[scaffold].get_xaxis().set_visible(False)
-            sub_plot_dict[scaffold].spines['right'].set_color('none')
-            sub_plot_dict[scaffold].spines['top'].set_color('none')
-            sub_plot_dict[scaffold].spines['bottom'].set_color('none')
-            plt.xlim(xmin=1, xmax=length)
-            #plt.ylim(ymax=height)
-            #plt.tight_layout()
-        #sub_plot_dict[scaffold].unshare_x_axes(sub_plot_dict[first_scaffold])
-        sub_plot_dict[final_scaffold_list[-1]].get_xaxis().set_visible(True)
-        sub_plot_dict[scaffold].spines['bottom'].set_color('black')
-        #plt.ylim(ymax=max_distance * 1.10)
-        plt.subplots_adjust(left=0.175, bottom=0.05, right=0.95, top=0.90, wspace=None, hspace=None)
-        for extension in extension_list:
-            plt.savefig("%s/%s_log_scale.%s" % (plot_dir, plot_name, extension))
-        plt.close()
-
-    def count_zygoty(self, outfile=None):
-        # suitable onl for diploid genomes
-        if self.parsing_mode in self.parsing_modes_with_genotypes:
-            zygoty_counts = OrderedDict()
-            variant_number = np.shape(self.records)[0]
-            for sample in self.samples:
-                zygoty_counts[sample] = OrderedDict({
-                                                     "homo": 0,
-                                                     "hetero": 0,
-                                                     "ref": 0,
-                                                     "absent": 0,
-                                                     })
-                zygoty_counts[sample]["absent"] = np.sum(self.records[sample]["GT"][0].isna() | self.records[sample]["GT"][1].isna())
-                zygoty_counts[sample]["hetero"] = np.sum(self.records[sample]["GT"][0] != self.records[sample]["GT"][1]) - zygoty_counts[sample]["absent"]
-                zygoty_counts[sample]["ref"] = np.sum((self.records[sample]["GT"][0] == 0) & (self.records[sample]["GT"][1] == 0))
-                zygoty_counts[sample]["homo"] = variant_number - zygoty_counts[sample]["hetero"] - zygoty_counts[sample]["absent"] - zygoty_counts[sample]["ref"]
-                #self.records.xs('GT', axis=1, level=1, drop_level=False).apply()
-            zygoty_counts  = pd.DataFrame(zygoty_counts)
-            if outfile:
-                zygoty_counts.to_csv(outfile, sep="\t", header=True, index=True)
-            return zygoty_counts
-        else:
-            raise ValueError("ERROR!!! Zygoty can't be counted for this parsing mode: %s."
-                             "Use 'coordinates_and_genotypes', 'genotypes' or 'complete modes'" % self.parsing_mode)
-
-    def zygoty_bar_plot(self, output_prefix, extension_list=("png",), figsize=(5, 5), dpi=200, title=None, color_dict=None):
-
-        default_color_dict = OrderedDict({
-                                          "homo": "orange",
-                                          "hetero": "blue",
-                                          "ref": "green",
-                                          "absent": "red",
-                                          })
-
-        colors = color_dict if color_dict else default_color_dict
-
-        zygoty_counts = self.count_zygoty(outfile="%s.counts" % output_prefix)
-        df_shape = np.shape(zygoty_counts)
-        fig = plt.figure(1, figsize=figsize, dpi=dpi)
-
-        bar_width = 1.0 / (df_shape[0] + 1)
-        bin_coord = np.arange(df_shape[1])
-
-        for i in range(0, df_shape[0]):
-            plt.bar(bin_coord + i * bar_width,
-                    zygoty_counts.loc[zygoty_counts.index[i]],
-                    width=bar_width, edgecolor='white',
-                    color=default_color_dict[zygoty_counts.index[i]],
-                    label=zygoty_counts.index[i])
-
-        plt.ylabel('Variants', fontweight='bold')
-        plt.xlabel('Sample', fontweight='bold')
-        plt.xticks([coord + bar_width for coord in range(len(bin_coord))], zygoty_counts.columns,
-                   rotation=45)
-        if title:
-            plt.title(title, fontweight='bold')
-        plt.legend()
-        for extension in extension_list:
-            plt.savefig("%s.%s" % (output_prefix, extension), bbox_inches='tight')
-        plt.close()
-
-        return zygoty_counts
-
-    def check_variant_presence(self, outfile=None):
-        if self.parsing_mode in self.parsing_modes_with_genotypes:
-
-            variant_presence = pd.concat([((self.records[sample]["GT"][0].notna()) & (self.records[sample]["GT"][0] != 0)) | ((self.records[sample]["GT"][1].notna()) & (self.records[sample]["GT"][1] != 0)) for sample in self.samples], axis=1)
-            variant_presence.columns = self.samples
-            if outfile:
-                variant_presence.to_csv(outfile, sep="\t", header=True, index=True)
-            return variant_presence
-        else:
-            raise ValueError("ERROR!!! Variant presence can't be counted for this parsing mode: %s."
-                             "Use 'coordinates_and_genotypes', 'genotypes' or 'complete modes'" % self.parsing_mode)
-
-    def get_uniq_variants(self, output_prefix):
-        variant_presence = self.check_variant_presence(outfile="%s.variant_presence" % output_prefix)
-        return variant_presence[variant_presence.apply(lambda s: True if np.sum(s) == 1 else False, axis=1)]
-
-    def count_uniq_variants(self, output_prefix, extension_list=("png",), figsize=(5, 5), dpi=200,
-                            title="Unique variants"):
-        if self.parsing_mode in self.parsing_modes_with_genotypes:
-
-            variant_presence = pd.concat([((self.records[sample]["GT"][0].notna()) & (self.records[sample]["GT"][0] != 0)) | ((self.records[sample]["GT"][1].notna()) & (self.records[sample]["GT"][1] != 0)) for sample in self.samples], axis=1)
-            variant_presence.columns = self.samples
-            uniq_variants = variant_presence[variant_presence.apply(lambda s: True if np.sum(s) == 1 else False, axis=1)]
-            uniq_variant_counts = uniq_variants.apply(np.sum)
-
-            if output_prefix:
-                #variant_presence.to_csv("%s.variant_presence" % output_prefix, sep="\t", header=True, index=True)
-                #uniq_variants.to_csv("%s.uniq_variants" % output_prefix, sep="\t", header=True, index=True)
-                uniq_variant_counts.to_csv("%s.uniq_variants.counts" % output_prefix, sep="\t", header=True, index=True)
-
-            fig = plt.figure(1, figsize=figsize, dpi=dpi)
-
-            bar_width = 0.5
-            bin_coord = np.arange(len(self.samples))
-
-            plt.bar(bin_coord, uniq_variant_counts, width=bar_width, edgecolor='white', color='blue',)
-
-            plt.ylabel('Variants', fontweight='bold')
-            plt.xlabel('Sample', fontweight='bold')
-            plt.xticks(bin_coord, self.samples, rotation=45)
-            plt.title(title, fontweight='bold')
-
-            for extension in extension_list:
-                plt.savefig("%s.%s" % (output_prefix, extension), bbox_inches='tight')
-            plt.close()
-
-            return uniq_variant_counts
-        else:
-            raise ValueError("ERROR!!! Variant presence can't be counted for this parsing mode: %s."
-                             "Use 'coordinates_and_genotypes', 'genotypes' or 'complete modes'" % self.parsing_mode)
-
-    def draw_sample_parameter_distribution(self, parameter, bin_width, output_prefix=None,
-                                           extension_list=("png",), suptitle=None,
-                                           xlabel=None, ylabel=None, show_median=True,
-                                           show_mean=True, median_relative=False, mean_relative=False, dpi=200,
-                                           subplot_size=3, xlimit=None, verbose=False, ylogbase=10):
-
-        param = self.records.xs(parameter, axis=1, level=1, drop_level=False)
-        param_mean = param.apply(np.mean)
-        param_median = param.apply(np.median)
-        if verbose:
-            print("Median:")
-            print(param_median)
-            print("Mean:")
-            print(param_mean)
-
-        if median_relative:
-            param = param.astype(np.float32) / param_median
-            param_mean = param_mean.astype(np.float32) / param_median
-            param_median = param_median.astype(np.float32) / param_median
-        elif mean_relative:
-            param = param.astype(np.float32) / param_mean
-            param_mean = param_mean.astype(np.float32) / param_mean
-            param_median = param_median.astype(np.float32) / param_mean
-
-        param_max = param.apply(np.max)
-        param_min = param.apply(np.min)
-
-        # selection of figure size
-        n = int(np.sqrt(self.sample_number))
-        if n * (n + 1) >= self.sample_number:
-            m = n + 1
-        else:
-            n = n +1
-            m = n
-        if median_relative or mean_relative:
-            if param_max > max(param_median) * 10:
-                bins = np.arange(0, max(param_median) * 10, bin_width)
-                bins = np.concat(bins, [max(param_max)])
-            else:
-                bins = np.arange(0, max(param_max), 0.1)
-        else:
-            print np.max(param_median)
-            print np.max(param_median)[0]
-            print max(param_median)
-            if param_max > max(param_median) * 10:
-                bins = np.arange(1, max(param_median) * 10, bin_width)
-                bins = np.concat(bins, [max(param_max)])
-            else:
-                bins = np.arange(1, max(param_max), bin_width)
-        bins = np.concatenate((bins, [bins[-1] + bin_width, bins[-1] + 2 * bin_width]))
-
-        print "Bins:"
-        print bins
-
-        figure, subplot_array = plt.subplots(nrows=n, ncols=m, sharex=True, sharey=True,
-                                             figsize=(m*subplot_size, n*subplot_size), dpi=dpi)
-        #print subplot_array
-        #print np.shape(subplot_array)
-        #print n, m
-        for row in range(0, n):
-            for col in range(0, m):
-                print row, col
-                sample_index = row * m + col
-                if ylabel and col == 0:
-                    subplot_array[row][col].ylabel = ylabel
-                if xlabel and row == n - 1:
-                    subplot_array[row][col].xlabel = xlabel
-
-                if sample_index >= self.sample_number:
-                    continue
-                sample_id = self.samples[sample_index]
-                #print param[sample_id]
-                # TODO: adjust function to deal not only with the first column inside parameter
-                subplot_array[row][col].hist(param[sample_id][parameter][0].dropna(), bins=bins, label=sample_id)
-                if show_median:
-                    subplot_array[row][col].axvline(x=float(param_median[sample_id]), label="median %.2f" % param_median, color="orange")
-                if show_mean:
-                    subplot_array[row][col].axvline(x=float(param_mean[sample_id]), label="mean %.2f" % param_mean, color="red")
-                if row == 0 and col == m - 1:
-                    subplot_array[row][col].legend()
-                subplot_array[row][col].set_title(sample_id)
-        if suptitle:
-            supt = suptitle
-        elif mean_relative:
-            supt = "%s distribution(Mean relative)" % parameter
-        elif median_relative:
-            supt = "%s distribution(Median relative)" % parameter
-        else:
-            supt = "%s distribution" % parameter
-        plt.xlim(xmin=0)
-        plt.suptitle(supt)
-
-        if output_prefix:
-            for extension in extension_list:
-                plt.savefig("%s.%s" % (output_prefix, extension), bbox_inches='tight')
-
-        xlim = xlimit if xlimit else np.max(param_median)*3
-        plt.xlim(xmax=xlim, xmin=0)
-        if output_prefix:
-            for extension in extension_list:
-                plt.savefig("%s.xlim%i.%s" % (output_prefix, xlim, extension), bbox_inches='tight')
-            plt.yscale('log', basey=ylogbase)
-            for extension in extension_list:
-                plt.savefig("%s.xlim%i.ylog.%s" % (output_prefix, xlim, extension), bbox_inches='tight')
-
-        plt.close()
-
-        return param
-
-    def get_coverage_distribution(self, output_prefix, bin_width=5, dpi=200, subplot_size=3, extension_list=("png",),
-                                  verbose=False):
-        if self.parsing_mode in self.parsing_modes_with_sample_coverage:
-            print("Drawing coverage distribution...")
-            self.draw_sample_parameter_distribution("DP", bin_width, output_prefix=output_prefix,
-                                                    extension_list=extension_list,
-                                                    suptitle="Coverage distribution",
-                                                    xlabel="Coverage", ylabel="Variants", show_median=True,
-                                                    show_mean=True, median_relative=False, mean_relative=False,
-                                                    dpi=dpi, subplot_size=subplot_size,
-                                                    verbose=verbose)
-            print("Drawing coverage distribution relative to median...")
-            self.draw_sample_parameter_distribution("DP", bin_width, output_prefix="%s.median_relative" % output_prefix,
-                                                    extension_list=extension_list,
-                                                    suptitle="Coverage distribution(Median relative)",
-                                                    xlabel="Coverage", ylabel="Variants", show_median=True,
-                                                    show_mean=True, median_relative=True, mean_relative=False,
-                                                    dpi=dpi, subplot_size=subplot_size)
-            print("Drawing coverage distribution relative to mean...")
-            self.draw_sample_parameter_distribution("DP", bin_width, output_prefix="%s.mean_relative" % output_prefix,
-                                                    extension_list=extension_list,
-                                                    suptitle="Coverage distribution(Mean relative)",
-                                                    xlabel="Coverage", ylabel="Variants", show_median=True,
-                                                    show_mean=True, median_relative=False, mean_relative=True,
-                                                    dpi=dpi, subplot_size=subplot_size)
-        else:
-            raise ValueError("ERROR!!! Coverage distribution can't be counted for this parsing mode: %s."
-                             "Use 'pos_gt_dp' or other method parsing DP column from samples fields" % self.parsing_mode)
-
-    def calculate_masking(self, outfile, samples=None, sample_coverage=None, min_samples=1, max_coverage=2.5, min_coverage=None):
-        if self.parsing_mode in self.parsing_modes_with_sample_coverage:
-            samples_to_use = samples if samples else self.samples
-            coverage = self.records[samples_to_use].xs("DP", axis=1, level=1, drop_level=False)
-            if sample_coverage:
-                sp_coverage = pd.Series(sample_coverage, dtype=np.float32)
-                sp_coverage.index = pd.MultiIndex.from_arrays([samples_to_use,
-                                                               ["DP"] * len(samples_to_use),
-                                                               [0] * len(samples_to_use)])
-            else:
-                sp_coverage = coverage.apply(np.median)
-            #coverage = coverage / coverage_median
-            print sp_coverage
-            print "UUUU"
-            print coverage.apply(np.median)
-            boolean_array = coverage >= (max_coverage * sp_coverage)
-            if min_coverage:
-                boolean_array &= coverage <= (min_coverage * sp_coverage)
-
-            outliers = boolean_array.apply(np.sum, axis=1)
-            outliers = outliers[outliers >= min_samples]
-            #outliers = pd.concat([self.records[self.records.index.isin(outliers.index)]["POS"], outliers], axis=1)
-            outliers = self.records[self.records.index.isin(outliers.index)]["POS"]
-
-            print("%i variants were masked" % np.shape(outliers)[0])
-
-            self.write_df(outliers, outfile, format="simple_bed", type="1-based")
-
-        else:
-            raise ValueError("ERROR!!! Masking can't be counted for this parsing mode: %s."
-                             "Use 'pos_gt_dp' or other method parsing DP column from samples fields" % self.parsing_mode)
-
-    #########################################################################
-    #                        In progress                                    #
-    #########################################################################
-
-    #########################################################################
-    # methods below were not yet rewritten for compatibility with VCFpandas #
-    #########################################################################
+        return CollectionVCF(metadata=self.metadata, records_dict=filtered_records,
+                             header=self.header, samples=self.samples, from_file=False),\
+               CollectionVCF(metadata=self.metadata, records_dict=filtered_out_records,
+                             header=self.header, samples=self.samples, from_file=False)
 
     def no_reference_allel_and_multiallel(self, record, sample_index=None, max_allels=None):
         return record.no_reference_allel_and_multiallel(sample_index=sample_index, max_allels=max_allels)
@@ -1173,6 +534,29 @@ class CollectionVCF():
             return self.no_reference_allel_and_multiallel(record, sample_index=sample_index, max_allels=max_allels)
 
         return self.filter(expression)
+
+    def count_records(self, expression):
+        """
+        Counts records in collection based on expression. Expression should be a function with one argument - record entry
+        :param expression: filtering expression
+        :return: tuple of two numbers. First is number of records for which expression is True, second - False.
+        """
+
+        true_records = 0
+        false_records = 0
+        for scaffold in self.scaffold_list:
+            for record in self.records[scaffold]:
+                if expression(record):
+                    true_records += 1
+                else:
+                    false_records += 1
+        return true_records, false_records
+
+    def count_zygoty(self):
+        """
+        :return: tuple - (N of homozygotes, N of heterozygotes)
+        """
+        return self.count_records(self.filter_zygoty_expression)
 
     @staticmethod
     def filter_zygoty_expression(record):
@@ -1348,6 +732,240 @@ class CollectionVCF():
         if record.ref in nucleotides:
             return record.ref
         return "INDEL"
+
+    def rainfall_plot(self, plot_name, base_colors=[], single_fig=True, dpi=300, figsize=(40, 40), facecolor="#D6D6D6",
+                      ref_genome=None, masked_regions=None, min_gap_length=10, draw_gaps=False, suptitle=None,
+                      gaps_color="#777777", masked_regions_color="#aaaaaa", logbase=2,
+                      extension_list=("svg", "eps", "pdf", "png", "jpg"),
+                      scaffold_black_list=None, scaffold_white_list=None,
+                      scaffold_ordered_list=None, sort_scaffolds=False):
+        """
+
+        :param plot_name:
+        :param base_colors:
+        :param single_fig:
+        :param dpi:
+        :param figsize:
+        :param facecolor:
+        :param ref_genome:
+        :param masked_regions:
+        :param min_gap_length:
+        :param draw_gaps:
+        :param suptitle:
+        :param gaps_color:
+        :param masked_regions_color:
+        :param logbase:
+        :param extension_list:
+        :param scaffold_black_list:
+        :param scaffold_white_list=:
+        :param scaffold_order_list=None
+        :return:
+
+        """
+        # TODO: add multithreading drawing if possible and multipicture drawing
+        print("Drawing rainfall plot...")
+        plot_dir = "rainfall_plot"
+        reference_colors = {"A": "#FBFD2B",    # yellow
+                            "C": "#FF000F",     # red
+                            "G": "#000FFF",     # blue
+                            "T": "#4ED53F",     # green
+                            "INDEL": "#000000"  # black
+                            }
+        if base_colors:
+            reference_colors = base_colors
+
+        num_of_regions = self.number_of_scaffolds
+        positions_dict = self.get_positions()
+        distances_dict = {}
+        region_reference_dict = {}
+        os.system("mkdir -p %s" % plot_dir)
+        if single_fig:
+            fig = plt.figure(1, dpi=dpi, figsize=figsize, facecolor=facecolor)
+            fig.suptitle(suptitle if suptitle else "Rainfall plot", fontsize=40, fontweight='bold', y=0.94)
+            sub_plot_dict = OrderedDict({})
+        index = 1
+
+        final_scaffold_list = DrawingRoutines.get_filtered_scaffold_list(self.records,
+                                                                         scaffold_black_list=scaffold_black_list,
+                                                                         sort_scaffolds=sort_scaffolds,
+                                                                         scaffold_ordered_list=scaffold_ordered_list,
+                                                                         scaffold_white_list=scaffold_white_list,
+                                                                         sample_level=False)
+
+        for region in final_scaffold_list: # self.records
+
+            # np.ediff1d return differences between consecutive elements in array, then 0 is added to the beginning
+            distances_dict[region] = np.insert(np.ediff1d(positions_dict[region]), 0, 0)
+            region_reference_dict[region] = OrderedDict({"A": [[], []],
+                                                         "C": [[], []],
+                                                         "G": [[], []],
+                                                         "T": [[], []],
+                                                         "INDEL": [[], []]})
+            for i in range(0, len(self.records[region])):
+                region_reference_dict[region][self._reference(self.records[region][i])][0].append(positions_dict[region][i])
+                region_reference_dict[region][self._reference(self.records[region][i])][1].append(distances_dict[region][i])
+            if single_fig:
+                if not sub_plot_dict:
+                    sub_plot_dict[region] = plt.subplot(num_of_regions, 1, index, axisbg=facecolor)
+                else:
+                    keys = list(sub_plot_dict.keys())
+                    sub_plot_dict[region] = plt.subplot(num_of_regions, 1, index,
+                                                        sharex=sub_plot_dict[keys[0]],
+                                                        sharey=sub_plot_dict[keys[0]],
+                                                        facecolor=facecolor)
+                                                        #axisbg=facecolor)
+
+                index += 1
+                if draw_gaps:
+                    if ref_genome:
+                        for gap in ref_genome.gaps_dict[region]:
+                            plt.gca().add_patch(plt.Rectangle((gap.location.start, 1),
+                                                              gap.location.end - gap.location.start,
+                                                              1024*32, facecolor=gaps_color, edgecolor='none'))
+                # masked regions should be SeqRecord dict
+                if masked_regions:
+                    for feature in masked_regions[region].features:
+                        plt.gca().add_patch(plt.Rectangle((int(feature.location.start)+1, 1),
+                                                           feature.location.end - feature.location.start,
+                                                           1024*32, facecolor=masked_regions_color, edgecolor='none'))
+
+                for reference in region_reference_dict[region]:
+                    plt.plot(region_reference_dict[region][reference][0],
+                             region_reference_dict[region][reference][1],
+                             color=reference_colors[reference],
+                             marker='.', linestyle='None', label=reference)
+
+                plt.text(-0.08, 0.5, region, rotation=0, fontweight="bold", transform=sub_plot_dict[region].transAxes,
+                         fontsize=30,
+                         horizontalalignment='center',
+                         verticalalignment='center')
+                plt.ylabel("Distanse")
+                plt.axhline(y=100, color="#000000")
+                plt.axhline(y=1000, color="#000000")
+                plt.axhline(y=500, color="purple")
+                plt.axhline(y=10, color="#000000")
+
+        if single_fig:
+            for region in sub_plot_dict:
+                sub_plot_dict[region].set_yscale('log', basey=logbase)
+            for extension in extension_list:
+                plt.savefig("%s/%s_log_scale.%s" % (plot_dir, plot_name, extension))
+            plt.close()
+
+    def count_variants_in_windows(self, window_size, window_step, reference_scaffold_length_dict,
+                                  ignore_scaffolds_shorter_than_window=True, output_prefix=None,
+                                  skip_empty_windows=False, expression=None, per_sample_output=False):
+
+        window_stepppp = window_size if window_step is None else window_step
+
+        if window_stepppp > window_size:
+            raise ValueError("ERROR!!! Window step can't be larger then window size")
+        elif (window_size % window_stepppp) != 0:
+            raise ValueError("ERROR!!! Window size is not a multiple of window step...")
+
+        steps_in_window = window_size / window_stepppp
+
+        short_scaffolds_ids = IdList()
+
+        vcf_scaffolds = set(self.scaffold_list)
+        reference_scaffolds = set(reference_scaffold_length_dict.keys())
+
+        scaffolds_absent_in_reference = IdSet(vcf_scaffolds - reference_scaffolds)
+        scaffolds_absent_in_vcf = IdSet(reference_scaffolds - vcf_scaffolds)
+        if per_sample_output:
+            count_dict = TwoLvlDict()
+            for sample in self.samples:
+                count_dict[sample] = SynDict()
+        else:
+            count_dict = SynDict()
+
+        uncounted_tail_variants_number_dict = SynDict()
+
+        if scaffolds_absent_in_reference:
+            raise ValueError("ERROR!!! Some scaffolds from vcf file are absent in reference...")
+
+        for scaffold_id in self.scaffold_list + list(scaffolds_absent_in_vcf):
+            number_of_windows = self.count_number_of_windows(reference_scaffold_length_dict[scaffold_id],
+                                                             window_size,
+                                                             window_stepppp)
+            if scaffold_id not in self.records:
+                continue
+            if number_of_windows == 0:
+                short_scaffolds_ids.append(scaffold_id)
+                if ignore_scaffolds_shorter_than_window:
+                    continue
+
+            if scaffold_id in scaffolds_absent_in_vcf:
+                if skip_empty_windows:
+                    continue
+            if per_sample_output:
+                for sample in self.samples:
+                    #print scaffold_id
+                    count_dict[sample][scaffold_id] = np.zeros(number_of_windows, dtype=np.int64)
+                    #print count_dict[sample][scaffold_id]
+            else:
+                count_dict[scaffold_id] = np.zeros(number_of_windows, dtype=np.int64)
+
+            uncounted_tail_variants_number_dict[scaffold_id] = 0
+
+            variant_index = 0
+            #print list(count_dict.keys())
+            for variant in self.records[scaffold_id]:
+                step_size_number = ((variant.pos - 1)/window_stepppp)
+
+                if step_size_number - steps_in_window + 1 >= number_of_windows:
+                    #print scaffold_id
+                    #print self.scaffold_length[scaffold_id]
+                    #print variant_index
+                    #print("\n")
+                    uncounted_tail_variants_number_dict[scaffold_id] = self.scaffold_length[scaffold_id] - variant_index
+                    break
+                if per_sample_output:
+
+                    for i in range(max(step_size_number - steps_in_window + 1, 0),
+                                    step_size_number + 1 if step_size_number < number_of_windows else number_of_windows):
+                        #print step_size_number, steps_in_window
+                        for sample_index in range(0, len(self.samples)):
+                            sample_id = self.samples[sample_index]
+                            #print sample_id, scaffold_id
+                            if "GT" not in variant.samples_list[sample_index]:
+                                print("WARNING: no genotype for sample %s for variant %s!!! Skipping..." % (sample_id, str(variant)))
+                                continue
+                            else:
+                                if (variant.samples_list[sample_index]["GT"][0] == "0/0") or (variant.samples_list[sample_index]["GT"][0] == "./."):
+                                    continue
+                            if expression:
+                                #print("AAAAAAAAAAAAAAAAAAAAAAAAA")
+                                count_dict[sample_id][scaffold_id][i] += (1 if expression(variant, sample_index) else 0)
+                                #if expression(variant, sample_index):
+                                #print sample_id, sample_index, scaffold_id, i, count_dict[sample_id][scaffold_id][i]
+                                #print "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBb"
+                            else:
+                                 count_dict[sample_id][scaffold_id][i] += 1
+
+                else:
+                    for i in range(max(step_size_number - steps_in_window + 1, 0),
+                                   step_size_number + 1 if step_size_number < number_of_windows else number_of_windows):
+                        if expression:
+                            count_dict[scaffold_id][i] += 1 if expression(variant) else 0
+                        else:
+                            count_dict[scaffold_id][i] += 1
+
+                variant_index += 1
+        #print count_dict[self.samples[0]][list(count_dict[self.samples[0]].keys())[5]]
+        #print "BBBBBBBBBBBBBB"
+        #print count_dict[self.samples[0]]
+        if output_prefix:
+            scaffolds_absent_in_reference.write("%s.scaffolds_absent_in_reference.ids" % output_prefix)
+            scaffolds_absent_in_vcf.write("%s.scaffolds_absent_in_vcf.ids" % output_prefix)
+            uncounted_tail_variants_number_dict.write("%s.uncounted_tail_variant_number.tsv" % output_prefix)
+            if per_sample_output:
+                for sample in count_dict:
+                    count_dict[sample].write("%s.%s.variant_number.tsv" % (output_prefix, sample), splited_values=True)
+            else:
+                count_dict.write("%s.variant_number.tsv" % output_prefix, splited_values=True)
+
+        return count_dict
 
     def count_heterozygous_snps(self, window_size, window_step, reference_scaffold_length_dict,
                                 ignore_scaffolds_shorter_than_window=True, output_prefix=None,
@@ -2347,6 +1965,13 @@ class ReferenceGenome(object):
                                                                               "ID=%i" % feature_id))
                     feature_id += 1
 
+    def __len__(self):
+        """
+
+        :return: length of genome.
+        """
+        return self.length
+
     def rec_index(self):
         """
         Region order is based on descending region length
@@ -2373,6 +1998,136 @@ class ReferenceGenome(object):
             raise ValueError("Coordinate %i is too large for this genome" % tmp_coordinate)
         shift = tmp_coordinate - start
         return coordinate_region, shift
+
+    def number_of_regions(self):
+        """
+
+        :return: number of regions/scaffolds/chromosomes in genome
+        """
+        return len(self.region_length)
+
+    def find_gaps(self, min_gap_length=1):
+        """
+        Finds gaps (N) in reference genome and writes them as SeqFeatures to self.gaps_dict.
+        Keys of dict are region names.
+        :return: None
+        """
+        gap_reg_exp = re.compile("N+", re.IGNORECASE)
+        for region in self.reference_genome:
+            self.gaps_dict[region] = []
+            gaps = gap_reg_exp.finditer(str(self.reference_genome[region].seq))  # iterator with
+            for match in gaps:
+                if (match.end() - match.start()) >= min_gap_length:
+                    self.gaps_dict[region].append(SeqFeature(FeatureLocation(match.start(), match.end()),
+                                                             type="gap", strand=None))
+
+    def generate_snp_set(self, size, substitution_dict=None, zygoty="homo", out_vcf="synthetic.vcf"):
+        """
+        Generates set of mutations
+        :param size: size of snp set to be generated.
+        :param substitution_dict: dictionary of substitutions.
+        :param zygoty: zygoty of mutations in set.
+        :param out_vcf: output .,vcf file with mutations
+        """
+
+        multiplier = (5 - len(substitution_dict)) if substitution_dict else 1
+        unique_set = np.array([], dtype=np.int64)
+        print("Generating...")
+
+        index = 1
+        while len(unique_set) < size:
+            print("Iteration %i..." % index)
+            print("    Generating raw set %i..." % index)
+            raw_set = np.random.random_integers(0, high=self.length-1, size=size*multiplier)
+            print("    Generated %i..." % len(raw_set))
+            print("    Removing duplicates from raw set %i..." % index)
+            raw_set = np.hstack((unique_set, raw_set))
+            unique_set = np.unique(raw_set)
+            np.random.shuffle(unique_set)
+            np.random.shuffle(unique_set)
+            print("    After removing  duplicates left %i.." % len(unique_set))
+            print("    Checking filtered set %i..." % index)
+            mutation_count = 0
+            report_count = 1
+            if substitution_dict is not None:
+                tmp_list = []
+                references = list(substitution_dict.keys())
+                for coordinate in unique_set:
+                    region, interregion_pos = self.get_position(coordinate)
+                    if self.reference_genome[region][interregion_pos] in references:
+                        if self.masked_regions and (region in self.masked_regions):
+                            for masked_region in self.masked_regions[region].features:
+                                #print(self.masked_regions[region].features)
+                                #print(masked_region)
+                                if interregion_pos in masked_region:
+                                    break
+                            else:
+                                tmp_list.append(coordinate)
+                                mutation_count += 1
+                        else:
+                            tmp_list.append(coordinate)
+                            mutation_count += 1
+                    if mutation_count/report_count == 500:
+                        print("    Generated %i" % mutation_count)
+                        report_count += 1
+                unique_set = np.array(tmp_list)
+            index += 1
+        print("    Generated %i" % mutation_count)
+        nucleotides = {"A", "C", "G", "T"}
+        alt_dict = {}
+        if not substitution_dict:
+            for nuc in nucleotides:
+                alt_dict[nuc] = list(nucleotides - {nuc})
+        else:
+            for ref in substitution_dict:
+                if substitution_dict[ref]:
+                    alt_dict[ref] = list(set(substitution_dict[ref]) - {ref})
+                else:
+                    alt_dict[ref] = list(nucleotides - {ref})
+        print("Writing vcf...")
+
+        coordinates_dict = dict((record_id, []) for record_id in self.region_list)
+        check = 0
+        for coordinate in unique_set[:size]:
+            region, interregion_pos = self.get_position(coordinate)
+            coordinates_dict[region].append(interregion_pos)
+
+        with open(out_vcf, "w") as out_fd:
+            out_fd.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
+            out_fd.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSynthetic_uniform_sample\n")
+            #mutation_count = 0
+            for region in coordinates_dict:
+                if not coordinates_dict[region]:
+                    continue
+                num_of_snps = len(coordinates_dict[region])
+                check += num_of_snps
+
+                coordinates_dict[region].sort()
+                #region, interregion_pos = self.get_position(coordinate)
+                for interregion_pos in coordinates_dict[region]:
+                    ref = self.reference_genome[region][interregion_pos]
+
+                    if len(substitution_dict[ref]) != 1:
+                        alt = alt_dict[ref][np.random.randint(0, len(alt_dict[ref]))]
+                    else:
+                        alt = alt_dict[ref][0]
+                    if zygoty == "homo":
+                        zyg = "1/1"
+                    elif zygoty == "hetero":
+                        zyg = "0/1"
+                    out_fd.write("%s\t%i\t.\t%s\t%s\t.\t.\t.\tGT\t%s\n" %
+                                 (region, interregion_pos + 1, ref, alt, zyg))
+                print("    %s : %i SNPs" % (region, num_of_snps))
+                    #mutation_count += 1
+                    #if mutation_count == size:
+                    #    break
+            print ("Totaly %i mutations were written" % check)
+
+    @staticmethod
+    def count_number_of_windows(scaffold_length, window_size, window_step):
+        if scaffold_length < window_size:
+            return 0
+        return int((scaffold_length - window_size)/window_step) + 1
 
     def count_gaped_and_masked_positions_in_windows(self, window_size, window_step,
                                                     ignore_scaffolds_shorter_than_window=True,
