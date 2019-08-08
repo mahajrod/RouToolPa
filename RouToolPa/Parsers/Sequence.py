@@ -23,7 +23,7 @@ class CollectionSequence(FileRoutines):
                  format="fasta",
                  parsing_mode="parse", black_list=(), white_list=(),
                  masking=None, masking_file=None, masking_filetype="gff",
-                 verbose=False, seq_expression=None):
+                 verbose=False, seq_expression=None, get_stats=False):
         self.formats = ["fasta"]
         self.format = format
         self.parsing_mode = parsing_mode
@@ -59,6 +59,9 @@ class CollectionSequence(FileRoutines):
         self.length = 0
         self.scaffolds = None
         self.gaps = None          # None or pandas dataframe with seq_id as index
+
+        if get_stats:
+            self.get_stats_and_features(count_gaps=False, sort=False, min_gap_length=1)
 
     def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
 

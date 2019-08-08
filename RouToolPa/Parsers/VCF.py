@@ -20,7 +20,7 @@ from scipy.spatial.distance import pdist
 from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet, fcluster
 
 import matplotlib
-matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
@@ -165,15 +165,21 @@ class MetadataVCF(OrderedDict):
         """
 
         key, value = self._split_by_equal_sign(line[2:].strip())
-        if value[0] == "<" and value[-1] == ">":
-            value = self._split_by_comma_sign(value[1:-1])
-            value_id = self._split_by_equal_sign(value[0])[1]
-            value = OrderedDict(self._split_by_equal_sign(entry) for entry in value[1:])
-            if key not in self:
-                self[key] = OrderedDict({})
-            self[key][value_id] = value
+        if key == "contig":
+            if "contig" not in self:
+                self["contig"] = OrderedDict({})
+            value = map(self._split_by_equal_sign, self._split_by_comma_sign(value[1:-1]))
+            self["contig"][value[0][1]] = int(value[1][1])
         else:
-            self[key] = value
+            if value[0] == "<" and value[-1] == ">":
+                value = self._split_by_comma_sign(value[1:-1])
+                value_id = self._split_by_equal_sign(value[0])[1]
+                value = OrderedDict(self._split_by_equal_sign(entry) for entry in value[1:])
+                if key not in self:
+                    self[key] = OrderedDict({})
+                self[key][value_id] = value
+            else:
+                self[key] = value
 
     def add_metadata_from_values(self, name, number, ntype, description):
         """
@@ -871,69 +877,6 @@ class CollectionVCF():
         for extension in extension_list:
             plt.savefig("%s/%s_log_scale.%s" % (plot_dir, plot_name, extension))
         plt.close()
-
-    def count_zygoty(self, outfile=None):
-        # suitable onl for diploid genomes
-        if self.parsing_mode in self.parsing_modes_with_genotypes:
-            zygoty_counts = OrderedDict()
-            variant_number = np.shape(self.records)[0]
-            for sample in self.samples:
-                zygoty_counts[sample] = OrderedDict({
-                                                     "homo": 0,
-                                                     "hetero": 0,
-                                                     "ref": 0,
-                                                     "absent": 0,
-                                                     })
-                zygoty_counts[sample]["absent"] = np.sum(self.records[sample]["GT"][0].isna() | self.records[sample]["GT"][1].isna())
-                zygoty_counts[sample]["hetero"] = np.sum(self.records[sample]["GT"][0] != self.records[sample]["GT"][1]) - zygoty_counts[sample]["absent"]
-                zygoty_counts[sample]["ref"] = np.sum((self.records[sample]["GT"][0] == 0) & (self.records[sample]["GT"][1] == 0))
-                zygoty_counts[sample]["homo"] = variant_number - zygoty_counts[sample]["hetero"] - zygoty_counts[sample]["absent"] - zygoty_counts[sample]["ref"]
-                #self.records.xs('GT', axis=1, level=1, drop_level=False).apply()
-            zygoty_counts  = pd.DataFrame(zygoty_counts)
-            if outfile:
-                zygoty_counts.to_csv(outfile, sep="\t", header=True, index=True)
-            return zygoty_counts
-        else:
-            raise ValueError("ERROR!!! Zygoty can't be counted for this parsing mode: %s."
-                             "Use 'coordinates_and_genotypes', 'genotypes' or 'complete modes'" % self.parsing_mode)
-
-    def zygoty_bar_plot(self, output_prefix, extension_list=("png",), figsize=(5, 5), dpi=200, title=None, color_dict=None):
-
-        default_color_dict = OrderedDict({
-                                          "homo": "orange",
-                                          "hetero": "blue",
-                                          "ref": "green",
-                                          "absent": "red",
-                                          })
-
-        colors = color_dict if color_dict else default_color_dict
-
-        zygoty_counts = self.count_zygoty(outfile="%s.counts" % output_prefix)
-        df_shape = np.shape(zygoty_counts)
-        fig = plt.figure(1, figsize=figsize, dpi=dpi)
-
-        bar_width = 1.0 / (df_shape[0] + 1)
-        bin_coord = np.arange(df_shape[1])
-
-        for i in range(0, df_shape[0]):
-            plt.bar(bin_coord + i * bar_width,
-                    zygoty_counts.loc[zygoty_counts.index[i]],
-                    width=bar_width, edgecolor='white',
-                    color=default_color_dict[zygoty_counts.index[i]],
-                    label=zygoty_counts.index[i])
-
-        plt.ylabel('Variants', fontweight='bold')
-        plt.xlabel('Sample', fontweight='bold')
-        plt.xticks([coord + bar_width for coord in range(len(bin_coord))], zygoty_counts.columns,
-                   rotation=45)
-        if title:
-            plt.title(title, fontweight='bold')
-        plt.legend()
-        for extension in extension_list:
-            plt.savefig("%s.%s" % (output_prefix, extension), bbox_inches='tight')
-        plt.close()
-
-        return zygoty_counts
 
     def check_variant_presence(self, outfile=None):
         if self.parsing_mode in self.parsing_modes_with_genotypes:
