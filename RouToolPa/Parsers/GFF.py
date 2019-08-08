@@ -16,7 +16,8 @@ import RouToolPa.Formats.AnnotationFormats as AnnotationFormats
 class CollectionGFF(Parser):
 
     def __init__(self, in_file=None, records=None, format="gff", parsing_mode="only_coordinates",
-                 black_list=(), white_list=(), featuretype_separation=False):
+                 black_list=(), white_list=(), featuretype_separation=False,
+                 scaffold_syn_dict=None):
 
         self.formats = ["gff", "gtf", "bed"]
         self.GFF_COLS = AnnotationFormats.GFF_COLS
@@ -160,6 +161,7 @@ class CollectionGFF(Parser):
         self.white_list = white_list
         
         self.featuretype_list = []
+        self.scaffold_syn_dict = scaffold_syn_dict
 
         # attributes type conversion parameters
         self.parameter_separator_dict = OrderedDict()
@@ -218,9 +220,13 @@ class CollectionGFF(Parser):
                                                              entry_white_list=white_list)
             self.records = self.records[self.records.index.get_level_values('scaffold').isin(scaffolds_to_keep)]
 
+        if self.scaffold_syn_dict:
+            self.records["scaffold"].replace(self.scaffold_syn_dict, inplace=True)
+
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("scaffold", "row"))
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
+
         if parsing_mode in self.featuretype_parsing_modes:
             self.featuretype_list = list(self.records[["featuretype"]].iloc[:, 0].unique())
             if featuretype_separation:
@@ -401,6 +407,9 @@ class CollectionGFF(Parser):
                 if not expression(entry):
                     continue
             yield entry[self.record_id_col], sequence_collection[entry[self.record_id_col]][entry[self.record_start_col]:entry[self.record_end_col]]
+
+
+
 
     def extract_sequences_by_type(self, sequence_collection, record_type_black_list=[], record_type_white_list=[],
                                   return_type="collection", records_parsing_type="parse"):
