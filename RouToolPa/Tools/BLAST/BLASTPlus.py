@@ -664,8 +664,8 @@ class Windowmasker(Tool):
                 masking_format="interval", source="windowmasker", feature_type="repeat"):
 
         counts_file = "%s.counts" % output_prefix
-        masking_file = "%s.masking" % output_prefix
-        masking_gff_file = "%s.masking.gff" % output_prefix
+        masking_file = "%s.windowmasker" % output_prefix
+        masking_gff_file = "%s.windowmasker.gff" % output_prefix
 
         self.construct_counts_file(input_file, counts_file, input_format=input_format, counts_format=counts_format)
 

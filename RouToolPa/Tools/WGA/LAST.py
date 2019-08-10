@@ -3,6 +3,7 @@
 from RouToolPa.Tools.Abstract import Tool
 import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
+
 class LAST(Tool):
     """
     Class for samtools 1.0+
