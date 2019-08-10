@@ -7,7 +7,7 @@ from RouToolPa.Routines import FileRoutines
 
 class RepeatMasker(Tool):
     def __init__(self, path="", max_threads=1):
-        Tool.__init__(self, "repeatmasker", path=path, max_threads=max_threads)
+        Tool.__init__(self, "RepeatMasker", path=path, max_threads=max_threads)
         self.repeat_classes_used_for_gene_annotation = ["DNA",
                                                         "DNA\?",
                                                         "LINE",
@@ -84,8 +84,8 @@ class RepeatMasker(Tool):
 
         self.execute(options=options, cmd="queryRepeatDatabase.pl")
 
-    def mask(self, list_of_fasta_files, output_dir="./", soft_masking=True, engine="ncbi",
-             search_speed="normal", no_low_complexity=None, only_low_complexity=None,
+    def mask(self, list_of_fasta_files, output_dir="./", soft_masking=True, engine=None,
+             search_speed=None, no_low_complexity=None, only_low_complexity=None,
              no_interspersed=None, only_interspersed=None, no_rna=None, only_alu=None, custom_library=None,
              species=None, html_output=False, ace_output=False, gff_output=False):
 
@@ -98,7 +98,7 @@ class RepeatMasker(Tool):
             self.execute(cmd=cmd)
 
         options = " -pa %i" % self.threads
-        options += " -e %s" % engine
+        options += " -e %s" % engine if engine else ""
 
         if search_speed == "slow":
             options += " -s"
