@@ -2,11 +2,10 @@ import os
 from RouToolPa.Tools.Abstract import JavaTool
 
 
-
-class SelectVariants(JavaTool):
+class SelectVariants4(JavaTool):
 
     def __init__(self,  java_path="", max_threads=4, jar_path="", max_memory=None, timelog=None):
-        JavaTool.__init__(self, "GenomeAnalysisTK.jar -T SelectVariants", java_path=java_path,
+        JavaTool.__init__(self, "gatk SelectVariants", java_path=java_path,
                           max_threads=max_threads, jar_path=jar_path, max_memory=max_memory,
                           timelog=timelog)
     # http://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_sting_gatk_walkers_variantutils_SelectVariants.html

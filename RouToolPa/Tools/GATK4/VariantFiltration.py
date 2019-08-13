@@ -4,13 +4,11 @@ from RouToolPa.Tools.Abstract import JavaTool
 from RouToolPa.Routines import VCFRoutines
 
 
-
-
-class VariantFiltration(JavaTool):
+class VariantFiltration4(JavaTool):
     # http://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_sting_gatk_walkers_filters_VariantFiltration.html
     # default filters for indel and snp filtration were taken from GATK BestPractice
     def __init__(self,  java_path="", max_threads=4, jar_path="", max_memory=None, timelog=None):
-        JavaTool.__init__(self, "GenomeAnalysisTK.jar -T VariantFiltration", java_path=java_path,
+        JavaTool.__init__(self, "gatk VariantFiltration", java_path=java_path,
                           max_threads=max_threads, jar_path=jar_path, max_memory=max_memory,
                           timelog=timelog)
 
