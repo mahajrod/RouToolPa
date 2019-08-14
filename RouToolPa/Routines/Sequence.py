@@ -7,7 +7,11 @@ import pickle
 from random import randint
 from copy import deepcopy
 from collections import OrderedDict, Iterable
+
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -2571,6 +2575,56 @@ class SequenceRoutines(FileRoutines):
         fasta_collection = CollectionSequence(in_file=input_fasta, format="fasta")
 
         fasta_collection.write_by_syn(output_fasta, syn_dict)
+
+    @staticmethod
+    def draw_length_pie(length_file, output_prefix, thresholds=(1000, 10000, 100000, 1000000, 10000000),
+                        labels=("1-10 kbp", "10-100 kbp", "0.1-1 Mbp", "1-10 Mbp", "10+ Mbp"),
+                        colors=("red", "orange", "yellow", "blue", "green"),
+                        extension_list=("png",)):
+
+        length_df = pd.read_csv(length_file, names=("scaffold", "length"), sep="\t", comment="#",
+                                converters={"scaffold": str, "length": int})
+
+        number_list = []
+        total_length_list = []
+
+        for i in range(0, len(thresholds) - 1):
+            tmp = length_df[(length_df["length"] >= thresholds[i]) & (length_df["length"] < thresholds[i + 1])]
+            number_list.append(len(tmp["length"]))
+            total_length_list.append(tmp["length"].sum())
+        tmp = length_df[(length_df["length"] >= thresholds[-1])]
+        number_list.append(len(tmp["length"]))
+        total_length_list.append(tmp["length"].sum())
+
+        number_list = np.array(number_list)
+        fraction_number_list = np.true_divide(number_list, np.sum(number_list))
+        total_length_list = np.array(total_length_list)
+        fraction_total_length_list = np.true_divide(total_length_list, np.sum(total_length_list))
+
+        figure, ax_array = plt.subplots(nrows=2, ncols=2, figsize=(6, 6), dpi=300)
+
+        patches, texts = ax_array[0][1].pie(number_list, labels=None, startangle=90, colors=colors)
+
+        for subplot in ax_array[0][0], ax_array[1][0]:
+            subplot.get_yaxis().set_visible(False)
+            subplot.get_xaxis().set_visible(False)
+            subplot.spines['bottom'].set_color('none')
+            subplot.spines['right'].set_color('none')
+            subplot.spines['left'].set_color('none')
+            subplot.spines['top'].set_color('none')
+
+        ax_array[0][1].set_title("Number of scaffolds")
+
+        number_labels = map(lambda s: "%s (%.2f %%)" % (s[0], 100 * s[1]), zip(labels, fraction_number_list))
+        ax_array[0][1].legend(patches, number_labels, loc='center left', bbox_to_anchor=(-1, 0.5))
+
+        patches, texts = ax_array[1][1].pie(total_length_list, labels=None, startangle=90, colors=colors)
+        ax_array[1][1].set_title("Total length")
+
+        length_labels = map(lambda s: "%s (%.2f %%)" % (s[0], 100 * s[1]), zip(labels, fraction_total_length_list))
+        ax_array[1][1].legend(patches, length_labels, loc='center left', bbox_to_anchor=(-1, 0.5))
+        for extension in extension_list:
+            plt.savefig("%s.%s" % (output_prefix, extension))
 
 
 def get_lengths(record_dict, out_file="lengths.t", write=False, write_header=True):
