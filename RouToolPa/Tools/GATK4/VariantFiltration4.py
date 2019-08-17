@@ -68,8 +68,7 @@ class VariantFiltration4(Tool):
         combined_filtered_vcf = "%s.combined.with_filters.sorted.vcf" % output_prefix
         combined_good_vcf = "%s.combined.good.sorted.vcf" % output_prefix
 
-
-        SelectVariants4.jar_path = self.jar_path
+        SelectVariants4.path = self.path
         SortVcf.jar_path = picard_dir
         SortVcf.max_memory = picard_memory
         #CombineVariants.jar_path = self.jar_path
