@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-from RouToolPa.Tools.Abstract import JavaTool
+from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import VCFRoutines
 
 
-class VariantFiltration4(JavaTool):
+class VariantFiltration4(Tool):
     # http://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_sting_gatk_walkers_filters_VariantFiltration.html
     # default filters for indel and snp filtration were taken from GATK BestPractice
-    def __init__(self,  java_path="", max_threads=4, jar_path="", max_memory=None, timelog=None):
-        JavaTool.__init__(self, "gatk VariantFiltration", java_path=java_path,
-                          max_threads=max_threads, jar_path=jar_path, max_memory=max_memory,
-                          timelog=timelog)
+    def __init__(self,  max_threads=4, path="", max_memory=None, timelog=None):
+        Tool.__init__(self, "gatk VariantFiltration", path=path,
+                      max_threads=max_threads, max_memory=max_memory,
+                      timelog=timelog)
 
     @staticmethod
     def parse_common_options(reference_file, input_vcf, output_vcf, filter_expression, filter_name):
