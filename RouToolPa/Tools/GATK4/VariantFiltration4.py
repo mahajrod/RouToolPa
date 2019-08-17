@@ -20,6 +20,7 @@ class VariantFiltration4(Tool):
         options += " --filter-name %s" % filter_name
         options += " -O %s" % output_vcf
 
+
         return options
 
     def filter(self, reference_file, input_vcf, output_vcf, filter_expression, filter_name, ):
