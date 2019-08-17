@@ -16,8 +16,8 @@ class VariantFiltration4(Tool):
     def parse_common_options(reference_file, input_vcf, output_vcf, filter_expression, filter_name):
         options = " -R %s" % reference_file
         options += " -V %s" % input_vcf
-        options += " --filterExpression \'%s\'" % filter_expression
-        options += " --filterName %s" % filter_name
+        options += " --filter-expression \'%s\'" % filter_expression
+        options += " --filter-name %s" % filter_name
         options += " -O %s" % output_vcf
 
         return options
