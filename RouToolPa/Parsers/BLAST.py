@@ -15,7 +15,8 @@ import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
 class CollectionBLAST:
 
-    def __init__(self, in_file=None, records=None, format="tab6", parsing_mode="complete",
+    def __init__(self, in_file=None, records=None,
+                 format="tab6", parsing_mode="complete",
                  target_black_list=(), target_white_list=(),
                  query_black_list=(), query_white_list=(),
                  target_syn_dict=None, query_syn_dict=None,
@@ -37,7 +38,7 @@ class CollectionBLAST:
                                                                  "evalue",
                                                                  "bitscore"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                                                   "index_cols": ["qseqid", "sseqid"],
+                                                   "index_cols": ["query_id", "target_id"],
                                                    "converters": {
                                                                   "qseqid":     str,
                                                                   "sseqid":     str,
@@ -54,7 +55,7 @@ class CollectionBLAST:
                                                                  },
                                                    "col_name_indexes": {
                                                                         "query_id":         0,
-                                                                        "targetid":         1,
+                                                                        "target_id":         1,
                                                                         "identity,%%":      2,
                                                                         "length":           3,
                                                                         "mismatch":         4,
@@ -109,7 +110,7 @@ class CollectionBLAST:
                                                                              "evalue",
                                                                              "bitscore"],
                                                                "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-                                                               "index_cols": ["qseqid", "sseqid"],
+                                                               "index_cols": ["query_id", "target_id"],
                                                                "converters": {
                                                                               "qseqid":     str,
                                                                               "sseqid":     str,
@@ -126,7 +127,7 @@ class CollectionBLAST:
                                                                              },
                                                                "col_name_indexes": {
                                                                                     "query_id":         0,
-                                                                                    "targetid":         1,
+                                                                                    "target_id":         1,
                                                                                     "identity,%%":      2,
                                                                                     "length":           3,
                                                                                     "mismatch":         4,
@@ -239,8 +240,8 @@ class CollectionBLAST:
                                    comment="#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
-                                   names=self.parsing_parameters[format][parsing_mode]["col_names"],
-                                   index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
+                                   names=self.parsing_parameters[format][parsing_mode]["col_names"])
+
 
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))
@@ -291,12 +292,16 @@ class CollectionBLAST:
             self.query_scaffold_lengths.set_index("id", inplace=True)
             self.query_scaffold_list = self.query_scaffold_lengths.index.tolist()
 
+        self.records.set_index(self.parsing_parameters[format][parsing_mode]["index_cols"], inplace=True)
+
+        """
         retained_columns = deepcopy(self.parsing_parameters[self.format][self.parsing_mode]["col_names"])
         for entry in "target_len", "query_len":
             if entry in retained_columns:
                 retained_columns.remove(entry)
 
         self.records = self.records[retained_columns]
+        """
     """
     def sort(self, inplace=False,
              sorting_order=("target_id", "query_id", "target_start", "target_hit_len", "query_start", "query_hit_len")):

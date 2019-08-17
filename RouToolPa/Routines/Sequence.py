@@ -2600,6 +2600,7 @@ class SequenceRoutines(FileRoutines):
         fraction_number_list = np.true_divide(number_list, np.sum(number_list))
         total_length_list = np.array(total_length_list)
         fraction_total_length_list = np.true_divide(total_length_list, np.sum(total_length_list))
+        total_length_list_str = map(lambda s: "%.2f Mbp" % (float(s) / 1000000), total_length_list)
 
         figure, ax_array = plt.subplots(nrows=2, ncols=2, figsize=(6, 6), dpi=300)
 
@@ -2615,14 +2616,16 @@ class SequenceRoutines(FileRoutines):
 
         ax_array[0][1].set_title("Number of scaffolds")
 
-        number_labels = map(lambda s: "%s (%.2f %%)" % (s[0], 100 * s[1]), zip(labels, fraction_number_list))
-        ax_array[0][1].legend(patches, number_labels, loc='center left', bbox_to_anchor=(-1, 0.5))
+        number_labels = map(lambda s: "%s (%.2f %%, %i)" % (s[0], 100 * s[1], s[2]),
+                            zip(labels, fraction_number_list, number_list))
+        ax_array[0][1].legend(patches, number_labels, loc='center left', bbox_to_anchor=(-1.2, 0.5))
 
         patches, texts = ax_array[1][1].pie(total_length_list, labels=None, startangle=90, colors=colors)
         ax_array[1][1].set_title("Total length")
 
-        length_labels = map(lambda s: "%s (%.2f %%)" % (s[0], 100 * s[1]), zip(labels, fraction_total_length_list))
-        ax_array[1][1].legend(patches, length_labels, loc='center left', bbox_to_anchor=(-1, 0.5))
+        length_labels = map(lambda s: "%s (%.2f %%, %s)" % (s[0], 100 * s[1], s[2]),
+                            zip(labels, fraction_total_length_list, total_length_list_str))
+        ax_array[1][1].legend(patches, length_labels, loc='center left', bbox_to_anchor=(-1.4, 0.5))
         for extension in extension_list:
             plt.savefig("%s.%s" % (output_prefix, extension))
 
