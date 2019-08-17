@@ -23,7 +23,7 @@ class SelectVariants4(Tool):
         options += " -V %s" % input_vcf
         options += " --select-type-to-include \'%s\'" % vartype if vartype else ""
         options += " -select \'%s\'" % varfilter if varfilter else ""
-        options += " -o %s" % output_vcf
+        options += " -O %s" % output_vcf
 
         self.execute(options=options)
 

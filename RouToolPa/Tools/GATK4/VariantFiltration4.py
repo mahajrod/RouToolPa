@@ -18,7 +18,7 @@ class VariantFiltration4(Tool):
         options += " -V %s" % input_vcf
         options += " --filterExpression \'%s\'" % filter_expression
         options += " --filterName %s" % filter_name
-        options += " -o %s" % output_vcf
+        options += " -O %s" % output_vcf
 
         return options
 
