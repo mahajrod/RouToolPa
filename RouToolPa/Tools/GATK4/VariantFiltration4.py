@@ -51,7 +51,7 @@ class VariantFiltration4(JavaTool):
                             indel_ReadPosRankSum=-20.0, indel_FS=200.0, combine_vcf=False, sequence_dict_file=None,
                             picard_memory="1g", picard_dir=None):
 
-        from RouToolPa.Tools.GATK import SelectVariants
+        from RouToolPa.Tools.GATK4 import SelectVariants4
         from RouToolPa.Tools.Picard import SortVcf
         snp_raw_vcf = "%s.snp.raw.vcf" % output_prefix
         indel_raw_vcf = "%s.indel.raw.vcf" % output_prefix
@@ -69,13 +69,13 @@ class VariantFiltration4(JavaTool):
         combined_good_vcf = "%s.combined.good.sorted.vcf" % output_prefix
 
 
-        SelectVariants.jar_path = self.jar_path
+        SelectVariants4.jar_path = self.jar_path
         SortVcf.jar_path = picard_dir
         SortVcf.max_memory = picard_memory
         #CombineVariants.jar_path = self.jar_path
 
-        SelectVariants.get_SNP(reference_file, input_vcf, snp_raw_vcf)
-        SelectVariants.get_indel(reference_file, input_vcf, indel_raw_vcf)
+        SelectVariants4.get_SNP(reference_file, input_vcf, snp_raw_vcf)
+        SelectVariants4.get_indel(reference_file, input_vcf, indel_raw_vcf)
 
         self.filter_bad_SNP(reference_file, snp_raw_vcf, snp_filtered_vcf, filter_name=snp_filter_name, QD=snp_QD,
                             FS=snp_FS, MQ=snp_MQ, #HaplotypeScore=snp_HaplotypeScore,
@@ -83,8 +83,8 @@ class VariantFiltration4(JavaTool):
         self.filter_bad_indel(reference_file, indel_raw_vcf, indel_filtered_vcf, filter_name=indel_filter_name,
                               QD=indel_QD, ReadPosRankSum=indel_ReadPosRankSum, FS=indel_FS)
 
-        SelectVariants.remove_entries_with_filters(reference_file, snp_filtered_vcf, snp_good_vcf)
-        SelectVariants.remove_entries_with_filters(reference_file, indel_filtered_vcf, indel_good_vcf)
+        SelectVariants4.remove_entries_with_filters(reference_file, snp_filtered_vcf, snp_good_vcf)
+        SelectVariants4.remove_entries_with_filters(reference_file, indel_filtered_vcf, indel_good_vcf)
 
         if combine_vcf:
             VCFRoutines.combine_same_samples_vcfs(unsorted_combined_filtered_vcf, vcf_list=[snp_filtered_vcf, indel_filtered_vcf],
