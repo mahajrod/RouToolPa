@@ -21,7 +21,7 @@ class SelectVariants4(Tool):
 
         options = " -R %s" % reference_file
         options += " -V %s" % input_vcf
-        options += " -selectType \'%s\'" % vartype if vartype else ""
+        options += " --select-type-to-include \'%s\'" % vartype if vartype else ""
         options += " -select \'%s\'" % varfilter if varfilter else ""
         options += " -o %s" % output_vcf
 
