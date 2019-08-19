@@ -36,8 +36,8 @@ class SelectVariants4(Tool):
     def remove_entries_with_filters(self, reference_file, input_vcf, output_vcf):
         options = " -R %s" % reference_file
         options += " -V %s" % input_vcf
-        options += " -ef"
-        options += " -o %s" % output_vcf
+        options += " --exclude-filtered"
+        options += " -O %s" % output_vcf
         self.execute(options=options)
 
     def get_STR(self, reference_file, input_vcf, output_vcf):
