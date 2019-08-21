@@ -9,9 +9,6 @@ from RouToolPa.Routines import FileRoutines, AnnotationsRoutines
 from RouToolPa.Collections.General import SynDict
 
 
-
-
-
 class TRF(Tool):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "trf", path=path, max_threads=max_threads)
@@ -19,7 +16,8 @@ class TRF(Tool):
     @staticmethod
     def parse_common_options(matching_weight=2, mismatching_penalty=7, indel_penalty=7,
                              match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
-                             report_flanking_sequences=False, make_dat_file=True, max_tr_length=None):
+                             report_flanking_sequences=False, make_dat_file=True, max_repeat_length=None,
+                             suppress_html_output=False):
 
         options = " %i" % matching_weight
         options += " %i" % mismatching_penalty
@@ -30,21 +28,23 @@ class TRF(Tool):
         options += " %i" % max_period
         options += " -f" if report_flanking_sequences else ""
         options += " -d" if make_dat_file else ""
-        options += " -l %i" % max_tr_length if max_tr_length else ""
+        options += " -l %i" % max_repeat_length if max_repeat_length else ""
+        options += " -h" if suppress_html_output else ""
 
         return options
 
     def search_tandem_repeats(self, query_file, matching_weight=2, mismatching_penalty=7, indel_penalty=7,
                               match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
                               report_flanking_sequences=False, make_dat_file=True, disable_html_output=True,
-                              max_tr_length=None):
+                              max_repeat_length=None, suppress_html_output=True):
 
         options = " %s" % query_file
         options += self.parse_common_options(matching_weight=matching_weight, mismatching_penalty=mismatching_penalty,
                                              indel_penalty=indel_penalty, match_probability=match_probability,
                                              indel_probability=indel_probability, min_alignment_score=min_alignment_score,
                                              max_period=max_period, report_flanking_sequences=report_flanking_sequences,
-                                             make_dat_file=make_dat_file, max_tr_length=max_tr_length)
+                                             make_dat_file=make_dat_file, max_repeat_length=max_repeat_length,
+                                             suppress_html_output=suppress_html_output)
 
         options += " -h" if disable_html_output else ""
 
@@ -71,7 +71,7 @@ class TRF(Tool):
                                       match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
                                       report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
                                       splited_result_dir="splited_output", converted_output_dir="converted_output",
-                                      max_len_per_file=100000, store_intermediate_files=False):
+                                      max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=None):
         work_dir = os.getcwd()
         splited_filename = FileRoutines.split_filename(query_file)
         self.split_fasta_by_seq_len(query_file, splited_fasta_dir, max_len_per_file=max_len_per_file,
@@ -84,7 +84,7 @@ class TRF(Tool):
                                                    min_alignment_score=min_alignment_score,
                                                    max_period=max_period,
                                                    report_flanking_sequences=report_flanking_sequences,
-                                                   make_dat_file=True)
+                                                   make_dat_file=True, max_repeat_length=max_repeat_length)
         common_options += " -h"  # suppress html output
         options_list = []
         splited_files = os.listdir(splited_fasta_dir)
