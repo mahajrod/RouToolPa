@@ -424,3 +424,17 @@ class CollectionLast:
     def rename_query_ids(self, syn_dict):
         self.records[["query_id"]].replace(syn_dict, inplace=True)
 
+    @staticmethod
+    def parse_alignment_string(alignment_string):
+
+        str_list = map(lambda s: s.split(":"), alignment_string.split(","))
+
+        target_list = []
+        query_list = []
+
+        for entry in str_list:
+            target_list.append(int(entry[0]))
+            query_list.append(int(entry[0]) if len(entry) == 1 else int(entry[1]))
+        
+        return np.array(target_list), np.array(query_list)
+
