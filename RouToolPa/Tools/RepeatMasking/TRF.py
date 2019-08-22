@@ -130,6 +130,26 @@ class TRF(Tool):
 
         return trf_report
 
+    def parallel_search_long_tandem_repeat(self, query_file, output_prefix, matching_weight=2, mismatching_penalty=3,
+                                           indel_penalty=5,
+                                           match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
+                                           report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
+                                           splited_result_dir="splited_output", converted_output_dir="converted_output",
+                                           max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=6):
+        self.parallel_search_tandem_repeat(query_file, output_prefix, matching_weight=matching_weight,
+                                           mismatching_penalty=mismatching_penalty,
+                                           indel_penalty=indel_penalty,
+                                           match_probability=match_probability,
+                                           indel_probability=indel_probability,
+                                           min_alignment_score=min_alignment_score, max_period=max_period,
+                                           report_flanking_sequences=report_flanking_sequences,
+                                           splited_fasta_dir=splited_fasta_dir,
+                                           splited_result_dir=splited_result_dir,
+                                           converted_output_dir=converted_output_dir,
+                                           max_len_per_file=max_len_per_file,
+                                           store_intermediate_files=store_intermediate_files,
+                                           max_repeat_length=max_repeat_length)
+
     @staticmethod
     def gff_filtering_expression(gff_description_dict, min_period=None, max_period=None, min_copy_number=None,
                                  max_copy_number=None, pattern=None, min_percentage_of_matches=None,
@@ -204,7 +224,6 @@ class TRF(Tool):
         # print len_dict
         len_dict.write(len_file)
 
-
     @staticmethod
     def filter_trf_gff_by_exact_copy_number(input_gff, output_gff, filtered_out_gff, min_copy_number,
                                             perfect_tandem=False):
@@ -222,6 +241,7 @@ class TRF(Tool):
                 return False
 
         AnnotationsRoutines.filter_gff_by_description(input_gff, output_gff, filtered_out_gff, filtering_expression)
+
 
 if __name__ == "__main__":
     pass
