@@ -21,7 +21,6 @@ from Parsers.GFF import CollectionGFF
 from RouToolPa.Collections.General import IdList, SynDict, TwoLvlDict, IdSet
 
 
-
 class AssemblySummary(OrderedDict):
 
     def __init__(self, assembly_summary_biopython_dict_element):

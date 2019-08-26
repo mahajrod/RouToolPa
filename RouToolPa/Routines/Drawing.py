@@ -143,7 +143,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         text_x_offset = -max_chr_len/15
         for chromosome in chr_dict:
-            print "Drawing chromosome %s" % chr_dict[chromosome]["Name"]
+            print("Drawing chromosome %s" % chr_dict[chromosome]["Name"])
             chromosome_position += distance_between_chromosomes
             chromosome_fragments_list = []
             if "Centromere" not in chr_dict[chromosome]:
