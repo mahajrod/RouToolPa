@@ -3,6 +3,10 @@ import sys
 from collections import OrderedDict, MutableSet, Iterable
 import numpy as np
 
+if sys.version_info[0] == 3:
+    from io import TextIOWrapper as file
+
+
 class TwoLvlDict(OrderedDict):
 
     def __init__(self, dictionary=None, input_file=None, column_sep="\t", value_sep=",",
