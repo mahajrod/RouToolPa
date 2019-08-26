@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 import os
 import re
+import sys
 import time
 from collections import Iterable
 from collections import OrderedDict
-from urllib2 import URLError
+
+if sys.version_info[0] == 2:
+    from urllib2 import URLError
+else:
+    from urllib3 import URLError
+
+
 import xmltodict
 import numpy as np
 from Bio import SeqIO, Entrez
