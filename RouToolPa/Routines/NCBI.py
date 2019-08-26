@@ -9,7 +9,7 @@ from collections import OrderedDict
 if sys.version_info[0] == 2:
     from urllib2 import URLError
 else:
-    from urllib3 import URLError
+    from urllib.error import URLError
 
 
 import xmltodict
