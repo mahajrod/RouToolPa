@@ -19,7 +19,7 @@ from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Evolution import EvolutionRoutines
 from RouToolPa.Routines.Alignment import AlignmentRoutines
 from RouToolPa.Routines.Expression import ExpressionRoutines
-from RouToolPa.Routines.Matplotlib import MatplotlibRoutines
+#from RouToolPa.Routines.Matplotlib import MatplotlibRoutines
 from RouToolPa.Routines.Annotations import AnnotationsRoutines
 from RouToolPa.Routines.Phylogenetics import PhylogeneticsRoutines
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
@@ -45,7 +45,7 @@ SequenceRoutines = SequenceRoutines()
 EvolutionRoutines = EvolutionRoutines()
 AlignmentRoutines = AlignmentRoutines()
 ExpressionRoutines = ExpressionRoutines()
-MatplotlibRoutines = MatplotlibRoutines()
+#MatplotlibRoutines = MatplotlibRoutines()
 AnnotationsRoutines = AnnotationsRoutines()
 PhylogeneticsRoutines = PhylogeneticsRoutines()
 SequenceClusterRoutines = SequenceClusterRoutines()
