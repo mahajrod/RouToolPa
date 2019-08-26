@@ -2,7 +2,7 @@ __author__ = 'mahajrod'
 
 from RouToolPa.Routines.GO import GORoutines
 from RouToolPa.Routines.VCF import VCFRoutines
-from RouToolPa.Routines.Math import MathRoutines
+#from RouToolPa.Routines.Math import MathRoutines
 from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Routines.Tree import TreeRoutines
 from RouToolPa.Routines.NCBI import NCBIRoutines
@@ -28,7 +28,7 @@ from RouToolPa.Routines.MultipleAlignment import MultipleAlignmentRoutines
 
 GORoutines = GORoutines()
 VCFRoutines = VCFRoutines()
-MathRoutines = MathRoutines()
+#MathRoutines = MathRoutines()
 FileRoutines = FileRoutines()
 TreeRoutines = TreeRoutines()
 NCBIRoutines = NCBIRoutines()
