@@ -24,7 +24,7 @@ def execute(exe_string):
     subprocess.call(exe_string, shell=True, executable=SHELLPATH)
 
 
-class Tool(SequenceRoutines, AlignmentRoutines):
+class Tool(AlignmentRoutines):
 
     def __init__(self, cmd, path="", max_threads=4, jar_path="", jar=None,
                  max_memory="500m", max_per_thread_memory="500m", timelog=None, tmp_dir=None):
