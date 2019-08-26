@@ -1,6 +1,10 @@
 __author__ = 'mahajrod'
+import sys
 
-from ete2 import Tree
+if sys.version_info[0] == 2:
+    from ete2 import Tree
+else:
+    from ete3 import Tree
 
 
 class TreeRoutines:
