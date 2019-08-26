@@ -1067,7 +1067,7 @@ temp_transcripts/                              Directory with downloaded transcr
                     taxonomy_ids = [id_dict["Id"] for id_dict in taxonomy_links[0]["LinkSetDb"][0]["Link"]]
 
                     if len(taxonomy_ids) > 1:
-                        print "WARNING: more than one taxonomy id for assembly %s" % assembly_ids
+                        print( "WARNING: more than one taxonomy id for assembly %s" % assembly_ids)
                         assemblies_with_ambiguous_taxonomies[assembly_id] = taxonomy_ids
                     #print taxonomy_ids
 
@@ -1077,7 +1077,7 @@ temp_transcripts/                              Directory with downloaded transcr
                     scientific_name = taxonomy_record[0]["ScientificName"]
                     lineage = taxonomy_record[0]["Lineage"]
                     #common_name_list = taxonomy_record[0]["CommonName"]
-                    print taxonomy_record[0]["ScientificName"]
+                    print (taxonomy_record[0]["ScientificName"])
                 """
 
 

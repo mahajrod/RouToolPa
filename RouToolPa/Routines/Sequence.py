@@ -473,7 +473,7 @@ class SequenceRoutines(FileRoutines):
                                 else:
                                     sys.stderr.write("ERROR!!! Multiple coincidence for %s" % record_id)
                                     raise ValueError("Multiple coincidence for %s" % record_id)
-                               # print entry_list
+                               # print( entry_list)
                                 for entry in entry_list:
                                     yield record_dict[entry]
                             elif len(entry_list) == 1:
@@ -1816,7 +1816,7 @@ class SequenceRoutines(FileRoutines):
             Ns_number += record_dict[contig_id].seq.count("N") + record_dict[contig_id].seq.count("n")
 
         # for record in record_dict:
-        #    print "%s\t%i" % (record, len(record_dict[record].seq))
+        #    print ("%s\t%i" % (record, len(record_dict[record].seq)))
 
         length_array = np.array(sorted([len(record_dict[record].seq) for record in record_dict], reverse=True))
         if seq_len_file:
@@ -2107,7 +2107,7 @@ class SequenceRoutines(FileRoutines):
             for subfeature in feature.sub_features:
                 #print record_id, feature.id, subfeature.id, subfeature.type, feature.sub_features
                 if subfeature.type in feature_types_list:
-                    # print subfeature
+                    # print(subfeature)
                     sequence = subfeature.extract(sequence_dict[record_id].seq)
                     #record = SeqRecord(sequence, id=subfeature.id)
                     # print(record)

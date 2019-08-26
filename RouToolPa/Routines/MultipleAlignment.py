@@ -625,7 +625,7 @@ class MultipleAlignmentRoutines(SequenceRoutines):
         position_list = [reference_position_list] if isinstance(reference_position_list, int) else reference_position_list
         position_list.sort()
         position_list = np.array(position_list) - 1 # convertion to 0-based
-        print position_list
+        print(position_list)
 
         if alignment_type == "codon":
             position_list *= 3
@@ -880,10 +880,10 @@ class MultipleAlignmentRoutines(SequenceRoutines):
                         filtered_df = record_df[boolean_comparison_array]
                         filtered_df.to_csv("%s.target_specific.variants" % output_prefix, sep="\t", index=False,
                                            header=True, na_rep=absent_symbol)
-                    #print record_df
-                    #print record_df["mustela_nigripes"][[220, 225]]
+                    #print (record_df)
+                    #print (record_df["mustela_nigripes"][[220, 225]])
                     #print ~pd.isnull(record_df["mustela_nigripes"]) &
-                        print filtered_df
+                        print (filtered_df)
                 else:
                     for record_id in variant_dict:
                         variant_list = []

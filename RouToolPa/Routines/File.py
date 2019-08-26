@@ -178,11 +178,11 @@ class FileRoutines:
                     if expression(os.path.abspath(entry)):
                         file_list.append(os.path.abspath(entry))
                         """
-                        print "BBBBBBBBBBBBBB"
-                        print entry
+                        print ("BBBBBBBBBBBBBB")
+                        print (entry)
                     else:
-                        print "AAAAAAAAAAA"
-                        print entry
+                        print ("AAAAAAAAAAA")
+                        print (entry)
                         """
                 else:
                     file_list.append(os.path.abspath(entry))

@@ -543,11 +543,11 @@ class AnnotationsRoutines(SequenceRoutines):
                                                               1 + (right_flank_length if line_list[6] == "-" else left_flank_length),
                                                               end - start + 1 + (right_flank_length if line_list[6] == "-" else left_flank_length))
                     """
-                    print line
-                    print line_list
+                    print( line)
+                    print( line_list)
                     for element in line_list:
-                        print element
-                        print type(element)
+                        print (element)
+                        print (type(element))
                     """
                     out_fd.write("\t".join(line_list))
 
