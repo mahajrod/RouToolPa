@@ -11,7 +11,6 @@ if sys.version_info[0] == 2:
 else:
     from urllib.error import URLError
 
-
 import xmltodict
 import numpy as np
 from Bio import SeqIO, Entrez
