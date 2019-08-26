@@ -14,7 +14,7 @@ from RouToolPa.Routines.EggNOG import EggNOGRoutines
 from RouToolPa.Routines.Project import ProjectRoutines
 from RouToolPa.Routines.Ensembl import EnsemblRoutines
 from RouToolPa.Routines.TreeFam import TreeFamRoutines
-from RouToolPa.Routines.Drawing import DrawingRoutines
+#from RouToolPa.Routines.Drawing import DrawingRoutines
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Evolution import EvolutionRoutines
 from RouToolPa.Routines.Alignment import AlignmentRoutines
@@ -40,7 +40,7 @@ EggNOGRoutines = EggNOGRoutines()
 ProjectRoutines = ProjectRoutines()
 EnsemblRoutines = EnsemblRoutines()
 TreeFamRoutines = TreeFamRoutines()
-DrawingRoutines = DrawingRoutines()
+#DrawingRoutines = DrawingRoutines()
 SequenceRoutines = SequenceRoutines()
 EvolutionRoutines = EvolutionRoutines()
 AlignmentRoutines = AlignmentRoutines()
