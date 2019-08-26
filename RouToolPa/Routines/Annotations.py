@@ -384,7 +384,7 @@ class AnnotationsRoutines(SequenceRoutines):
 
         accordance_dict = SynDict(filename=accordance_file, allow_repeats_of_key=True)
         length_dict = SynDict(filename=length_file, expression=int)
-        print length_dict
+        print(length_dict)
         longest_list = IdList()
 
         all_output_file = "%s.all.correspondence" % output_prefix
@@ -776,7 +776,7 @@ class AnnotationsRoutines(SequenceRoutines):
             if unified_dict[scaffold]:
                 unified_dict[scaffold].sort()
             if unified_dict[scaffold] is None:
-                print scaffold
+                print(scaffold)
 
         #print unified_dict
 
