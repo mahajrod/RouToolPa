@@ -6,7 +6,7 @@ from RouToolPa.Routines.VCF import VCFRoutines
 from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Routines.Tree import TreeRoutines
 from RouToolPa.Routines.NCBI import NCBIRoutines
-from RouToolPa.Routines.Math import SmoothRoutines
+#from RouToolPa.Routines.Math import SmoothRoutines
 from RouToolPa.Routines.MtDNA import MtDNARoutines
 from RouToolPa.Routines.Fastq import FastQRoutines
 from RouToolPa.Routines.Primer import PrimerRoutines
@@ -34,7 +34,7 @@ TreeRoutines = TreeRoutines()
 NCBIRoutines = NCBIRoutines()
 MtDNARoutines = MtDNARoutines()
 FastQRoutines = FastQRoutines()
-SmoothRoutines = SmoothRoutines()
+#SmoothRoutines = SmoothRoutines()
 PrimerRoutines = PrimerRoutines()
 EggNOGRoutines = EggNOGRoutines()
 ProjectRoutines = ProjectRoutines()
