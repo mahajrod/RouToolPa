@@ -1,17 +1,10 @@
 #!/usr/bin/env python
-import os
-import re
-import time
-from collections import Iterable
+
 from collections import OrderedDict
-from urllib2 import URLError
-import xmltodict
-import numpy as np
+
 from Bio import SeqIO, Entrez
-from Bio.SeqRecord import SeqRecord
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Collections.General import IdList, SynDict, TwoLvlDict, IdSet
-
 
 
 class EnsemblRoutines(SequenceRoutines):
