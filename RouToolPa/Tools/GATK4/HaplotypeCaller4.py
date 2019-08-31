@@ -170,17 +170,18 @@ class HaplotypeCaller4(Tool):
 
                 options_list.append(options + region_options)
                 output_index += 1
-
+            print("Variant calling....")
             #self.parallel_execute(options_list,
             #                      cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
             unsorted_combined_vcf = "%s/%s.unsorted.%s" % (output_dir, output_prefix, output_extension)
             sorted_combined_vcf = "%s/%s.%s" % (output_dir, output_prefix, output_extension)
+            print("Combining variants...")
             VCFRoutines.combine_same_samples_vcfs(unsorted_combined_vcf,
                                                   vcf_list=output_file_list,
                                                   order_vcf_files=True,
                                                   close_fd_after=False,
                                                   extension_list=[".vcf",])
-
+            print("Sorting...")
             SortVcf4.sort_vcf(unsorted_combined_vcf, sorted_combined_vcf, sequence_dict)
 
         elif handling_mode == 'slurm':
