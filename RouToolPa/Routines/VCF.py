@@ -1,4 +1,9 @@
 import os
+import sys
+
+if sys.version_info[0] == 3:
+    from io import TextIOWrapper as file
+
 from copy import deepcopy
 from collections import OrderedDict
 from RouToolPa.Collections.General import IdList, SynDict
