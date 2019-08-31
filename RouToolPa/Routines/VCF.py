@@ -25,8 +25,8 @@ class VCFRoutines(SequenceRoutines):
             vcf_files = self.make_list_of_path_to_files_by_extension(vcf_list, extension_list=extension_list,
                                                                      recursive=False, return_absolute_paths=True)
 
-            print vcf_files
-            print type(vcf_files)
+            print(vcf_files)
+            print( type(vcf_files))
         else:
             pass
 
