@@ -188,8 +188,9 @@ class FileRoutines:
                     file_list.append(os.path.abspath(entry))
             else:
                 print("%s does not exist" % entry)
-
-        return map(os.path.abspath, file_list) if return_absolute_paths else file_list
+        # direct conversion to list was added for compatibility with python3
+        # in which map function returns map object instead of list
+        return list(map(os.path.abspath, file_list)) if return_absolute_paths else file_list
 
     def make_list_of_path_to_files_from_string(self, input_string, file_separator=",",
                                                expression=None, recursive=False):
