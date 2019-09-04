@@ -683,6 +683,38 @@ class FileRoutines:
         self.combine_files_with_header(file_list, output_file,
                                        header_prefix=header_prefix, sorting_options=sorting_options)
 
+    @staticmethod
+    def get_filtered_entry_list(entry_list,
+                                entry_black_list=[],
+                                sort_entries=False,
+                                entry_ordered_list=None,
+                                entry_white_list=[]):
+        white_set = set(entry_white_list)
+        black_set = set(entry_black_list)
+        entry_set = set(entry_list)
+
+        if white_set:
+            entry_set = entry_set & white_set
+        if black_set:
+            entry_set = entry_set - black_set
+
+        filtered_entry_list = list(entry_set)
+        if sort_entries:
+            filtered_entry_list.sort()
+
+        final_entry_list = []
+
+        if entry_ordered_list:
+            for entry in entry_ordered_list:
+                if entry in filtered_entry_list:
+                    final_entry_list.append(entry)
+                    filtered_entry_list.remove(entry)
+                else:
+                    print("WARNING!!!Entry(%s) from order list is absent in list of entries!" % entry)
+            return final_entry_list + filtered_entry_list
+        else:
+            return filtered_entry_list
+
     def merge_files_by_columns(self, file_list, column_index_list,  output_file, separator="\t", column_names_list=None,
                                comment_prefix="#", header=False):
         comment_prefix_len = len(comment_prefix)
