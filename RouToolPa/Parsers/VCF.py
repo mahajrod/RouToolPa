@@ -5,13 +5,16 @@ VCF Parser Module based on pandas
 __author__ = 'Sergei F. Kliver'
 
 import os
-import re
+import sys
 import datetime
 
 from math import sqrt
 from copy import deepcopy
 
 from collections import OrderedDict, Iterable
+
+if sys.version_info[0] == 3:
+    from io import TextIOWrapper as file
 
 import numpy as np
 import pandas as pd
@@ -125,14 +128,34 @@ class MetadataVCF(OrderedDict):
                                                                                                           self[field][entry]))
 
     def read(self, in_file):
-        with open(in_file, "r") as fd:
-            for line in fd:
+        """
+        while cycle and readline method are used for compatibility with parsing the data segment of file by pandas
+
+        :param in_file:
+        :return:
+        """
+        if isinstance(in_file, file):
+            while True:
+                line = in_file.readline()
                 if line[:2] != "##":
                     # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
                     # self.samples = self.header[9:]
-                    break
-                self.metadata.add_metadata(line)
+                    self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
+                    self["contig"].columns = ["length"]
+                    return line
+                self.add_metadata(line)
+        else:
+            with open(in_file, "r") as fd:
+                while True:
+                    line = in_file.readline()
+                    if line[:2] != "##":
+                        # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
+                        # self.samples = self.header[9:]
 
+                        self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
+                        self["contig"].columns = ["length"]
+                        return line
+                    self.add_metadata(line)
     @staticmethod
     def _split_by_equal_sign(string):
         try:
@@ -201,15 +224,24 @@ class MetadataVCF(OrderedDict):
         """
         metadata_string = ""
         for key in self:
-            if not isinstance(self[key], dict):
+            if key == "contig":
+                for contig_tuple in self["contig"].itertuples():
+                    metadata_string += "##contig=<ID=%s,length=%i>\n" % (contig_tuple[0], contig_tuple[1])
+            elif not isinstance(self[key], dict):
                 metadata_string += "##%s=%s\n" % (key, self[key])
             else:
+
                 prefix = "##%s=<" % key
                 suffix = ">\n"
-                for att_id in self[key]:
-                    middle = "ID=%s," % att_id + ",".join(["%s=%s" % (param, self[key][att_id][param])
-                                                           for param in self[key][att_id]])
-                    metadata_string += prefix + middle + suffix
+                try:
+                    for att_id in self[key]:
+                        middle = "ID=%s," % att_id + ",".join(["%s=%s" % (param, self[key][att_id][param])
+                                                               for param in self[key][att_id]])
+                        metadata_string += prefix + middle + suffix
+                except:
+                    print key, self[key]
+                    raise ValueError()
+
         return metadata_string[:-1]
 
 
@@ -241,6 +273,9 @@ class CollectionVCF():
         """
         Initializes collection. If from_file is True collection will be read from file (arguments other then in_file, external_metadata and threads are ignored)
         Otherwise collection will be initialize from meta, records_dict, header, samples
+
+        IMPORTANT: coordinates are converted to 0-based
+
         :param metadata:
         :param records_dict:
         :param header:
@@ -315,6 +350,22 @@ class CollectionVCF():
                                                                        "FORMAT": str #lambda s: s.split(":")
                                                                        },
                                                         },
+                                   "all_no_parsing": {
+                                        "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
+                                        "cols": None,
+                                        "index_cols": "CHROM",
+                                        "converters": {
+                                            "CHROM": str,
+                                            "POS": np.int32,
+                                            "ID": str,
+                                            "REF": str,
+                                            "ALT": str,
+                                            "QUAL": str,
+                                            "FILTER": str,
+                                            "INFO": str,  # self.parse_info_field,
+                                            "FORMAT": str  # lambda s: s.split(":")
+                                        },
+                                    },
                                    "all":              {
                                                         "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
                                                         "cols": None,
@@ -331,6 +382,7 @@ class CollectionVCF():
                                                                        "FORMAT": str #lambda s: s.split(":")
                                                                        },
                                                         },
+
                                    "complete":         {
                                                         "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
                                                         "cols": None,
@@ -359,15 +411,18 @@ class CollectionVCF():
         if in_file:
             self.read(in_file, external_metadata=external_metadata,
                       parsing_mode=self.parsing_mode)
+            self.scaffold_length = self.metadata["contig"]
         else:
             self.metadata = metadata
             self.records = None if records is None else records
             self.header = header
             self.samples = samples
+            self.scaffold_length = None
         self.record_number = len(self.records)
         self.sample_number = len(self.samples)
         self.per_scaffold_record_number = self.records.groupby(self.records.index).size() # pandas Series with scaffold ids as index
         self.scaffold_list = self.records.index.get_level_values('CHROM').unique().to_list()
+
         self.number_of_scaffolds = len(self.scaffold_list)
         self.threads = threads
 
@@ -387,6 +442,12 @@ class CollectionVCF():
         self.records = None
 
         fd = FileRoutines.metaopen(in_file, "r")
+
+        header_line = self.metadata.read(in_file=fd)
+        self.header = HeaderVCF(header_line[1:].strip().split("\t"))  # line[1:].strip().split("\t")
+        self.samples = self.header[9:]
+
+        """
         while True:
             line = fd.readline()
             if line[:2] != "##":
@@ -394,7 +455,9 @@ class CollectionVCF():
                 self.samples = self.header[9:]
                 break
             self.metadata.add_metadata(line)
-        if self.parsing_mode in ("all", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
+        """
+
+        if self.parsing_mode in ("all", "all_no_parsing", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
             self.metadata.create_converters(parsing_mode=self.parsing_mode)
             self.parsing_parameters[self.parsing_mode]["col_names"] = self.header
             for sample_col in range(9, 9 + len(self.samples)):
@@ -646,21 +709,54 @@ class CollectionVCF():
     # ========================================= Parsing section end ====================================================
 
     # ============================================ Writing section =====================================================
-    def write(self, outfile, format='simple_bed', type="0-based"):
+
+    def write(self, outfile, format='simple_bed', bed_type="0-based", samples=None, split_samples=False):
+        df = self.records.reset_index(level='CHROM')
         if format == 'simple_bed':
-            if type == "0-based":
-                self.records[["POS"]].reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = self.records[["POS"]].reset_index(level='CHROM')
+            if bed_type == '1-based':
                 df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
+            df[["CHROM", "POS"]].to_csv(outfile, sep='\t', index=False, header=False)
+
         elif format == 'bed':
-            if type == "0-based":
-                self.records.reset_index(level='CHROM').to_csv(outfile, sep='\t', index=False, header=False)
-            elif type == '1-based':
-                df = self.records.reset_index(level='CHROM')
+            if bed_type == '1-based':
                 df["POS"] += 1
-                df.to_csv(outfile, sep='\t', index=False, header=False)
+            df.to_csv(outfile, sep='\t', index=False, header=False)
+
+        elif format == "vcf":
+            df["POS"] += 1
+            if split_samples:
+                for sample in samples if samples else self.samples:
+                    with open("%s.%s.vcf" % (outfile, sample), "w") as out_fd:
+                        out_fd.write(str(self.metadata))
+                        out_fd.write("\n")
+
+                        header = self.header[:9] + [sample]
+
+                        out_fd.write("\n")
+
+                        if self.parsing_mode == "all_no_parsing":
+                            df[self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+
+                        out_fd.close()
+
+            else:
+                with open(outfile, "w") as out_fd:
+                    out_fd.write(str(self.metadata))
+                    out_fd.write("\n")
+
+                    if samples:
+                        header = self.header[:9] + ([samples] if isinstance(samples, str) else samples)
+                        out_fd.write("#" + "\t".join(header))
+                    else:
+                        header = self.header
+                        out_fd.write(str(self.header))
+
+                    out_fd.write("\n")
+
+                    if self.parsing_mode == "all_no_parsing":
+                        df.to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+
+                    out_fd.close()
 
     @staticmethod
     def write_df(dataframe, outfile, format='simple_bed', type="0-based"):
