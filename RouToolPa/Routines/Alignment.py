@@ -287,6 +287,7 @@ class AlignmentRoutines(SequenceRoutines):
         else:
             raise ValueError("ERROR!!! Neither minimum nor maximum threshold was set!")
 
+        line_index = 1
         with open(output_file, "w") as out_fd:
             out_fd.write("#scaffold\tposition\t%s\n" % (",".join(sample_labels if sample_labels else coverage_file_list)))
 
@@ -297,3 +298,8 @@ class AlignmentRoutines(SequenceRoutines):
                     out_fd.write("%s\t%s\t%s\n" % (line_list[0][scaffold_column],
                                                    line_list[0][position_column],
                                                    ",".join(map(str, coverage_list))))
+
+                if line_index % 100000000 == 0:
+                    print("Read %i million lines..." % (line_index/1000000))
+
+                line_index += 1
