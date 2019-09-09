@@ -733,6 +733,8 @@ class CollectionVCF():
                         out_fd.write("\n")
 
                         header = self.header[:9] + [sample]
+                        print sample
+                        print header
                         out_fd.write(str(self.header))
                         out_fd.write("\n")
 
