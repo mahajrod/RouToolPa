@@ -710,7 +710,7 @@ class CollectionVCF():
     # ============================================ Writing section =====================================================
 
     def write(self, outfile, format='simple_bed', bed_type="0-based", samples=None, split_samples=False):
-        def lambda_not_ref_variant(s):
+        def not_ref_variant(s):
             return (s[:3] != "0/0") and (s[:3] != "./.")
 
         df = self.records.reset_index(level='CHROM')
@@ -737,7 +737,7 @@ class CollectionVCF():
                         out_fd.write("\n")
 
                         if self.parsing_mode == "read":
-                            df[df[[sample]].applymap(lambda_not_ref_variant)[sample]][self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+                            df[df[[sample]].applymap(not_ref_variant)[sample]][self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
 
                         out_fd.close()
 
@@ -748,11 +748,11 @@ class CollectionVCF():
 
                     if samples:
                         if isinstance(samples, str):
-                            df = df[df[[samples]].applymap(lambda_not_ref_variant)[samples]]
+                            df = df[df[[samples]].applymap(not_ref_variant)[samples]]
                             header = self.header[:9] + [samples]
                         else:
                             header = self.header[:9] + samples
-                            df = df[np.logical_or.reduce([df[[sample]].applymap(lambda_not_ref_variant)[sample] for sample in samples])]
+                            df = df[np.logical_or.reduce([df[[sample]].applymap(not_ref_variant)[sample] for sample in samples])]
                         out_fd.write("#" + "\t".join(header))
                     else:
                         header = self.header
