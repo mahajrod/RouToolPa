@@ -1,6 +1,13 @@
 __author__ = 'mahajrod'
 import os
+import sys
 from collections import OrderedDict
+
+if sys.version_info[0] == 3:
+    izip = zip
+else:
+    from itertools import izip
+
 from Bio import SearchIO, SeqIO, AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -233,16 +240,19 @@ class AlignmentRoutines(SequenceRoutines):
                                               max_threshold=2.5, min_threshold=None,min_sample_number=1,
                                               scaffold_column=0, position_column=1, coverage_column=2):
         """
+
         :param coverage_file_list:
         :param mean_coverage_list:
         :param output_file:
+        :param sample_labels:
         :param max_threshold:
         :param min_threshold:
         :param min_sample_number:
-        :param coverage_column:  0-based
+        :param scaffold_column: 0-based
+        :param position_column: 0-based
+        :param coverage_column: 0-based
         :return:
         """
-
         file_number = len(coverage_file_list)
         index_list = [i for i in range(0, file_number)]
         if min_sample_number > file_number:
@@ -281,7 +291,9 @@ class AlignmentRoutines(SequenceRoutines):
 
         with open(output_file, "w") as out_fd:
             out_fd.write("#scaffold\tposition\t%s\n" % (",".join(sample_labels if sample_labels else coverage_file_list)))
-            for line_list in [self.file_line_as_list_generator(filename) for filename in coverage_file_list]:
+
+            for line_list in izip(*[self.file_line_as_list_generator(filename) for filename in coverage_file_list]):
+
                 coverage_list = [int(line_list[i][coverage_column]) for i in index_list]
                 if check_pos(coverage_list):
                     out_fd.write("%s\t%s\t%s\n" % (line_list[0][scaffold_column],
