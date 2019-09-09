@@ -726,7 +726,7 @@ class CollectionVCF():
 
         elif format == "vcf":
             df["POS"] += 1
-            print split_samples
+            #print split_samples
             if split_samples:
                 for sample in samples if samples else self.samples:
                     with open("%s.%s.vcf" % (outfile, sample), "w") as out_fd:
@@ -734,10 +734,9 @@ class CollectionVCF():
                         out_fd.write("\n")
 
                         header = self.header[:9] + [sample]
-                        print sample
-                        print header
-                        out_fd.write(str(self.header))
-                        out_fd.write("\n")
+                        #print sample
+                        #print header
+                        out_fd.write("#" + "\t".join(header) + "\n")
 
                         if self.parsing_mode == "read":
                             df[df[[sample]].applymap(not_ref_variant)[sample]][header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
