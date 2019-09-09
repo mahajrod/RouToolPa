@@ -229,10 +229,10 @@ class AlignmentRoutines(SequenceRoutines):
         return seq_dict
 
     @staticmethod
-    def calculate_masking_from_coveraage_files(coverage_file_list, mean_coverage_list, output_file,
-                                               sample_labels=None,
-                                               max_threshold=2.5, min_threshold=None,min_sample_number=1,
-                                               scaffold_column=0, position_column=1, coverage_column=2):
+    def calculate_masking_from_coverage_files(coverage_file_list, mean_coverage_list, output_file,
+                                              sample_labels=None,
+                                              max_threshold=2.5, min_threshold=None,min_sample_number=1,
+                                              scaffold_column=0, position_column=1, coverage_column=2):
         """
         :param coverage_file_list:
         :param mean_coverage_list:
