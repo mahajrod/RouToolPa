@@ -726,6 +726,7 @@ class CollectionVCF():
 
         elif format == "vcf":
             df["POS"] += 1
+            print split_samples
             if split_samples:
                 for sample in samples if samples else self.samples:
                     with open("%s.%s.vcf" % (outfile, sample), "w") as out_fd:
