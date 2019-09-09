@@ -350,21 +350,21 @@ class CollectionVCF():
                                                                        "FORMAT": str #lambda s: s.split(":")
                                                                        },
                                                         },
-                                   "all_no_parsing": {
+                                   "read": {
                                         "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
                                         "cols": None,
                                         "index_cols": "CHROM",
                                         "converters": {
-                                            "CHROM": str,
-                                            "POS": np.int32,
-                                            "ID": str,
-                                            "REF": str,
-                                            "ALT": str,
-                                            "QUAL": str,
-                                            "FILTER": str,
-                                            "INFO": str,  # self.parse_info_field,
-                                            "FORMAT": str  # lambda s: s.split(":")
-                                        },
+                                                       "CHROM":  str,
+                                                       "POS":    str,
+                                                       "ID":     str,
+                                                       "REF":    str,
+                                                       "ALT":    str,
+                                                       "QUAL":   str,
+                                                       "FILTER": str,
+                                                       "INFO":   str, #self.parse_info_field,
+                                                       "FORMAT": str #lambda s: s.split(":")
+                                                                       }
                                     },
                                    "all":              {
                                                         "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
@@ -444,7 +444,7 @@ class CollectionVCF():
         fd = FileRoutines.metaopen(in_file, "r")
 
         header_line = self.metadata.read(in_file=fd)
-        self.header = HeaderVCF(header_line[1:].strip().split("\t"))  # line[1:].strip().split("\t")
+        self.header = HeaderVCF(header_line[1:].strip().split("\t"))
         self.samples = self.header[9:]
 
         """
@@ -457,7 +457,7 @@ class CollectionVCF():
             self.metadata.add_metadata(line)
         """
 
-        if self.parsing_mode in ("all", "all_no_parsing", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
+        if self.parsing_mode in ("all", "read", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
             self.metadata.create_converters(parsing_mode=self.parsing_mode)
             self.parsing_parameters[self.parsing_mode]["col_names"] = self.header
             for sample_col in range(9, 9 + len(self.samples)):
@@ -472,7 +472,7 @@ class CollectionVCF():
                                    names=self.parsing_parameters[self.parsing_mode]["col_names"],
                                    index_col=self.VCF_COLS["CHROM"])
         fd.close()
-
+        print self.records
         print("%s\tReading file finished..." % str(datetime.datetime.now()))
 
         # convert to 0-based representation
@@ -731,7 +731,7 @@ class CollectionVCF():
                         out_fd.write("\n")
 
                         header = self.header[:9] + [sample]
-
+                        out_fd.write(str(self.header))
                         out_fd.write("\n")
 
                         if self.parsing_mode == "all_no_parsing":
