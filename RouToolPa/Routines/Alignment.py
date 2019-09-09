@@ -251,6 +251,7 @@ class AlignmentRoutines(SequenceRoutines):
                              "than total number of files")
 
         print mean_coverage_list
+
         if max_threshold and min_threshold:
             max_coverage_list = np.array(mean_coverage_list) * max_threshold
             min_coverage_list = np.array(mean_coverage_list) * min_threshold
