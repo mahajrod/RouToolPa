@@ -737,7 +737,7 @@ class CollectionVCF():
                         out_fd.write("\n")
 
                         if self.parsing_mode == "read":
-                            df[df[[sample]].applymap(not_ref_variant)[sample]][self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+                            df[df[[sample]].applymap(not_ref_variant)[sample]][header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
 
                         out_fd.close()
 
