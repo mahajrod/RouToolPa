@@ -356,7 +356,7 @@ class CollectionVCF():
                                         "index_cols": "CHROM",
                                         "converters": {
                                                        "CHROM":  str,
-                                                       "POS":    str,
+                                                       "POS":    np.int32,
                                                        "ID":     str,
                                                        "REF":    str,
                                                        "ALT":    str,
@@ -472,7 +472,6 @@ class CollectionVCF():
                                    names=self.parsing_parameters[self.parsing_mode]["col_names"],
                                    index_col=self.VCF_COLS["CHROM"])
         fd.close()
-        print self.records
         print("%s\tReading file finished..." % str(datetime.datetime.now()))
 
         # convert to 0-based representation
@@ -711,6 +710,9 @@ class CollectionVCF():
     # ============================================ Writing section =====================================================
 
     def write(self, outfile, format='simple_bed', bed_type="0-based", samples=None, split_samples=False):
+        def lambda_not_ref_variant(s):
+            return (s[:3] != "0/0") and (s[:3] != "./.")
+
         df = self.records.reset_index(level='CHROM')
         if format == 'simple_bed':
             if bed_type == '1-based':
@@ -734,8 +736,8 @@ class CollectionVCF():
                         out_fd.write(str(self.header))
                         out_fd.write("\n")
 
-                        if self.parsing_mode == "all_no_parsing":
-                            df[self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+                        if self.parsing_mode == "read":
+                            df[df[[sample]].applymap(lambda_not_ref_variant)[sample]][self.header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
 
                         out_fd.close()
 
@@ -745,7 +747,12 @@ class CollectionVCF():
                     out_fd.write("\n")
 
                     if samples:
-                        header = self.header[:9] + ([samples] if isinstance(samples, str) else samples)
+                        if isinstance(samples, str):
+                            df = df[df[[samples]].applymap(lambda_not_ref_variant)[samples]]
+                            header = self.header[:9] + [samples]
+                        else:
+                            header = self.header[:9] + samples
+                            df = df[np.logical_or.reduce([df[[sample]].applymap(lambda_not_ref_variant)[sample] for sample in samples])]
                         out_fd.write("#" + "\t".join(header))
                     else:
                         header = self.header
@@ -753,7 +760,7 @@ class CollectionVCF():
 
                     out_fd.write("\n")
 
-                    if self.parsing_mode == "all_no_parsing":
+                    if self.parsing_mode == "read":
                         df.to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
 
                     out_fd.close()
