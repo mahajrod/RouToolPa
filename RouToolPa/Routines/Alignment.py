@@ -234,7 +234,6 @@ class AlignmentRoutines(SequenceRoutines):
                                                max_threshold=2.5, min_threshold=None,min_sample_number=1,
                                                scaffold_column=0, position_column=1, coverage_column=2):
         """
-
         :param coverage_file_list:
         :param mean_coverage_list:
         :param output_file:
