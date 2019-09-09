@@ -10,7 +10,6 @@ from Bio import SeqIO
 from RouToolPa.Collections.General import SynDict, IdList
 
 
-
 class VulgarAlignment:
     def __init__(self, exonerate_vulgar_string):
         string_list = exonerate_vulgar_string.split()

@@ -236,7 +236,8 @@ class CollectionVCF():
     """
 
     def __init__(self, in_file=None, metadata=None, records=None, header=None, samples=None,
-                 external_metadata=None, threads=1, parsing_mode="all",):
+                 external_metadata=None, threads=1, parsing_mode="all", scaffold_black_list=(), scaffold_white_list=(),
+                 scaffold_syn_dict=None):
         """
         Initializes collection. If from_file is True collection will be read from file (arguments other then in_file, external_metadata and threads are ignored)
         Otherwise collection will be initialize from meta, records_dict, header, samples
@@ -350,6 +351,10 @@ class CollectionVCF():
 
         self.linkage_dict = None
         self.parsing_mode = parsing_mode
+
+        self.scaffold_black_list = scaffold_black_list
+        self.scaffold_white_list = scaffold_white_list
+        self.scaffold_syn_dict = scaffold_syn_dict
         
         if in_file:
             self.read(in_file, external_metadata=external_metadata,

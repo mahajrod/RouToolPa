@@ -71,7 +71,7 @@ class VariantFiltration(JavaTool):
         combined_good_vcf = "%s.combined.good.sorted.vcf" % output_prefix
 
 
-        SelectVariants.jar_path = self.jar_path
+        SelectVariants.path = self.path
         SortVcf.jar_path = picard_dir
         SortVcf.max_memory = picard_memory
         #CombineVariants.jar_path = self.jar_path

@@ -18,7 +18,19 @@ class CollectionGFF(Parser):
     def __init__(self, in_file=None, records=None, format="gff", parsing_mode="only_coordinates",
                  black_list=(), white_list=(), featuretype_separation=False,
                  scaffold_syn_dict=None):
+        """
+        IMPORTANT: coordinates are converted to 0-based
 
+        :param in_file:
+        :param records:
+        :param format:
+        :param parsing_mode:
+        :param black_list:
+        :param white_list:
+        :param featuretype_separation:
+        :param scaffold_syn_dict:
+
+        """
         self.formats = ["gff", "gtf", "bed"]
         self.GFF_COLS = AnnotationFormats.GFF_COLS
         self.BED_COLS = AnnotationFormats.BED_COLS
@@ -408,8 +420,46 @@ class CollectionGFF(Parser):
                     continue
             yield entry[self.record_id_col], sequence_collection[entry[self.record_id_col]][entry[self.record_start_col]:entry[self.record_end_col]]
 
+    def get_introns(self, exon_feature="CDS", parent_id_field="Parent",
+                    id_field="ID", intron_id_prefix="intron", intron_id_digit_number=8):
+        if self.featuretype_separation:
+            intron_index = 1
+            intron_id_template = "%s%%0%ii" % (intron_id_prefix, intron_id_digit_number)
 
+            self.records["intron"] = self.records[exon_feature].copy(deep=True)
+            self.records["intron"]["start"], self.records["intron"]["end"] = self.records["intron"]["end"], \
+                                                                             self.records["intron"]["start"].shift(periods=-1, fill_value=0)
+            self.records["intron"].index = self.records["intron"].index.droplevel(level=1)
 
+            self.records["intron"]["row"] = range(0, len(self.records["intron"]))
+            self.records["intron"].set_index("row", append=True, inplace=True)
+
+            self.records["intron"].drop(self.records["intron"].groupby(parent_id_field, sort=False).agg({parent_id_field: 'count'})[parent_id_field].cumsum() - 1, level=1, inplace=True)
+
+            intron_number = len(self.records["intron"])
+
+            self.records["intron"]["phase"] = 0
+            self.records["intron"]["featuretype"] = "intron"
+
+            self.records["intron"][id_field] = [intron_id_template % i for i in range(intron_index, intron_index + intron_number)]
+
+            self.records["intron"].index = self.records["intron"].index.droplevel(level=1)
+            self.records["intron"]["row"] = range(0, len(self.records["intron"]))
+            self.records["intron"].set_index("row", append=True, inplace=True)
+
+    def write_introns(self, output):
+        if "intron" in self.records:
+            with open(output, "w") as out_fd:
+                for row_tuple in self.records["intron"].copy(deep=True).reset_index(level="scaffold").itertuples(
+                        index=False):
+                    out_fd.write("%s\t%i\t%i\t%s\t%i\t%s\n" % ("\t".join(row_tuple[:3]),
+                                                               row_tuple[3] + 1,
+                                                               row_tuple[4],
+                                                               "\t".join(row_tuple[5:7]),
+                                                               row_tuple[7],
+                                                               ";".join(["%s=%s" % (self.records["intron"].columns[i], str(row_tuple[i])) for i in range(8, len(self.records["intron"].columns))])))
+        else:
+            raise ValueError("ERROR!!! No introns were found!")
 
     def extract_sequences_by_type(self, sequence_collection, record_type_black_list=[], record_type_white_list=[],
                                   return_type="collection", records_parsing_type="parse"):
@@ -421,9 +471,6 @@ class CollectionGFF(Parser):
                 from RouToolPa.Parsers.Sequence import CollectionSequence
 
                 extracted_records = CollectionSequence()
-
-
-
 
         else:
             pass

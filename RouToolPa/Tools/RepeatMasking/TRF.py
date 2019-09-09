@@ -123,7 +123,7 @@ class TRF(Tool):
                 file_str += " %s/%s%s" % (converted_output_dir, filename, suffix)
             CGAS.cat(file_str, merged_file)
         """
-        compress_splited_out_string = "tar czf %s.splited_outputs.tar.gz %s" % (output_prefix, splited_result_dir)
+        compress_splited_out_string = "tar czf %s.splited_output.tar.gz %s" % (output_prefix, splited_result_dir)
         os.system(compress_splited_out_string)
 
         if not store_intermediate_files:
