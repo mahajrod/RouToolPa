@@ -300,6 +300,28 @@ class AlignmentRoutines(SequenceRoutines):
                                                    ",".join(map(str, coverage_list))))
 
                 if line_index % 100000000 == 0:
-                    print("Read %i million lines..." % (line_index/1000000))
+                    print("Handled %i million positions..." % (line_index/1000000))
 
                 line_index += 1
+
+    def collapse_per_base_coverage_mask(self, mask_file, out_file,
+                                        scaffold_column=0,
+                                        position_column=1,
+                                        comments_prefix="#"):
+
+        line_list_generator = self.file_line_as_list_generator(mask_file, comments_prefix=comments_prefix)
+        with self.metaopen(out_file, "w") as out_fd:
+            tmp = line_list_generator.__next__()
+
+            prev_scaffold = tmp[scaffold_column]
+            prev_start = int(tmp[position_column])
+            prev_end = int(tmp[position_column])
+
+            for line_list in line_list_generator:
+                pos = int(line_list[position_column])
+                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_start + 1):
+                    out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
+
+                    prev_scaffold = line_list[scaffold_column]
+                    prev_start = pos
+                    prev_end = pos
