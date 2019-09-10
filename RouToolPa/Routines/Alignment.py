@@ -319,7 +319,7 @@ class AlignmentRoutines(SequenceRoutines):
 
             for line_list in line_list_generator:
                 pos = int(line_list[position_column])
-                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_start + 1):
+                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
                     out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
 
                     prev_scaffold = line_list[scaffold_column]
