@@ -327,3 +327,5 @@ class AlignmentRoutines(SequenceRoutines):
                     prev_end = pos
                 else:
                     prev_end += 1
+
+            out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
