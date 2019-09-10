@@ -8,6 +8,7 @@ if sys.version_info[0] == 3:
 else:
     from itertools import izip
 
+import pandas as pd
 from Bio import SearchIO, SeqIO, AlignIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -307,7 +308,9 @@ class AlignmentRoutines(SequenceRoutines):
     def collapse_per_base_coverage_mask(self, mask_file, out_file,
                                         scaffold_column=0,
                                         position_column=1,
-                                        comments_prefix="#"):
+                                        comments_prefix="#",
+                                        output_format="0-based",
+                                        in_memory=True):
 
         line_list_generator = self.file_line_as_list_generator(mask_file, comments_prefix=comments_prefix)
         with self.metaopen(out_file, "w") as out_fd:
@@ -317,15 +320,36 @@ class AlignmentRoutines(SequenceRoutines):
             prev_start = int(tmp[position_column])
             prev_end = int(tmp[position_column])
 
-            for line_list in line_list_generator:
-                pos = int(line_list[position_column])
-                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
-                    out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
+            coordinates_df = []
+            if in_memory:
+                for line_list in line_list_generator:
+                    pos = int(line_list[position_column])
+                    if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
+                        coordinates_df.append((prev_scaffold, prev_start, prev_end))
 
-                    prev_scaffold = line_list[scaffold_column]
-                    prev_start = pos
-                    prev_end = pos
-                else:
-                    prev_end += 1
+                        prev_scaffold = line_list[scaffold_column]
+                        prev_start = pos
+                        prev_end = pos
+                    else:
+                        prev_end += 1
 
-            out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
+                coordinates_df.append((prev_scaffold, prev_start, prev_end))
+                coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"), index="scaffold")
+
+                if output_format == "0-based":
+                    coordinates_df["start"] -= 1
+
+                coordinates_df.to_csv(out_fd, sep="\t", index=True)
+            else:
+                for line_list in line_list_generator:
+                    pos = int(line_list[position_column])
+                    if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
+                        out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if output_format == "0-based" else prev_start, prev_end))
+
+                        prev_scaffold = line_list[scaffold_column]
+                        prev_start = pos
+                        prev_end = pos
+                    else:
+                        prev_end += 1
+
+                out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if output_format == "0-based" else prev_start, prev_end))
