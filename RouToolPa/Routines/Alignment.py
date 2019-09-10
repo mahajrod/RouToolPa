@@ -336,7 +336,7 @@ class AlignmentRoutines(SequenceRoutines):
                 coordinates_df.append((prev_scaffold, prev_start, prev_end))
                 coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"))
                 coordinates_df.set_index("scaffold", inplace=True)
-                if zero_based_output == "0-based":
+                if zero_based_output:
                     coordinates_df["start"] -= 1
 
                 coordinates_df.to_csv(out_fd, sep="\t", index=True)
