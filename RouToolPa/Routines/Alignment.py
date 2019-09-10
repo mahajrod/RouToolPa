@@ -309,7 +309,7 @@ class AlignmentRoutines(SequenceRoutines):
                                         scaffold_column=0,
                                         position_column=1,
                                         comments_prefix="#",
-                                        output_format="0-based",
+                                        zero_based_output=False,
                                         in_memory=True):
 
         line_list_generator = self.file_line_as_list_generator(mask_file, comments_prefix=comments_prefix)
@@ -336,7 +336,7 @@ class AlignmentRoutines(SequenceRoutines):
                 coordinates_df.append((prev_scaffold, prev_start, prev_end))
                 coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"), index="scaffold")
 
-                if output_format == "0-based":
+                if zero_based_output == "0-based":
                     coordinates_df["start"] -= 1
 
                 coordinates_df.to_csv(out_fd, sep="\t", index=True)
@@ -344,7 +344,7 @@ class AlignmentRoutines(SequenceRoutines):
                 for line_list in line_list_generator:
                     pos = int(line_list[position_column])
                     if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
-                        out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if output_format == "0-based" else prev_start, prev_end))
+                        out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if zero_based_output == "0-based" else prev_start, prev_end))
 
                         prev_scaffold = line_list[scaffold_column]
                         prev_start = pos
@@ -352,4 +352,4 @@ class AlignmentRoutines(SequenceRoutines):
                     else:
                         prev_end += 1
 
-                out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if output_format == "0-based" else prev_start, prev_end))
+                out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if zero_based_output == "0-based" else prev_start, prev_end))
