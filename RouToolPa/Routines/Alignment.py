@@ -334,8 +334,8 @@ class AlignmentRoutines(SequenceRoutines):
                         prev_end += 1
 
                 coordinates_df.append((prev_scaffold, prev_start, prev_end))
-                coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"), index="scaffold")
-
+                coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"))
+                coordinates_df.set_index("scaffold", inplace=True)
                 if zero_based_output == "0-based":
                     coordinates_df["start"] -= 1
 
