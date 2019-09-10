@@ -311,7 +311,7 @@ class AlignmentRoutines(SequenceRoutines):
 
         line_list_generator = self.file_line_as_list_generator(mask_file, comments_prefix=comments_prefix)
         with self.metaopen(out_file, "w") as out_fd:
-            tmp = line_list_generator.__next__()
+            tmp = next(line_list_generator)
 
             prev_scaffold = tmp[scaffold_column]
             prev_start = int(tmp[position_column])
