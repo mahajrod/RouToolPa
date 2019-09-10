@@ -325,3 +325,5 @@ class AlignmentRoutines(SequenceRoutines):
                     prev_scaffold = line_list[scaffold_column]
                     prev_start = pos
                     prev_end = pos
+                else:
+                    prev_end += 1
