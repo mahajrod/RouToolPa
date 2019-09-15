@@ -8,7 +8,7 @@ from copy import deepcopy
 from collections import OrderedDict
 from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.Sequence import SequenceRoutines
-
+from RouToolPa.Formats.VariantFormats import VCF_COLS
 
 class VCFRoutines(SequenceRoutines):
     def __init__(self):
@@ -145,7 +145,49 @@ class VCFRoutines(SequenceRoutines):
         fragmented_scaffolds.write("%s.fragmented_scaffolds" % output_prefix)
         scaffolds_with_absent_fragments.write("%s.scaffolds_with_absent_fragments" % output_prefix)
 
-    """
+    def extract_heterozygous_variants(self, input_vcf, output_prefix, mode="one", verbose=True):
+        with self.metaopen(input_vcf, "r") as in_fd, \
+             self.metaopen("%s.hetero.vcf" % output_prefix) as het_fd, \
+             self.metaopen("%s.homo.vcf") as homo_fd:
+
+            het_counter = 0
+            homo_counter =0
+
+            for line in in_fd:
+                if line[0] == "#":
+                    het_fd.write(line)
+                    homo_fd.write(line)
+                else:
+                    line_list = line.strip().split("\t")
+                    info_list = line_list[VCF_COLS["FORMAT"]].split(":")
+                    samples = map(lambda s: s.split(":"), line_list[9:])
+                    for index in range(0, len(info_list)):
+                        if info_list[index] == "GT":
+                            genotype_index = index
+                            break
+                    heterozygous_sample_number = sum(map(lambda s: True if s[0] != s[1] else False,
+                                                     map(lambda s: s[genotype_index].split("/"), samples)))
+
+                    if mode == "one":
+                        if heterozygous_sample_number > 0:
+                            het_fd.write(line)
+                            het_counter += 1
+                        else:
+                            homo_fd.write(line)
+                            homo_counter += 1
+                    elif mode == "all":
+                        if heterozygous_sample_number == len(samples):
+                            het_fd.write(line)
+                            het_counter += 1
+                        else:
+                            homo_fd.write(line)
+                            homo_counter += 1
+
+            if verbose:
+                print("Heterozygous variants: %i" % het_counter)
+                print("Homozygous variants: %i" % homo_counter)
+                print("Total variants: %i" % (het_counter + homo_counter))
+    """ 
     @staticmethod
     def convert_gvcf_to_coverage_file(self, gvcf_file, coverage_file):
         with self.metaopen(coverage_file, "w") as out_fd:
