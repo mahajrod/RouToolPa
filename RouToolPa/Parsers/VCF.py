@@ -192,6 +192,7 @@ class MetadataVCF(OrderedDict):
             if "contig" not in self:
                 self["contig"] = OrderedDict({})
             value = map(self._split_by_equal_sign, self._split_by_comma_sign(value[1:-1]))
+            print value
             self["contig"][value[0][1]] = int(value[1][1])
         else:
             if value[0] == "<" and value[-1] == ">":
@@ -740,6 +741,10 @@ class CollectionVCF():
 
                         if self.parsing_mode == "read":
                             df[df[[sample]].applymap(not_ref_variant)[sample]][header].to_csv(out_fd, sep="\t", header=False, index=False, columns=header)
+                        elif self.parsing_mode == "all":
+                            pass
+                        elif self.parsing_mode == "complete":
+                            pass
 
                         out_fd.close()
 
