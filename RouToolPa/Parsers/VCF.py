@@ -192,8 +192,11 @@ class MetadataVCF(OrderedDict):
             if "contig" not in self:
                 self["contig"] = OrderedDict({})
             value = map(self._split_by_equal_sign, self._split_by_comma_sign(value[1:-1]))
-            print value
-            self["contig"][value[0][1]] = int(value[1][1])
+            for entry_tuple in value:
+                if entry_tuple[0] == "length":
+                    self["contig"][value[0][1]] = int(entry_tuple[1])
+                    break
+
         else:
             if value[0] == "<" and value[-1] == ">":
                 value = self._split_by_comma_sign(value[1:-1])
