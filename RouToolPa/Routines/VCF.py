@@ -147,8 +147,8 @@ class VCFRoutines(SequenceRoutines):
 
     def extract_heterozygous_variants(self, input_vcf, output_prefix, mode="one", verbose=True):
         with self.metaopen(input_vcf, "r") as in_fd, \
-             self.metaopen("%s.hetero.vcf" % output_prefix) as het_fd, \
-             self.metaopen("%s.homo.vcf") as homo_fd:
+             self.metaopen("%s.hetero.vcf" % output_prefix, "w") as het_fd, \
+             self.metaopen("%s.homo.vcf" % output_prefix, "w") as homo_fd:
 
             het_counter = 0
             homo_counter =0
