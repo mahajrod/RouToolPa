@@ -461,6 +461,19 @@ class CollectionGFF(Parser):
         else:
             raise ValueError("ERROR!!! No introns were found!")
 
+    def write(self, output, output_format, source="custom", feature_type="region"):
+
+        if self.format == "bed":
+            if self.parsing_mode == "only_coordinates":
+                if output_format == "bed":
+                    self.records.to_csv(output, sep="\t", index=True, header=False)
+                elif output_format == "gff":
+                    entry_template = "%s\t%s\t%s\t%i\t%i\t.\t.\t.\t.\n"
+                    with open(output, "w") as out_fd:
+                        for record_tuple in self.records.itertuples(index=True):
+                            out_fd.write(entry_template % (record_tuple[0], source, feature_type,
+                                                           record_tuple[1] + 1, record_tuple[2]))
+
     def extract_sequences_by_type(self, sequence_collection, record_type_black_list=[], record_type_white_list=[],
                                   return_type="collection", records_parsing_type="parse"):
 
