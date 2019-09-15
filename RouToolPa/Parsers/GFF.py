@@ -470,7 +470,7 @@ class CollectionGFF(Parser):
                 elif output_format == "gff":
                     entry_template = "%s\t%s\t%s\t%i\t%i\t.\t.\t.\t.\n"
                     with open(output, "w") as out_fd:
-                        for record_tuple in self.records.reset_index(level=0).itertuples(index=True):
+                        for record_tuple in self.records.reset_index(level=0).itertuples(index=False):
                             out_fd.write(entry_template % (record_tuple[0], source, feature_type,
                                                            record_tuple[1] + 1, record_tuple[2]))
 
