@@ -171,8 +171,8 @@ class HaplotypeCaller4(Tool):
                 options_list.append(options + region_options)
                 output_index += 1
             print("Variant calling....")
-            #self.parallel_execute(options_list,
-            #                      cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
+            self.parallel_execute(options_list,
+                                  cmd=("gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory) if self.max_memory else None)
             unsorted_combined_vcf = "%s/%s.unsorted.%s" % (output_dir, output_prefix, output_extension)
             sorted_combined_vcf = "%s/%s.%s" % (output_dir, output_prefix, output_extension)
             print("Combining variants...")
