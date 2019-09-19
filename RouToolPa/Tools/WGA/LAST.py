@@ -30,7 +30,9 @@ class LAST(Tool):
 
         options += " -v" if verbose else ""
 
-        options += " %s" % db_prefix
+        options += " %s.%s.R%i%i" % (db_prefix, seeding_scheme,
+                                     1 if keep_preliminary_masking else 0,
+                                     1 if mask_simple_repeats else 0)
         options += " %s" % (input_fasta_list if isinstance(input_fasta_list, str) else " ".join(input_fasta_list))
 
         return options
