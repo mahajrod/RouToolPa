@@ -61,7 +61,7 @@ class LAST(Tool):
                                 1 if mask_simple_repeats else 0)
         options += " -f %s" % output_format if output_format else ""
         options += " -i %s" % per_thread_memory if per_thread_memory else ""
-        options += " -p %s" % match_score_matrix
+        options += " -p %s" % match_score_matrix if match_score_matrix else ""
 
         options += " -E %f" % eg2_threshold if eg2_threshold else ""
         options += " -C %i" % discard_limit if discard_limit else ""
