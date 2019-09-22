@@ -49,10 +49,19 @@ class LAST(Tool):
 
         self.execute(options=options, cmd="lastdb")
 
-    def parse_lastal_options(self, lastdb, query, output, verbose=True,
+    def parse_lastal_options(self, lastdb, query, output_prefix, verbose=True,
                              keep_preliminary_masking=True, mask_simple_repeats=True,
                              output_format="MAF", per_thread_memory="4G", match_score_matrix=None,
                              eg2_threshold=0.05, discard_limit=2):
+
+        prefix = "%s.R%i%i.%s%s" % (output_prefix,
+                                    1 if keep_preliminary_masking else 0,
+                                    1 if mask_simple_repeats else 0,
+                                    "EG2_%f." % eg2_threshold if eg2_threshold else "",
+                                    "C_%i." % discard_limit if discard_limit else "")
+
+        tab_filename = "%stab" % prefix
+        maf_filename = "%smaf" % prefix
 
         options = " -P %i" % self.threads
 
@@ -69,12 +78,9 @@ class LAST(Tool):
         options += " %s" % lastdb
         options += " %s" % query
         if output_format == "MAF":
-            output_filename_list = self.split_filename(output)
-            tab_filename = output + ".tab" if output_filename_list[-1] != "maf" else output_filename_list[0] + output_filename_list[1] + ".tab"
-            maf_filename = output + ".maf" if output_filename_list[-1] != "maf" else output
             options += " | tee %s | maf-convert tab > %s" % (maf_filename, tab_filename)
         else:
-            options += " > %s" % output
+            options += " > %s" % tab_filename
         return options
 
     def parse_last_train_options(self, lastdb, query, output, verbose=True,
@@ -97,12 +103,12 @@ class LAST(Tool):
 
         return options
 
-    def lastal(self, lastdb, query, output, verbose=True,
+    def lastal(self, lastdb, query, output_prefix, verbose=True,
                keep_preliminary_masking=True, mask_simple_repeats=True,
                output_format="MAF", per_thread_memory="4G", match_score_matrix=None,
                eg2_threshold=0.05, discard_limit=2):
 
-        options = self.parse_lastal_options(lastdb, query, output, verbose=verbose,
+        options = self.parse_lastal_options(lastdb, query, output_prefix, verbose=verbose,
                                             keep_preliminary_masking=keep_preliminary_masking,
                                             mask_simple_repeats=mask_simple_repeats,
                                             output_format=output_format,
