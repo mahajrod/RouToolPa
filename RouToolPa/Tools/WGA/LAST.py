@@ -52,7 +52,7 @@ class LAST(Tool):
     def parse_lastal_options(self, lastdb, query, output_prefix, verbose=True,
                              keep_preliminary_masking=True, mask_simple_repeats=True,
                              output_format="MAF", per_thread_memory="4G", match_score_matrix=None,
-                             eg2_threshold=0.05, discard_limit=2):
+                             eg2_threshold=None, discard_limit=None):
 
         prefix = "%s.R%i%i.%s%s" % (output_prefix,
                                     1 if keep_preliminary_masking else 0,
@@ -83,10 +83,14 @@ class LAST(Tool):
             options += " > %s" % tab_filename
         return options
 
-    def parse_last_train_options(self, lastdb, query, output, verbose=True,
+    def parse_last_train_options(self, lastdb, query, output_prefix, verbose=True,
                                  reverse_complement_symmetry=True, directional_symmetry=True,
                                  insertion_deletion_symmetry=True, eg2_threshold=0.05,
                                  discard_limit=2):
+
+        output = "%s.%s%strain.out" % (output_prefix,
+                                       "EG2_%f." % eg2_threshold if eg2_threshold else "",
+                                       "C_%i." % discard_limit if discard_limit else "")
 
         options = " -P %i" % self.threads
 
@@ -106,7 +110,7 @@ class LAST(Tool):
     def lastal(self, lastdb, query, output_prefix, verbose=True,
                keep_preliminary_masking=True, mask_simple_repeats=True,
                output_format="MAF", per_thread_memory="4G", match_score_matrix=None,
-               eg2_threshold=0.05, discard_limit=2):
+               eg2_threshold=None, discard_limit=None):
 
         options = self.parse_lastal_options(lastdb, query, output_prefix, verbose=verbose,
                                             keep_preliminary_masking=keep_preliminary_masking,
