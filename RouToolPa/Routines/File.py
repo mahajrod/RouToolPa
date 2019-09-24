@@ -9,6 +9,9 @@ import gzip
 import shutil
 from collections import Iterable, OrderedDict
 
+if sys.version_info[0] == 3:
+    from io import TextIOWrapper as file
+
 from RouToolPa.Collections.General import IdSet,  IdList, SynDict
 
 
