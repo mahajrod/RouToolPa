@@ -271,35 +271,12 @@ class RecordPrimer3:
         """
         table_form2 = ""
         for primer_pair in self.primer_pair_list:
-            print (self.id,
-                                                                         self.chrom,
-                                                                         self.chrom_pos_start,
-                                                                         self.chrom_pos_end,
-                                                                         str(self.monomer) if not(self.monomer is None) else ".",
-                                                                         str(self.total_monomer_number) if not(self.total_monomer_number is None) else ".",
-                                                                         self.primer_pair_count,
-                                                                         primer_pair.id,
-                                                                         primer_pair.product_size,
-                                                                         primer_pair.left_primer.melting_temperature,
-                                                                         primer_pair.right_primer.melting_temperature,
-                                                                         primer_pair.left_primer.gc_content,
-                                                                         primer_pair.right_primer.gc_content,
-                                                                         primer_pair.left_primer.seq,
-                                                                         primer_pair.right_primer.seq,
-                                                                         primer_pair.left_primer.self_any_th,
-                                                                         primer_pair.right_primer.self_any_th,
-                                                                         primer_pair.left_primer.self_end_th,
-                                                                         primer_pair.right_primer.self_end_th,
-                                                                         primer_pair.left_primer.hairpin_th,
-                                                                         primer_pair.right_primer.hairpin_th,
-                                                                         primer_pair.left_primer.end_stability,
-                                                                         primer_pair.right_primer.end_stability,
-                                                                         self.seq)
+
             table_form2 += "%s\t%s\t%i\t%i\t%s\t%s\t%i\t%i\t%i\t%.3f\t%.3f\t%.3f\t%.3f\t%s\t%s\t%.3f\t%.3f\t" \
                            "%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%s\n" % (self.id,
                                                                          self.chrom,
-                                                                         self.chrom_pos_start,
-                                                                         self.chrom_pos_end,
+                                                                         self.chrom_pos_start if self.chrom_pos_start else self.target_start,
+                                                                         self.chrom_pos_end if self.chrom_pos_end else self.target_start + self.target_len,
                                                                          str(self.monomer) if not(self.monomer is None) else ".",
                                                                          str(self.total_monomer_number) if not(self.total_monomer_number is None) else ".",
                                                                          self.primer_pair_count,
@@ -440,7 +417,7 @@ class CollectionPrimer3(Collection):
             monomer = id_based_location_dict[entry_dict["SEQUENCE_ID"]][3]["Pattern"][0] if "Pattern" in id_based_location_dict[entry_dict["SEQUENCE_ID"]][3] else None
             total_monomer_number = float(id_based_location_dict[entry_dict["SEQUENCE_ID"]][3]["N_copies"][0]) if "N_copies" in id_based_location_dict[entry_dict["SEQUENCE_ID"]][3] else None
         else:
-            chrom = None
+            chrom = entry_dict["SEQUENCE_ID"]
             start = None
             end = None
             monomer = None
