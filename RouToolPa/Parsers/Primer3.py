@@ -129,7 +129,7 @@ class RecordPrimer3:
         string += "PRIMER_PICK_LEFT_PRIMER=%i\n" % (1 if self.pick_left_primer else 0) if not (self.pick_left_primer is None) else ""
         string += "PRIMER_PICK_INTERNAL_OLIGO=%i\n" % (1 if self.pick_internal_oligo else 0) if not (self.pick_internal_oligo is None) else ""
         string += "PRIMER_PICK_RIGHT_PRIMER=%i\n" % (1 if self.pick_right_primer else 0) if not (self.pick_right_primer is None) else ""
-        string += "PRIMER_PRODUCT_SIZE_RANGE=%i-%i\n" % (self.product_size_range[0], self.product_size_range[1])
+        string += "PRIMER_PRODUCT_SIZE_RANGE=%i-%i\n" % (self.product_size_range[0], self.product_size_range[1]) if self.product_size_range else ""
         string += "PRIMER_INTERNAL_OLIGO_EXPLAIN=%s\n" % self.left_primer_choice_description if not (self.left_primer_choice_description is None) else ""
         string += "PRIMER_PAIR_EXPLAIN=%s\n" % self.internal_oligo_choice_description if not (self.internal_oligo_choice_description is None) else ""
         string += "PRIMER_RIGHT_EXPLAIN=%s\n" % self.right_primer_choice_description if not (self.right_primer_choice_description is None) else ""
@@ -463,7 +463,7 @@ class CollectionPrimer3(Collection):
                                int(entry_dict["PRIMER_PICK_LEFT_PRIMER"]) if "PRIMER_PICK_LEFT_PRIMER" in entry_dict else None,
                                int(entry_dict["PRIMER_PICK_INTERNAL_OLIGO"]) if "PRIMER_PICK_INTERNAL_OLIGO" in entry_dict else None,
                                int(entry_dict["PRIMER_PICK_RIGHT_PRIMER"]) if "PRIMER_PICK_RIGHT_PRIMER" in entry_dict else None,
-                               map(int, entry_dict["PRIMER_PRODUCT_SIZE_RANGE"].split("-")),
+                               map(int, entry_dict["PRIMER_PRODUCT_SIZE_RANGE"].split("-")) if "PRIMER_PRODUCT_SIZE_RANGE" in entry_dict else None,
                                int(entry_dict["PRIMER_LEFT_NUM_RETURNED"]) if "PRIMER_LEFT_NUM_RETURNED" in entry_dict else None,
                                int(entry_dict["PRIMER_INTERNAL_NUM_RETURNED"]) if "PRIMER_INTERNAL_NUM_RETURNED" in entry_dict else None,
                                int(entry_dict["PRIMER_RIGHT_NUM_RETURNED"]) if "PRIMER_RIGHT_NUM_RETURNED" in entry_dict else None,
