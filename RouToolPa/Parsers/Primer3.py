@@ -146,6 +146,11 @@ class RecordPrimer3:
 
         return string
 
+    def correct_coordinates(self, sequence_dict):
+        for primer_pair in self.primer_pair_list:
+            primer_pair.left_primer.start = sequence_dict[self.chrom].find(primer_pair.left_primer.seq)
+            primer_pair.right_primer.start = sequence_dict[self.chrom].find(primer_pair.right_primer.seq)
+
     def remove_primers_with_gaps_in_pcr_product(self, min_gap_len=5):
         bad_primers_index_list = []
 
@@ -480,6 +485,10 @@ class CollectionPrimer3(Collection):
                                total_monomer_number=total_monomer_number)
 
         self.records.append(record)
+
+    def correct_coordinates(self, sequence_dict):
+        for record in self.records:
+            record.correct_coordinates(sequence_dict)
 
     def write(self, out_file):
         with open(out_file, "w") as out_fd:
