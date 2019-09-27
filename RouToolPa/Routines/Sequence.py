@@ -4,6 +4,7 @@ import re
 import sys
 import math
 import pickle
+from string import maketrans
 from random import randint
 from copy import deepcopy
 from collections import OrderedDict, Iterable
@@ -18,9 +19,6 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
-
-
-
 
 class SequenceRoutines(FileRoutines):
 
@@ -38,6 +36,24 @@ class SequenceRoutines(FileRoutines):
                                                        "H": {"A", "C", "T"},
                                                        "V": {"A", "C", "G"},
                                                        "N": {"A", "C", "G", "T"}})
+
+        self.complement_dict = OrderedDict({"A": "T",
+                                            "C": "G",
+                                            "G": "C",
+                                            "T": "A",
+                                            "R": "Y",
+                                            "Y": "R",
+                                            "S": "S",
+                                            "W": "W",
+                                            "K": "M",
+                                            "M": "K",
+                                            "B": "V",
+                                            "D": "H",
+                                            "H": "D",
+                                            "V": "B",
+                                            "N": "N"})
+
+        self.complement_table = maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
 
         self.ambiguous_nucleotides_string_dict = OrderedDict({"R": "AG",
                                                               "Y": "CT",
@@ -62,6 +78,9 @@ class SequenceRoutines(FileRoutines):
                                                                       "ACT": "H",
                                                                       "ACG": "V",
                                                                       "ACGT": "N"})
+
+    def reverse_complement(self, seq):
+        return seq[::-1].translate(self.complement_table)
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
                     parsing_mode="parse", index_file=None):

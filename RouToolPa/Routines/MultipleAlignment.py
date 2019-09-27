@@ -62,6 +62,79 @@ class MultipleAlignmentRoutines(SequenceRoutines):
         #print position_presence_array
         return position_presence_array
 
+    @staticmethod
+    def count_nucleotides_per_position(alignment, verbose=True, gap_symbol="-", add_max_fraction=False,
+                                       output_prefix=None,
+                                       fraction_threshold=None, collapse_positions=False, ):
+        number_of_sequences = len(alignment)
+        alignment_length = len(alignment[0])
+        # converting alignment to numpy letter array stored by columns!
+        alignment_array = np.array([list(rec) for rec in alignment], np.character, order="F")
+
+        if verbose:
+            print("%i sequences in alignment" % number_of_sequences)
+            print("%i columns in alignment" % alignment_length)
+
+        nucleotide_list = ["A", "C", "G", "T", "R", "Y", "S", "W", "K", "M", "B", "D", "H", "V", "N", gap_symbol]
+        count_df = pd.DataFrame(0, index=[i for i in range(0, alignment_length)], columns=nucleotide_list)
+
+        for column in range(0, alignment_length):
+            column_array = alignment_array[:, column]
+            unique, counts = np.unique(column_array, return_counts=True)
+            for index in range(0, len(unique)):
+                # print type(unique[index])
+                # print type(counts[index])
+                # print str(unique[index])
+                # print unique
+                count_df[str(unique[index])][column] = counts[index]
+        if output_prefix:
+            count_df.to_csv("%s.only_counts.counts" % output_prefix,
+                            sep="\t", index=True, index_label="pos")
+        if add_max_fraction:
+
+            count_df["max"] = count_df.apply(max, axis=1)
+            count_df["max"] /= number_of_sequences
+            count_df["max_letter"] = count_df.idxmax(axis=1)
+
+            if output_prefix:
+                count_df.to_csv("%s.with_max.counts" % output_prefix,
+                                sep="\t", index=True, index_label="pos")
+
+            if fraction_threshold:
+                count_df = count_df[(count_df["max"] >= fraction_threshold) & (count_df["max_letter"] != gap_symbol)]
+
+                if output_prefix:
+                    count_df.to_csv("%s.with_max.min%.3f.counts" % (output_prefix, fraction_threshold),
+                                    sep="\t", index=True, index_label="pos")
+            if collapse_positions:
+                prev_start = None
+                prev_end = None
+                collapsed_df = []
+                for pos in count_df.index:
+                    if prev_start is None:
+                        prev_start = pos
+                        prev_end = pos
+
+                        continue
+                    elif pos != prev_end + 1:
+                        # python interval notation!
+
+                        collapsed_df.append([prev_start, prev_end + 1])
+                        prev_start = pos
+                        prev_end = pos
+                    else:
+                        prev_end += 1
+
+                collapsed_df.append([prev_start, prev_end + 1])
+
+                collapsed_df = pd.DataFrame(collapsed_df, columns=["start", "end"])
+                collapsed_df["length"] = collapsed_df["end"] - collapsed_df["start"]
+                if output_prefix:
+                    collapsed_df.to_csv("%s.with_max.min%.3f.regions" % (output_prefix, fraction_threshold),
+                                        sep="\t", index=False)
+
+        return count_df
+
     def get_position_presence_matrix_fom_file(self, alignment_file, output_file, format="fasta", gap_symbol="-",
                                               verbose=True):
 

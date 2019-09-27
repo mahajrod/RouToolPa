@@ -299,7 +299,8 @@ class CollectionSequence(FileRoutines):
 
         return self.length.apply(count)
 
-    def expression_unmask(self, s):
+    @staticmethod
+    def expression_unmask(s):
         return s.upper()
 
     def unmask(self, in_place=False, verbose=None):
