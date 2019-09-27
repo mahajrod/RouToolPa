@@ -97,6 +97,9 @@ class RecordPrimer3:
                  chrom_pos_start=None, chrom_pos_end=None, monomer=None, total_monomer_number=None):
 
         self.id = seq_id                                                                    # str
+
+        self.seq_id = self.id.split(".primer")[0]
+
         self.seq = seq                                                                      # str
         self.target_start = target_start                                                    # int
         self.target_len = target_len                                                        # int
@@ -148,8 +151,8 @@ class RecordPrimer3:
 
     def correct_coordinates(self, sequence_dict):
         for primer_pair in self.primer_pair_list:
-            primer_pair.left_primer.start = sequence_dict[self.id].find(primer_pair.left_primer.seq)
-            primer_pair.right_primer.start = sequence_dict[self.id].find(SequenceRoutines.reverse_complement(primer_pair.right_primer.seq)+primer_pair.right_primer.length)
+            primer_pair.left_primer.start = sequence_dict[self.seq_id].find(primer_pair.left_primer.seq)
+            primer_pair.right_primer.start = sequence_dict[self.seq_id].find(SequenceRoutines.reverse_complement(primer_pair.right_primer.seq)+primer_pair.right_primer.length)
 
     def remove_primers_with_gaps_in_pcr_product(self, min_gap_len=5):
         bad_primers_index_list = []
