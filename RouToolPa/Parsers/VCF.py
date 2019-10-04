@@ -451,16 +451,6 @@ class CollectionVCF():
         self.header = HeaderVCF(header_line[1:].strip().split("\t"))
         self.samples = self.header[9:]
 
-        """
-        while True:
-            line = fd.readline()
-            if line[:2] != "##":
-                self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
-                self.samples = self.header[9:]
-                break
-            self.metadata.add_metadata(line)
-        """
-
         if self.parsing_mode in ("all", "read", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
             self.metadata.create_converters(parsing_mode=self.parsing_mode)
             self.parsing_parameters[self.parsing_mode]["col_names"] = self.header
