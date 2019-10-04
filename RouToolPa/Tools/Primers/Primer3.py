@@ -178,5 +178,6 @@ class Primer3(Tool):
 
         self.execute(options=options)
 
+
 if __name__ == "__main__":
     pass
