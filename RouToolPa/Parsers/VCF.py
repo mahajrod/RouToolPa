@@ -482,8 +482,19 @@ class CollectionVCF():
 
         self.records['POS'] -= 1
 
+        if self.scaffold_white_list and self.scaffold_black_list:
+            self.records = self.records[self.records.index.isin(self.scaffold_white_list) & (~self.records.index.isin(self.scaffold_black_list))]
+        elif self.scaffold_white_list:
+            self.records = self.records[self.records.index.isin(self.scaffold_white_list)]
+        elif self.scaffold_black_list:
+            self.records = self.records[~self.records.index.isin(self.scaffold_black_list)]
+
+        if self.scaffold_syn_dict:
+            self.records.rename(index=self.scaffold_syn_dict, inplace=True)
+
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("CHROM", "ROW"))
+
         if self.parsing_mode in ("genotypes", "coordinates_and_genotypes"):
             sample_genotypes = self.parse_samples(["GT"])
             self.records.columns = pd.MultiIndex.from_arrays([
