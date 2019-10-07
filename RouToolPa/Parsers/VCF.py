@@ -552,7 +552,7 @@ class CollectionVCF():
     
     def parse_info(self):
         print("%s\tParsing info field..." % str(datetime.datetime.now()))
-        
+
         def split_info_entry(info_entry):
             tmp = info_entry.split("=")
             if len(tmp) == 2:
