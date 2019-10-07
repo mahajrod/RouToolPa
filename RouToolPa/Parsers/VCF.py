@@ -552,7 +552,15 @@ class CollectionVCF():
     
     def parse_info(self):
         print("%s\tParsing info field..." % str(datetime.datetime.now()))
-        tmp_info = pd.DataFrame(map(lambda s: OrderedDict(map(lambda b: b.split("="), s.split(";"))), list(self.records["INFO"])))
+        
+        def split_info_entry(info_entry):
+            tmp = info_entry.split("=")
+            if len(tmp) == 2:
+                return tmp
+            else:
+                return tmp[0], True
+
+        tmp_info = pd.DataFrame(map(lambda s: OrderedDict(map(split_info_entry, s.split(";"))), list(self.records["INFO"])))
         tmp_info.index = self.records.index
 
         #print tmp_info
