@@ -127,7 +127,7 @@ class Exonerate(Tool):
         self.split_fasta(query_file, splited_fasta_dir, num_of_recs_per_file=num_of_recs_per_file,
                          num_of_files=num_of_files,
                          output_prefix=splited_filename[1],
-                         parsing_mode=parsing_mode, index_file=index_file)
+                         parsing_mode=parsing_mode, index_file=index_file, sort_by_length=True)
         splited_files = os.listdir(splited_fasta_dir)
 
         self.safe_mkdir(splited_result_dir)
@@ -179,22 +179,6 @@ class Exonerate(Tool):
                                                       environment_variables_dict=environment_variables_dict)
 
     def prepare_index(self, list_of_files, output_prefix, translated_index=None, memory_limit=1024):
-        pass
-
-    def parallel_alignment_server_mode(self, query_file, target_file, model, num_of_recs_per_file=None,
-                                       show_alignment=None, show_sugar=True, show_cigar=None,
-                                       show_vulgar=None, show_query_gff=None, show_target_gff=None,
-                                       store_intermediate_files=True,
-                                       annotation_file=None,
-                                       splited_fasta_dir="splited_fasta_dir", splited_result_dir="splited_output",
-                                       number_of_results_to_report=None,
-                                       other_options=None,
-                                       num_of_files=None,
-                                       converted_output_dir="converted_output", parsing_mode="parse", index_file=None,
-                                       external_process_pool=None):
-        
-
-
         pass
 
     def prepare_data_for_target_alignment(self, query_fasta, target_fasta, correspondence_file, out_dir,
