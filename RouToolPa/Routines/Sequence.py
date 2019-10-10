@@ -83,7 +83,7 @@ class SequenceRoutines(FileRoutines):
         return seq[::-1].translate(self.complement_table)
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
-                    parsing_mode="parse", index_file=None, sort_by_length=True):
+                    parsing_mode="parse", index_file=None, sort_by_length=False):
         """
         by default splits input files into files with num_of_recs_per_file.
         if num_of_files is set num_of_recs_per_file is ignored.
