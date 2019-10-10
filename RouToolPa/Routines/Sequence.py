@@ -83,7 +83,7 @@ class SequenceRoutines(FileRoutines):
         return seq[::-1].translate(self.complement_table)
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
-                    parsing_mode="parse", index_file=None):
+                    parsing_mode="parse", index_file=None, sort_by_length=True):
         """
         by default splits input files into files with num_of_recs_per_file.
         if num_of_files is set num_of_recs_per_file is ignored.
@@ -92,10 +92,12 @@ class SequenceRoutines(FileRoutines):
         out_prefix = self.split_filename(input_fasta)[1] if output_prefix is None else output_prefix
 
         sequence_dict = self.parse_seq_file(input_fasta, parsing_mode, format="fasta", index_file=index_file) # SeqIO.index_db("temp.idx", input_fasta, "fasta")
+        if sort_by_length:
+            sequence_length_dict = self.get_lengths(sequence_dict)
 
         split_index = 0
         records_written = 0
-        record_ids_list = list(sequence_dict.keys())
+        record_ids_list = list(sequence_length_dict.keys() if sort_by_length else sequence_dict.keys())
         number_of_records = len(record_ids_list)
 
         num_of_recs = int(number_of_records/num_of_files) + 1 if num_of_files else num_of_recs_per_file
@@ -418,7 +420,7 @@ class SequenceRoutines(FileRoutines):
                     transcript_format)
 
     @staticmethod
-    def get_lengths(record_dict, out_file=None, close_after_if_file_object=False):
+    def get_lengths(record_dict, out_file=None, close_after_if_file_object=False, reverse_order=False):
         #engths_dict = SynDict()
         length_list = []
         for record_id in record_dict:
@@ -426,7 +428,8 @@ class SequenceRoutines(FileRoutines):
             #lengths_dict[record_id] = len(record_dict[record_id])
 
         length_list.sort(key=lambda s: s[1], reverse=True)
-        lengths_dict = SynDict(length_list)
+
+        lengths_dict = SynDict(length_list[::-1] if reverse_order else length_list)
         if out_file:
             lengths_dict.write(out_file, header=False, separator="\t", splited_values=False, values_separator=",",
                                close_after_if_file_object=close_after_if_file_object)
