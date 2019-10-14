@@ -781,6 +781,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))
 
+        plt.tight_layout()
+
         if output_prefix:
             print("%s\tWriting to file..." % str(datetime.datetime.now()))
             for extension in extension_list:
