@@ -4,7 +4,10 @@ import re
 import sys
 import math
 import pickle
-from string import maketrans
+
+if sys.version_info[0] == 2:
+    from string import maketrans
+
 from random import randint
 from copy import deepcopy
 from collections import OrderedDict, Iterable
@@ -52,8 +55,8 @@ class SequenceRoutines(FileRoutines):
                                             "H": "D",
                                             "V": "B",
                                             "N": "N"})
-
-        self.complement_table = maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
+        if sys.version_info[0] == 2:
+            self.complement_table = maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
 
         self.ambiguous_nucleotides_string_dict = OrderedDict({"R": "AG",
                                                               "Y": "CT",
@@ -80,7 +83,10 @@ class SequenceRoutines(FileRoutines):
                                                                       "ACGT": "N"})
 
     def reverse_complement(self, seq):
-        return seq[::-1].translate(self.complement_table)
+        if sys.version_info[0] == 2:
+            return seq[::-1].translate(self.complement_table)
+        else:
+            return seq[::-1].maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
                     parsing_mode="parse", index_file=None, sort_by_length=False):
