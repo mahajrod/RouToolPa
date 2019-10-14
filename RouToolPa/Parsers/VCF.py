@@ -95,7 +95,8 @@ class MetadataVCF(OrderedDict):
                     if self[field][entry]["Type"] == "Flag":
                         a = 1
                         self.info_flag_list.append(entry) if field == "INFO" else self.format_flag_list.append(entry)
-                    self.info_nonflag_list.append(entry) if field == "INFO" else self.format_nonflag_list.append(entry)
+                    else:
+                        self.info_nonflag_list.append(entry) if field == "INFO" else self.format_nonflag_list.append(entry)
 
                     if entry == "GT":
                         self.converters[field][entry] = "Int8" if parsing_mode == "complete" else str
@@ -512,6 +513,7 @@ class CollectionVCF():
         elif self.parsing_mode in ("all", "complete"):
             info = self.parse_info()
             sample_list = self.parse_samples()
+
             if self.parsing_mode == "all":
                 self.records.columns = pd.MultiIndex.from_arrays([
                                                                   self.records.columns,
@@ -535,11 +537,12 @@ class CollectionVCF():
             if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
                 col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
             else:
-                col = col.apply(self.metadata.converters["INFO"][param])
+                col = col.apply(self.metadata.converters[param_group][param])
         elif self.parsing_mode in ("complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
             col = column.str.split(self.metadata.parameter_separator_dict[param] if param in self.metadata.parameter_separator_dict else ",",
                                    expand=True)
-            col.replace(self.metadata.default_replace_dict, inplace=True)
+            if self.metadata[param_group][param]["Type"] != "Flag":
+                col.replace(self.metadata.default_replace_dict, inplace=True)
             if self.metadata.converters[param_group][param] == str:
                 return col
             if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
@@ -566,11 +569,17 @@ class CollectionVCF():
         #print tmp_info
         info_df_list = []
         for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
+            #print self.metadata.info_flag_list
+            #print self.metadata.info_nonflag_list
             if param in tmp_info:
-
-                column_df = self.parse_column(tmp_info[param], param, "INFO")
+                print("%s\tParsing info parameter %s..." % (str(datetime.datetime.now()), param))
+                if param in self.metadata.info_nonflag_list:
+                    column_df = self.parse_column(tmp_info[param], param, "INFO")
+                else:
+                    column_df = deepcopy(tmp_info[[param]])
                 shape = np.shape(column_df)
                 column_number = 1 if len(shape) == 1 else shape[1]
+                print column_number
                 if self.parsing_mode == "all":
                     column_df.columns = pd.MultiIndex.from_arrays([
                                                   ["INFO"] * column_number,
@@ -587,7 +596,7 @@ class CollectionVCF():
 
 
                 info_df_list.append(column_df)
-
+        #print info_df_list
         info = pd.concat(info_df_list, axis=1)
         info.sort_index(level=1, inplace=True)
 
