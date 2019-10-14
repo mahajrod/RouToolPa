@@ -588,7 +588,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           axes_label_distance=6,
                                           antialiased_lines=None,
                                           target_scaffold_labels_angle=45,
-                                          query_scaffold_labels_angle=0):
+                                          query_scaffold_labels_angle=0,
+                                          show_target_labels=True,
+                                          show_query_labels=True):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,
@@ -669,31 +671,33 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
         print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
-        for target_scaffold_id in target_scaffold_list:
-            ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
-                    total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize,
-                    rotation=target_scaffold_labels_angle,
-                    horizontalalignment='left',
-                    verticalalignment='bottom',)
-            ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
-                    -1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize,
-                    rotation=target_scaffold_labels_angle,
-                    horizontalalignment='right',
-                    verticalalignment='top',)
 
-        for query_scaffold_id in query_scaffold_list:
-            ax.text(total_target_len + 1.5 * bar_width,
-                    (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
-                     query_scaffold_id, fontsize=scaffold_label_fontsize,
-                    rotation=query_scaffold_labels_angle,
-                    horizontalalignment='left',
-                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'bottom')
-            ax.text(-1.5 * bar_width,
-                    (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
-                     query_scaffold_id, fontsize=scaffold_label_fontsize,
-                    rotation=query_scaffold_labels_angle,
-                    horizontalalignment='right',
-                    verticalalignment='center' if query_scaffold_labels_angle == 0 else 'top')
+        if show_target_labels:
+            for target_scaffold_id in target_scaffold_list:
+                ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
+                        total_query_len + 1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize,
+                        rotation=target_scaffold_labels_angle,
+                        horizontalalignment='left',
+                        verticalalignment='bottom',)
+                ax.text((target_length_df.loc[target_scaffold_id]["cum_start"] + target_length_df.loc[target_scaffold_id]["cum_end"])/2,
+                        -1.5 * bar_width, target_scaffold_id, fontsize=scaffold_label_fontsize,
+                        rotation=target_scaffold_labels_angle,
+                        horizontalalignment='right',
+                        verticalalignment='top',)
+        if show_query_labels:
+            for query_scaffold_id in query_scaffold_list:
+                ax.text(total_target_len + 1.5 * bar_width,
+                        (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
+                         query_scaffold_id, fontsize=scaffold_label_fontsize,
+                        rotation=query_scaffold_labels_angle,
+                        horizontalalignment='left',
+                        verticalalignment='center' if query_scaffold_labels_angle == 0 else 'bottom')
+                ax.text(-1.5 * bar_width,
+                        (query_length_df.loc[query_scaffold_id]["cum_start"] + query_length_df.loc[query_scaffold_id]["cum_end"])/2,
+                         query_scaffold_id, fontsize=scaffold_label_fontsize,
+                        rotation=query_scaffold_labels_angle,
+                        horizontalalignment='right',
+                        verticalalignment='center' if query_scaffold_labels_angle == 0 else 'top')
 
         if title:
             plt.title(title)
