@@ -590,7 +590,11 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           target_scaffold_labels_angle=45,
                                           query_scaffold_labels_angle=0,
                                           show_target_labels=True,
-                                          show_query_labels=True):
+                                          show_query_labels=True,
+                                          bottom_offset=0.1,
+                                          top_offset=0.9,
+                                          left_offset=0.1,
+                                          right_offset=0.9):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,
@@ -781,7 +785,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))
 
-        plt.tight_layout()
+        plt.subplots_adjust(left=left_offset, bottom=bottom_offset, right=right_offset, top=top_offset)
 
         if output_prefix:
             print("%s\tWriting to file..." % str(datetime.datetime.now()))
