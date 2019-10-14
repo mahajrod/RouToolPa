@@ -22,7 +22,7 @@ class CollectionLast:
                  min_target_hit_len=None, min_query_hit_len=None,
                  min_target_len=None, min_query_len=None):
 
-        self.formats = ["tab"]
+        self.formats = ["tab", "tab_mismap"]
         self.TAB_COLS = AlignmentFormats.LAST_TAB_COLS
         self.parsing_parameters = {"tab": {
                                            "coordinates_only": {
@@ -140,6 +140,117 @@ class CollectionLast:
                                                    },
                                            },
 
+                                "tab_mismap": {
+                                                "coordinates_only": {
+                                                    "col_names": ["target_id", "target_start", "target_hit_len",
+                                                                  "target_strand", "target_len", "query_id",
+                                                                  "query_start", "query_hit_len", "query_strand",
+                                                                  "query_len"],
+                                                    "cols": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                                                    "index_cols": None,
+                                                    "converters": {
+                                                        "target_id": str,
+                                                        "target_start": np.int64,
+                                                        "target_hit_len": np.int64,
+                                                        "target_strand": str,
+                                                        "target_len": np.int64,
+                                                        "query_id": str,
+                                                        "query_start": np.int64,
+                                                        "query_hit_len": np.int64,
+                                                        "query_strand": str,
+                                                        "query_len": np.int64,
+                                                    },
+                                                    "col_name_indexes": {
+                                                        "target_id": 0,
+                                                        "target_start": 1,
+                                                        "target_hit_len": 2,
+                                                        "target_strand": 3,
+                                                        "target_len": 4,
+                                                        "query_id": 5,
+                                                        "query_start": 6,
+                                                        "query_hit_len": 7,
+                                                        "query_strand": 8,
+                                                        "query_len": 9,
+                                                    },
+                                                },
+
+                                                "all": {
+                                                    "col_names": ["score", "target_id", "target_start", "target_hit_len",
+                                                                  "target_strand", "target_len", "query_id",
+                                                                  "query_start", "query_hit_len", "query_strand",
+                                                                  "query_len", "alignment", "mismap"],
+                                                    "cols": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                                                    "index_cols": None,
+                                                    "converters": {
+                                                        "score": np.int64,
+                                                        "target_id": str,
+                                                        "target_start": np.int64,
+                                                        "target_hit_len": np.int64,
+                                                        "target_strand": str,
+                                                        "target_len": np.int64,
+                                                        "query_id": str,
+                                                        "query_start": np.int64,
+                                                        "query_hit_len": np.int64,
+                                                        "query_strand": str,
+                                                        "query_len": np.int64,
+                                                        "alignment": str,
+                                                        "mismap": str,
+                                                    },
+                                                    "col_name_indexes": {
+                                                        "score": 0,
+                                                        "target_id": 1,
+                                                        "target_start": 2,
+                                                        "target_hit_len": 3,
+                                                        "target_strand": 4,
+                                                        "target_len": 5,
+                                                        "query_id": 6,
+                                                        "query_start": 7,
+                                                        "query_hit_len": 8,
+                                                        "query_strand": 9,
+                                                        "query_len": 10,
+                                                        "alignment": 11,
+                                                        "mismap": 12,
+                                                    },
+                                                },
+                                                "complete": {
+                                                    "col_names": ["score", "target_id", "target_start", "target_hit_len",
+                                                                  "target_strand", "target_len", "query_id",
+                                                                  "query_start", "query_hit_len", "query_strand",
+                                                                  "query_len", "alignment", "mismap"],
+                                                    "cols": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                                                    "index_cols": None,
+                                                    "converters": {
+                                                        "score": np.int64,
+                                                        "target_id": str,
+                                                        "target_start": np.int64,
+                                                        "target_hit_len": np.int64,
+                                                        "target_strand": str,
+                                                        "target_len": np.int64,
+                                                        "query_id": str,
+                                                        "query_start": np.int64,
+                                                        "query_hit_len": np.int64,
+                                                        "query_strand": str,
+                                                        "query_len": np.int64,
+                                                        "alignment": str,
+                                                        "mismap": str
+                                                    },
+                                                    "col_name_indexes": {
+                                                        "score": 0,
+                                                        "target_id": 1,
+                                                        "target_start": 2,
+                                                        "target_hit_len": 3,
+                                                        "target_strand": 4,
+                                                        "target_len": 5,
+                                                        "query_id": 6,
+                                                        "query_start": 7,
+                                                        "query_hit_len": 8,
+                                                        "query_strand": 9,
+                                                        "query_len": 10,
+                                                        "alignment": 11,
+                                                        "mismap": 12,
+                                                    },
+                                                },
+                                },
                                    }
         self.parsing_mode = parsing_mode
         self.alignment_parsing_modes = ["all", "complete"]
@@ -269,9 +380,11 @@ class CollectionLast:
 
         self.records = self.records[retained_columns]
 
-        if parsing_mode == "complete":
+        if (self.format == "tab") and (parsing_mode == "complete"):
             self.records["EG2"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["EG2"]))
             self.records["E"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["E"]))
+        elif (self.format == "tab_mismap") and (parsing_mode == "complete"):
+            self.records["mismap"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["mismap"]))
 
     def sort(self, inplace=False,
              sorting_order=("target_id", "query_id", "target_start", "target_hit_len", "query_start", "query_hit_len")):
