@@ -579,6 +579,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           target_label=None,
                                           query_label=None,
                                           gridwidth=1,
+                                          show_grid=True,
                                           linewidth=0.01,
                                           scaffold_label_fontsize=13,
                                           axes_label_fontstyle="italic",
@@ -630,18 +631,41 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.add_patch(Rectangle((-bar_width, 0), bar_width, total_query_len, color=bar_color))        # left bar
         ax.add_patch(Rectangle((total_target_len, 0), bar_width, total_query_len, color=bar_color))  # right bar
 
-        for query_cum_start in query_length_df["cum_start"]:
-            ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start),
+        if show_grid:
+            for query_cum_start in query_length_df["cum_start"]:
+                ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start),
+                                   color=grid_color, linewidth=gridwidth))
+
+            ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (total_query_len, total_query_len),
                                color=grid_color, linewidth=gridwidth))
 
-        ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (total_query_len, total_query_len),
-                           color=grid_color, linewidth=gridwidth))
-
-        for target_cum_start in target_length_df["cum_start"]:
-            ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, total_query_len + bar_width),
+            for target_cum_start in target_length_df["cum_start"]:
+                ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, total_query_len + bar_width),
+                                   color=grid_color, linewidth=gridwidth))
+            ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width),
                                color=grid_color, linewidth=gridwidth))
-        ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, total_query_len + bar_width),
-                           color=grid_color, linewidth=gridwidth))
+        else:
+            for query_cum_start in query_length_df["cum_start"]:
+                ax.add_line(Line2D((-bar_width, 0), (query_cum_start, query_cum_start),
+                                   color=grid_color, linewidth=gridwidth))
+                ax.add_line(Line2D((total_target_len, total_target_len + bar_width), (query_cum_start, query_cum_start),
+                                   color=grid_color, linewidth=gridwidth))
+
+            ax.add_line(Line2D((-bar_width, 0), (total_query_len, total_query_len),
+                               color=grid_color, linewidth=gridwidth))
+            ax.add_line(Line2D((total_target_len, total_target_len + bar_width), (total_query_len, total_query_len),
+                               color=grid_color, linewidth=gridwidth))
+
+            for target_cum_start in target_length_df["cum_start"]:
+                ax.add_line(Line2D((target_cum_start, target_cum_start), (-bar_width, 0),
+                                   color=grid_color, linewidth=gridwidth))
+                ax.add_line(Line2D((target_cum_start, target_cum_start), (total_query_len, total_query_len + bar_width),
+                                   color=grid_color, linewidth=gridwidth))
+
+            ax.add_line(Line2D((total_target_len, total_target_len), (-bar_width, 0),
+                               color=grid_color, linewidth=gridwidth))
+            ax.add_line(Line2D((total_target_len, total_target_len), (total_query_len, total_query_len + bar_width),
+                               color=grid_color, linewidth=gridwidth))
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
         print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
