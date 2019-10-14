@@ -594,7 +594,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           bottom_offset=0.1,
                                           top_offset=0.9,
                                           left_offset=0.1,
-                                          right_offset=0.9):
+                                          right_offset=0.9,
+                                          x_axis_visible=False,
+                                          y_axis_visible=False):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,
@@ -728,12 +730,16 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         plt.xlim(xmin=-bar_width * 2, xmax=total_target_len + 2 * bar_width)
         plt.ylim(ymin=-bar_width * 2, ymax=total_query_len + 2 * bar_width)
 
-        ax.spines['bottom'].set_color('none')
-        ax.spines['right'].set_color('none')
-        ax.spines['left'].set_color('none')
-        ax.spines['top'].set_color('none')
-        ax.get_yaxis().set_visible(False)
-        ax.get_xaxis().set_visible(False)
+        if not x_axis_visible:
+            ax.spines['bottom'].set_color('none')
+            ax.spines['top'].set_color('none')
+
+        if not y_axis_visible:
+            ax.spines['right'].set_color('none')
+            ax.spines['left'].set_color('none')
+
+        ax.get_yaxis().set_visible(y_axis_visible)
+        ax.get_xaxis().set_visible(x_axis_visible)
 
         print("%s\t\tAdding labels finished..." % str(datetime.datetime.now()))
         print("%s\t\tDrawing alignments..." % str(datetime.datetime.now()))
