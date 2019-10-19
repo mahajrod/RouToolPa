@@ -68,7 +68,7 @@ class Jellyfish(Tool):
                 file_options = "zcat %s" % " ".join(input_files)
                 cmd = "%s | jellyfish count" % file_options
                 options += " /dev/fd/0"
-            elif filetypes_list[0] == "bam" or filetypes_list[0]  == "sam" or filetypes_list[0]  == "cram":
+            elif filetypes_list[0] == "bam" or filetypes_list[0] == "sam" or filetypes_list[0] == "cram":
                 cmd = "jellyfish count"
                 if len(input_files) > 1:
                     raise ValueError("Jellyfish can deal with one sam/bam/cram file at a time")
