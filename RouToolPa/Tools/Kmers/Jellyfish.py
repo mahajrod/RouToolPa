@@ -25,7 +25,7 @@ class Jellyfish(Tool):
         Tool.__init__(self, "jellyfish", path=path, max_threads=max_threads)
 
     def count(self, in_file, out_file, kmer_length=23, hash_size=1000000, count_both_strands=False,
-              lower_count=None, upper_count=None):
+              lower_count=None, upper_count=None, generators=None):
         # IMPORTANT! Not all options were implemented
         if (lower_count is not None) and (upper_count is not None):
             if lower_count > upper_count:
@@ -49,19 +49,30 @@ class Jellyfish(Tool):
         if len(filetypes_list) > 1:
             raise ValueError("Mix of filetypes in input files: %s" % ",".join(filetypes_list))
 
-        if filetypes_list[0] == "fasta" or filetypes_list[0] == "fastq" or filetypes_list[0] is None:
-            if filetypes_list[0] is None:
-                print("Warning!!! Type of input files was not recognized. Treating them as fasta...")
-            cmd = "jellyfish count"
-            options += " %s" % " ".join(input_files)
-        elif filetypes_list[0] == "bzip":
-            file_options = "bzcat %s" % " ".join(input_files)
-            cmd = "%s | jellyfish count" % file_options
-            options += " /dev/fd/0"
-        elif filetypes_list[0] == "gz":
-            file_options = "zcat %s" % " ".join(input_files)
-            cmd = "%s | jellyfish count" % file_options
-            options += " /dev/fd/0"
+        if generators:
+            options += " -g %s" % generators
+            options += " -G %i" % self.threads
+
+        else:
+
+            if filetypes_list[0] == "fasta" or filetypes_list[0] == "fastq" or filetypes_list[0] is None:
+                if filetypes_list[0] is None:
+                    print("Warning!!! Type of input files was not recognized. Treating them as fasta...")
+                cmd = "jellyfish count"
+                options += " %s" % " ".join(input_files)
+            elif filetypes_list[0] == "bzip":
+                file_options = "bzcat %s" % " ".join(input_files)
+                cmd = "%s | jellyfish count" % file_options
+                options += " /dev/fd/0"
+            elif filetypes_list[0] == "gz":
+                file_options = "zcat %s" % " ".join(input_files)
+                cmd = "%s | jellyfish count" % file_options
+                options += " /dev/fd/0"
+            elif filetypes_list[0] == "bam" or filetypes_list[0]  == "sam" or filetypes_list[0]  == "cram":
+                cmd = "jellyfish count"
+                if len(input_files) > 1:
+                    raise ValueError("Jellyfish can deal with one sam/bam/cram file at a time")
+                options += " --sam %s" % in_file[0]
 
         self.execute(options, cmd=cmd)
 
