@@ -529,7 +529,7 @@ class Exonerate(Tool):
                         fd_dict["sugar_" + output_type].write(tmp[6:])
                     elif tmp[:6] == "cigar:":
                         fd_dict["cigar"].write(tmp[6:])
-                        fd_dict["cigar" + output_type].write(tmp[6:])
+                        fd_dict["cigar_" + output_type].write(tmp[6:])
 
         # extract top hits from vulgar
         awk_string_prefix = "awk '{if (substr($0,0,1) != \"#\") {if ($1 != SEQ_ID) {print $0}; SEQ_ID=$1}}' "
