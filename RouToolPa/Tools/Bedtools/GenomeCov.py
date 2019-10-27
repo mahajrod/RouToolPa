@@ -87,7 +87,7 @@ class GenomeCov(Tool):
 
         stat_df.to_csv(output, sep="\t")
         if verbose:
-            print stat_df
+            print(stat_df)
         
         return stat_df
     
