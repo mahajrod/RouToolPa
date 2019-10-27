@@ -84,7 +84,7 @@ class GenomeCov(Tool):
                                   names=("scaffold", "position", "coverage"))
 
         print("Calculating stats...")
-        stat_df = coverage_df.groupby(level=1).agg(["min", "max", "mean", "median"])
+        stat_df = coverage_df.groupby(level=0).agg(["min", "max", "mean", "median"])
 
         stat_df.to_csv(output, sep="\t")
         if verbose:
