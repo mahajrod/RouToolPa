@@ -79,10 +79,11 @@ class GenomeCov(Tool):
                                          verbose=verbose)
     
     def get_coverage_stats(self, coverage_file, output, verbose=True):
-        
+        print("Reading...")
         coverage_df = pd.read_csv(coverage_file, sep='\t', header=None, index_col=(0, 1), 
                                   names=("scaffold", "position", "coverage"))
 
+        print("Calculating stats...")
         stat_df = coverage_df.groupby(level=1).agg(["min", "max", "mean", "median"])
 
         stat_df.to_csv(output, sep="\t")
