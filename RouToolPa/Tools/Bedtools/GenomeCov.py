@@ -3,6 +3,7 @@ __author__ = 'Sergei F. Kliver'
 
 from collections import OrderedDict
 import numpy as np
+import pandas as pd
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import MathRoutines
 
@@ -76,7 +77,20 @@ class GenomeCov(Tool):
                                          dtype=float, comments="#", delimiter="\t", converters=None, skiprows=0,
                                          usecols=2, unpack=False, ndmin=0, output_file=coverage_stat_file,
                                          verbose=verbose)
+    
+    def get_coverage_stats(self, coverage_file, output, verbose=True):
+        
+        coverage_df = pd.read_csv(coverage_file, sep='\t', header=None, index_col=(0, 1), 
+                                  names=("scaffold", "position", "coverage"))
 
+        stat_df = coverage_df.groupby(level=1).agg(["min", "max", "mean", "median"])
+
+        stat_df.to_csv(output, sep="\t")
+        if verbose:
+            print stat_df
+        
+        return stat_df
+    
     def collapse_coverage_file(self, coverage_file, output_file):
 
         awk_string = "awk -F'\\t' 'BEGIN {SCAF=\"\"; LEN=\"\"; COV=\"\"} {if (($1 != SCAF)) {if (NR > 1) {printf \"%%s\\t%%s\\t%%s\\n\",SCAF,LEN, COV}; SCAF=$1; LEN=$2; COV=$3} else {LEN=$2; COV=COV\",\"$3}} ; END {printf \"%%s\t%%s\t%%s\n\",SCAF,LEN, COV} %s > %s" % (coverage_file, output_file)
