@@ -17,7 +17,7 @@ from Bio import SeqIO, Entrez
 from Bio.SeqRecord import SeqRecord
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Annotations import AnnotationsRoutines
-from Parsers.GFF import CollectionGFF
+from RouToolPa.Parsers.GFF import CollectionGFF
 from RouToolPa.Collections.General import IdList, SynDict, TwoLvlDict, IdSet
 
 
