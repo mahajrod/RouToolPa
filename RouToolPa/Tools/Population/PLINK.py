@@ -15,7 +15,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from RouToolPa.Tools.Abstract import Tool
-from Parsers.PLINK import PLINKReport
+from RouToolPa.Parsers.PLINK import PLINKReport
 
 from RouToolPa.Routines import MatplotlibRoutines
 

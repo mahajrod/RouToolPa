@@ -16,7 +16,7 @@ chisqprob = lambda chisq, df: stats.chi2.sf(chisq, df)
 from statsmodels.sandbox.stats.multicomp import fdrcorrection0
 
 from RouToolPa.Tools.Abstract import Tool
-from Parsers.PAML import CodeMLReport
+from RouToolPa.Parsers.PAML import CodeMLReport
 from RouToolPa.Routines import FileRoutines
 
 from RouToolPa.Collections.General import TwoLvlDict
