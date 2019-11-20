@@ -16,7 +16,7 @@ class PSMC(Tool):
         Tool.__init__(self, "plink", path=path, max_threads=max_threads, max_memory=max_memory, max_per_thread_memory=max_per_thread_memory)
 
     def psmc_plot(self, sample_label_list, psmc_list, generation_time, absolute_mutation_rate,
-                  output_prefix, plot_grid=False):
+                  output_prefix, plot_grid=False, min_generations=None, max_generations=None):
         """
         -u FLOAT   absolute mutation rate per nucleotide [2.5e-08]
          -s INT     skip used in data preparation [100]
@@ -44,6 +44,8 @@ class PSMC(Tool):
         options += " -p" # TODO: find sence of this options
         options += " -G" if plot_grid else ""
         options += " -M %s" % ",".join(sample_label_list)
+        options += " -X %f" % max_generations if max_generations else ""
+        options += " -x %f" % min_generations if min_generations else ""
         options += " %s" % output_prefix
         options += " %s" % " ".join(psmc_list)
 
