@@ -628,7 +628,10 @@ class FileRoutines:
             for line in in_fd:
                 if line[:comments_prefix_len] == comments_prefix:
                     continue
-                yield line.strip().split(separator)
+                try:
+                    yield line.strip().split(separator)
+                except StopIteration:
+                    break
 
     def file_line_generator(self, input_file, comments_prefix="#"):
         comments_prefix_len = len(comments_prefix)
