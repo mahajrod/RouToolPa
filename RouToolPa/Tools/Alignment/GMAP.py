@@ -34,9 +34,8 @@ class GMAP(Tool):
 
         line_list_gen = self.file_line_as_list_generator(in_file)
         with open(out_file, "w") as out_fd:
-            line_list = [None, None, None]
             write_flag = False
-            while True:
+            for line_list in line_list_gen:
                 if line_list[2] == transcript_feature:
                     attributtes_dict = dict(map(lambda s: s.split("="), line_list[8].split(";")))
                     if check(attributtes_dict):
@@ -49,7 +48,3 @@ class GMAP(Tool):
                 elif ((line_list[2] == cds_feature) or (line_list[2] == exon_feature)) and write_flag:
                     out_fd.write("\t".join(line_list))
                     out_fd.write("\n")
-                try:
-                    line_list = line_list_gen.next()
-                except StopIteration:
-                    break
