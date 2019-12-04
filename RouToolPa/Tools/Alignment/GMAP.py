@@ -54,4 +54,4 @@ class GMAP(Tool):
                     out_fd.write("\n")
 
         if verbose:
-            print("Total transcripts: %i\n Retained transcripts: %i\n" % (total_transcripts, retained_transcripts))
+            print("Total transcripts: %i\nRetained transcripts: %i\n" % (total_transcripts, retained_transcripts))
