@@ -49,5 +49,7 @@ class GMAP(Tool):
                 elif ((line_list[2] == cds_feature) or (line_list[2] == exon_feature)) and write_flag:
                     out_fd.write("\t".join(line_list))
                     out_fd.write("\n")
-
-                line_list = line_list_gen.next()
+                try:
+                    line_list = line_list_gen.next()
+                except StopIteration:
+                    break
