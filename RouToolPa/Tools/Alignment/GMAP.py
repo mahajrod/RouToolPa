@@ -34,7 +34,7 @@ class GMAP(Tool):
 
         line_list_gen = self.file_line_as_list_generator(in_file)
         with open(out_file, "w") as out_fd:
-            line_list = [None, None]
+            line_list = [None, None, None]
             write_flag = False
             while True:
                 if line_list[2] == transcript_feature:
