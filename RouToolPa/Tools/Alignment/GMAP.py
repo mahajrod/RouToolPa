@@ -32,7 +32,8 @@ class GMAP(Tool):
         else:
             raise ValueError("ERROR!!! Neither minimum coverage nor minimum identity was set!")
 
-        with self.file_line_as_list_generator(in_file) as line_list_gen, open(out_file, "w") as out_fd:
+        line_list_gen = self.file_line_as_list_generator(in_file)
+        with open(out_file, "w") as out_fd:
             line_list = [None, None]
             write_flag = False
             while True:
