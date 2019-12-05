@@ -64,15 +64,25 @@ class Emapper(Tool):
 
     @staticmethod
     def convert_emapper_annotation_file_to_fam(emapper_annotation_file, output_fam, eggnogdb_prefix=None,
-                                               species_name=None, label_separator="."):
+                                               species_name=None, label_separator=".", diamond_mode=False, database=None):
         fam_dict = SynDict()
+
+        if diamond_mode and (database is not None):
+            def extract_fam_from_line(line_list):
+                return dict(map(lambda s: s.split("@")[::-1], line_list[9].split(",")))[database]
+        elif diamond_mode:
+            raise ValueError("ERROR!!! Database name (veNOG or other) is required in diamond mode!")
+        else:
+            def extract_fam_from_line(line_list):
+                return line_list[10].split("|")[0]
+
         with open(emapper_annotation_file, "r") as annotations_fd:
             for line in annotations_fd:
                 if line[0] == "#":
                     continue
                 line_list = line.split("\t")
 
-                fam_id = line_list[10].split("|")[0]
+                fam_id = extract_fam_from_line(line_list)
                 if not(eggnogdb_prefix is None):
                     fam_id = eggnogdb_prefix + fam_id
 
