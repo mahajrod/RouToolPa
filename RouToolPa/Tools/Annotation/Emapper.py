@@ -69,7 +69,8 @@ class Emapper(Tool):
 
         if diamond_mode and (database is not None):
             def extract_fam_from_line(line_list):
-                return dict(map(lambda s: s.split("@")[::-1], line_list[9].split(",")))[database]
+                db_dict = dict(map(lambda s: s.split("@")[::-1], line_list[9].split(",")))
+                return db_dict[database] if database in db_dict else "unknown"
         elif diamond_mode:
             raise ValueError("ERROR!!! Database name (veNOG or other) is required in diamond mode!")
         else:
