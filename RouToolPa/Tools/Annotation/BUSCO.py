@@ -105,7 +105,7 @@ class BUSCO(Tool):
         if 2 <= len(busco_file_list) <= 3:
             fig, subplot_list = plt.subplots(2, 2, figsize=(6, 6))
             plt.suptitle("Overlaps for BUSCO categories between assemblies/genomes")
-            print subplot_list
+            #print(subplot_list)
             for status, index in zip(self.status_list, range(0, 4)):
 
                 plt.sca(subplot_list[index // 2][index % 2])
