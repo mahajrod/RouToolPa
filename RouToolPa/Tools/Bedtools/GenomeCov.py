@@ -77,7 +77,68 @@ class GenomeCov(Tool):
                                          dtype=float, comments="#", delimiter="\t", converters=None, skiprows=0,
                                          usecols=2, unpack=False, ndmin=0, output_file=coverage_stat_file,
                                          verbose=verbose)
-    
+
+    @staticmethod
+    def mean_from_dict(coverage_dict):
+        sum = 0
+        total_sites = 0
+        for coverage in coverage_dict:
+            sum += coverage * coverage_dict[coverage]
+            total_sites += coverage_dict[coverage]
+
+        return float(sum) / float(total_sites)
+
+    @staticmethod
+    def median_from_dict(coverage_dict):
+        total_sites = 0
+        for coverage in coverage_dict:
+            total_sites += coverage_dict[coverage]
+        if total_sites % 2 == 0:
+            left_half_sites = right_half_sites = total_sites / 2
+        else:
+            left_half_sites = int(total_sites / 2)
+            right_half_sites = left_half_sites + 1
+
+        sorted_coverage = list(coverage_dict.keys())
+        sorted_coverage.sort()
+
+        count = 0
+        for i in range(0, len(sorted_coverage)):
+            count += coverage_dict[sorted_coverage[i]]
+
+            if count >= right_half_sites:
+                return float(sorted_coverage[i])
+            elif count == left_half_sites:
+                return float(sorted_coverage[i] + sorted_coverage[i+1]) / 2
+
+    def get_stats_from_coverage_file_stream_version(self, coverage_file, output, verbose=True,
+                                                    scaffold_column=0, coverage_column=1,
+                                                    separator="\t"):
+        prev_scaffold = None
+        coverage_dict = OrderedDict()
+        stats = OrderedDict()
+        with self.metaopen(coverage_file, "r") as in_fd:
+            for line in in_fd:
+                line_list = line.strip().split(separator)
+                scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
+
+                if scaffold != prev_scaffold:
+                    stats[scaffold] = [min(list(coverage_dict.keys())),
+                                       max(list(coverage_dict.keys())),
+                                       self.mean_from_dict(coverage_dict),
+                                       self.median_from_dict(coverage_dict)]
+                else:
+                    if coverage in coverage_dict:
+                        coverage_dict[coverage] += 1
+                    else:
+                        coverage_dict[coverage] = 1
+
+        stats = pd.DataFrame.from_dict(stats, orient="index")
+
+        stats.to_csv(output, sep="\t")
+        if verbose:
+            print stats
+
     def get_coverage_stats(self, coverage_file, output, verbose=True):
         print("Reading...")
         coverage_df = pd.read_csv(coverage_file, sep='\t', header=None, index_col=(0, 1), 
