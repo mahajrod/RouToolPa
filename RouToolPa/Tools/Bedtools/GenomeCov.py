@@ -122,7 +122,7 @@ class GenomeCov(Tool):
                 line_list = line.strip().split(separator)
                 scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
 
-                if scaffold != prev_scaffold:
+                if (scaffold != prev_scaffold) and (prev_scaffold is not None):
                     stats[scaffold] = [min(list(coverage_dict.keys())),
                                        max(list(coverage_dict.keys())),
                                        self.mean_from_dict(coverage_dict),
