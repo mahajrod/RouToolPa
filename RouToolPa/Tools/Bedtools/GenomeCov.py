@@ -117,7 +117,7 @@ class GenomeCov(Tool):
         coverage_dict = OrderedDict()
         stats = OrderedDict()
         with self.metaopen(coverage_file, "r") as in_fd:
-            line_list = in_fd.next().strip().split(separator)
+            line_list = in_fd.readline().strip().split(separator)
             scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
             coverage_dict[coverage] = 1
             prev_scaffold = scaffold
