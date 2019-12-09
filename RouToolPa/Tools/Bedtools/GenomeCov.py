@@ -136,7 +136,12 @@ class GenomeCov(Tool):
                         coverage_dict[coverage] += 1
                     else:
                         coverage_dict[coverage] = 1
-
+            else:
+                stats[scaffold] = [min(list(coverage_dict.keys())),
+                                   max(list(coverage_dict.keys())),
+                                   self.mean_from_dict(coverage_dict),
+                                   self.median_from_dict(coverage_dict)]
+        print stats
         stats = pd.DataFrame.from_dict(stats, orient="index")
 
         stats.to_csv(output, sep="\t")
