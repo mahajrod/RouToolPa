@@ -94,10 +94,10 @@ class GenomeCov(Tool):
         for coverage in coverage_dict:
             total_sites += coverage_dict[coverage]
         if total_sites % 2 == 0:
-            left_half_sites = right_half_sites = total_sites / 2
-        else:
-            left_half_sites = int(total_sites / 2)
+            left_half_sites = total_sites / 2
             right_half_sites = left_half_sites + 1
+        else:
+            left_half_sites = right_half_sites = int(total_sites / 2) + 1
 
         sorted_coverage = list(coverage_dict.keys())
         sorted_coverage.sort()
@@ -107,8 +107,10 @@ class GenomeCov(Tool):
             count += coverage_dict[sorted_coverage[i]]
 
             if count >= right_half_sites:
+                #print ("1111")
                 return float(sorted_coverage[i])
             elif count == left_half_sites:
+                #print("11111")
                 return float(sorted_coverage[i] + sorted_coverage[i+1]) / 2
 
     def get_stats_from_coverage_file_stream_version(self, coverage_file, output, verbose=True,
