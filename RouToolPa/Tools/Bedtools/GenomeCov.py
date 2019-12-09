@@ -137,9 +137,10 @@ class GenomeCov(Tool):
 
         stats.to_csv(output, sep="\t")
         if verbose:
-            print stats
+            print(stats)
 
-    def get_coverage_stats(self, coverage_file, output, verbose=True):
+    @staticmethod
+    def get_coverage_stats(coverage_file, output, verbose=True):
         print("Reading...")
         coverage_df = pd.read_csv(coverage_file, sep='\t', header=None, index_col=(0, 1), 
                                   names=("scaffold", "position", "coverage"))
