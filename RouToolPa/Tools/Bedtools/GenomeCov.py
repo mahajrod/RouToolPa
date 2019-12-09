@@ -114,15 +114,19 @@ class GenomeCov(Tool):
     def get_stats_from_coverage_file_stream_version(self, coverage_file, output, verbose=True,
                                                     scaffold_column=0, coverage_column=1,
                                                     separator="\t"):
-        prev_scaffold = None
         coverage_dict = OrderedDict()
         stats = OrderedDict()
         with self.metaopen(coverage_file, "r") as in_fd:
+            line_list = in_fd.next().strip().split(separator)
+            scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
+            coverage_dict[coverage] = 1
+            prev_scaffold = scaffold
+
             for line in in_fd:
                 line_list = line.strip().split(separator)
                 scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
 
-                if (scaffold != prev_scaffold) and (prev_scaffold is not None):
+                if scaffold != prev_scaffold:
                     stats[scaffold] = [min(list(coverage_dict.keys())),
                                        max(list(coverage_dict.keys())),
                                        self.mean_from_dict(coverage_dict),
