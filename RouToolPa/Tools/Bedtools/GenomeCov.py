@@ -142,7 +142,7 @@ class GenomeCov(Tool):
                                    self.mean_from_dict(coverage_dict),
                                    self.median_from_dict(coverage_dict)]
         print(stats)
-        stats = pd.DataFrame.from_dict(stats, orient="index")
+        stats = pd.DataFrame.from_dict(stats, orient="index", columns=["scaffold", "min", "max", "mean", "median"])
 
         stats.to_csv(output, sep="\t")
         if verbose:
