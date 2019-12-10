@@ -64,7 +64,7 @@ class Emapper(Tool):
 
     @staticmethod
     def convert_emapper_annotation_file_to_fam(emapper_annotation_file, output_fam, eggnogdb_prefix=None,
-                                               species_name=None, label_separator=".", diamond_mode=False, database=None):
+                                               species_name=None, label_separator="@", diamond_mode=False, database=None):
         fam_dict = SynDict()
 
         if diamond_mode and (database is not None):
