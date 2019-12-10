@@ -28,7 +28,7 @@ class FileRoutines:
                                "cram": [".cram"]}
 
     @staticmethod
-    def metaopen(filename, flags, buffering=100000000):
+    def metaopen(filename, flags, buffering=None):
         if isinstance(filename, file):
             return filename
         elif filename[-3:] == ".gz":
@@ -36,7 +36,10 @@ class FileRoutines:
         elif filename[-4:] == ".bz2":
             return bz2.open(filename, flags)
         else:
-            return open(filename, flags, buffering=buffering)
+            if buffering:
+                return open(filename, flags, buffering=buffering)
+            else:
+                return open(filename, flags)
 
     @staticmethod
     def add_external_extraction_to_filename(filename):
