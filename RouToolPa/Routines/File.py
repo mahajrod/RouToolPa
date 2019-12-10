@@ -36,7 +36,7 @@ class FileRoutines:
         elif filename[-4:] == ".bz2":
             return bz2.open(filename, flags)
         else:
-            if buffering:
+            if buffering is not None:
                 return open(filename, flags, buffering=buffering)
             else:
                 return open(filename, flags)
