@@ -132,6 +132,7 @@ class GenomeCov(Tool):
                     print("%s\tProcessed %i lines" % (str(datetime.datetime.now()), line_counter))
                 if scaffold != current_scaffold:
                     #print(scaffold)
+                    print("%s\tCalculating stats for %s" % (str(datetime.datetime.now()), current_scaffold))
                     stats[current_scaffold] = [min(list(coverage_dict.keys())),
                                                max(list(coverage_dict.keys())),
                                                self.mean_from_dict(coverage_dict),
