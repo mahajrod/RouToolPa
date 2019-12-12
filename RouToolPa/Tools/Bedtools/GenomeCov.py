@@ -118,22 +118,29 @@ class GenomeCov(Tool):
                                                     separator="\t", buffering=None):
 
         stats = OrderedDict()
+        summary_stats = OrderedDict()
         with self.metaopen(coverage_file, "r", buffering=buffering) as in_fd:
             line_list = in_fd.readline().strip().split(separator)
             scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
             coverage_dict = OrderedDict([(coverage, 1)])
+            summary_coverage_dict = OrderedDict([(coverage, 1)])
             current_scaffold = scaffold
             line_counter = 1
             for line in in_fd:
                 line_list = line.strip().split(separator)
                 scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
+                if coverage in summary_coverage_dict:
+                    summary_coverage_dict[coverage] += 1
+                else:
+                    summary_coverage_dict[coverage] = 1
                 line_counter += 1
                 if line_counter % 1000000 == 0:
                     print("%s\tProcessed %i lines" % (str(datetime.datetime.now()), line_counter))
                 if scaffold != current_scaffold:
                     #print(scaffold)
                     print("%s\tCalculating stats for %s" % (str(datetime.datetime.now()), current_scaffold))
-                    stats[current_scaffold] = [min(list(coverage_dict.keys())),
+                    stats[current_scaffold] = [sum(list(coverage_dict.values())),
+                                               min(list(coverage_dict.keys())),
                                                max(list(coverage_dict.keys())),
                                                self.mean_from_dict(coverage_dict),
                                                self.median_from_dict(coverage_dict)]
@@ -148,14 +155,23 @@ class GenomeCov(Tool):
             else:
                 #print("END")
                 #print(scaffold)
-                stats[current_scaffold] = [min(list(coverage_dict.keys())),
+                stats[current_scaffold] = [sum(list(coverage_dict.values())),
+                                           min(list(coverage_dict.keys())),
                                            max(list(coverage_dict.keys())),
                                            self.mean_from_dict(coverage_dict),
                                            self.median_from_dict(coverage_dict)]
-        #print(stats)
-        stats = pd.DataFrame.from_dict(stats, orient="index", columns=["min", "max", "mean", "median"])
 
+        summary_stats["all"] = [sum(list(summary_coverage_dict.values())),
+                                min(list(summary_coverage_dict.keys())),
+                                max(list(summary_coverage_dict.keys())),
+                                self.mean_from_dict(summary_coverage_dict),
+                                self.median_from_dict(summary_coverage_dict)]
+
+        #print(stats)
+        stats = pd.DataFrame.from_dict(stats, orient="index", columns=["length", "min", "max", "mean", "median"])
+        summary_stats = pd.DataFrame.from_dict(summary_stats, orient="index", columns=["length", "min", "max", "mean", "median"])
         stats.to_csv(output, sep="\t", index_label="#scaffold")
+        summary_stats.to_csv(output, sep="\t", index_label="#scaffold")
         if verbose:
             print(stats)
 

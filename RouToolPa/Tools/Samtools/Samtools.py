@@ -278,6 +278,8 @@ class SamtoolsV1(Tool):
         options += " %s" % input_bam if input_bam else " -"
 
         self.execute(options, cmd="samtools view ")
+        if output_bam:
+            self.index(output_bam)
 
 
 class SamtoolsV0(SamtoolsV1, Tool):
