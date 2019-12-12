@@ -122,19 +122,20 @@ class GenomeCov(Tool):
             line_list = in_fd.readline().strip().split(separator)
             scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
             coverage_dict = OrderedDict([(coverage, 1)])
-            prev_scaffold = scaffold
+            current_scaffold = scaffold
 
             for line in in_fd:
                 line_list = line.strip().split(separator)
                 scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
 
-                if scaffold != prev_scaffold:
+                if scaffold != current_scaffold:
                     print(scaffold)
-                    stats[scaffold] = [min(list(coverage_dict.keys())),
-                                       max(list(coverage_dict.keys())),
-                                       self.mean_from_dict(coverage_dict),
-                                       self.median_from_dict(coverage_dict)]
+                    stats[current_scaffold] = [min(list(coverage_dict.keys())),
+                                               max(list(coverage_dict.keys())),
+                                               self.mean_from_dict(coverage_dict),
+                                               self.median_from_dict(coverage_dict)]
                     coverage_dict = OrderedDict([(coverage, 1)])
+                    current_scaffold = scaffold
 
                 else:
                     if coverage in coverage_dict:
@@ -144,10 +145,10 @@ class GenomeCov(Tool):
             else:
                 print("END")
                 print(scaffold)
-                stats[scaffold] = [min(list(coverage_dict.keys())),
-                                   max(list(coverage_dict.keys())),
-                                   self.mean_from_dict(coverage_dict),
-                                   self.median_from_dict(coverage_dict)]
+                stats[current_scaffold] = [min(list(coverage_dict.keys())),
+                                           max(list(coverage_dict.keys())),
+                                           self.mean_from_dict(coverage_dict),
+                                           self.median_from_dict(coverage_dict)]
         print(stats)
         stats = pd.DataFrame.from_dict(stats, orient="index", columns=["min", "max", "mean", "median"])
 
