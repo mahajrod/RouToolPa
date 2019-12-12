@@ -133,6 +133,8 @@ class GenomeCov(Tool):
                                        max(list(coverage_dict.keys())),
                                        self.mean_from_dict(coverage_dict),
                                        self.median_from_dict(coverage_dict)]
+                    coverage_dict = OrderedDict()
+
                 else:
                     if coverage in coverage_dict:
                         coverage_dict[coverage] += 1
