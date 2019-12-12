@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 __author__ = 'Sergei F. Kliver'
-
+import datetime
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
@@ -123,13 +123,15 @@ class GenomeCov(Tool):
             scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
             coverage_dict = OrderedDict([(coverage, 1)])
             current_scaffold = scaffold
-
+            line_counter = 1
             for line in in_fd:
                 line_list = line.strip().split(separator)
                 scaffold, coverage = line_list[scaffold_column], int(line_list[coverage_column])
-
+                line_counter += 1
+                if line_counter % 1000000 == 0:
+                    print("%s\tProcessed %i lines" % (str(datetime.datetime.now()), line_counter))
                 if scaffold != current_scaffold:
-                    print(scaffold)
+                    #print(scaffold)
                     stats[current_scaffold] = [min(list(coverage_dict.keys())),
                                                max(list(coverage_dict.keys())),
                                                self.mean_from_dict(coverage_dict),
@@ -143,13 +145,13 @@ class GenomeCov(Tool):
                     else:
                         coverage_dict[coverage] = 1
             else:
-                print("END")
-                print(scaffold)
+                #print("END")
+                #print(scaffold)
                 stats[current_scaffold] = [min(list(coverage_dict.keys())),
                                            max(list(coverage_dict.keys())),
                                            self.mean_from_dict(coverage_dict),
                                            self.median_from_dict(coverage_dict)]
-        print(stats)
+        #print(stats)
         stats = pd.DataFrame.from_dict(stats, orient="index", columns=["min", "max", "mean", "median"])
 
         stats.to_csv(output, sep="\t", index_label="#scaffold")
