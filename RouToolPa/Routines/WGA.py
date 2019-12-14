@@ -27,7 +27,7 @@ class WGARoutines(SequenceRoutines):
         pass
 
     def label_maf(self, input, output, label_list, separator="."):
-        with open(input, "r") as in_fd, open(output, "r") as out_fd:
+        with open(input, "r") as in_fd, open(output, "w") as out_fd:
             label_id = 0
 
             for line in in_fd:
