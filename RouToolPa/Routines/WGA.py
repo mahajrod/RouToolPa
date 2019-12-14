@@ -26,11 +26,18 @@ class WGARoutines(SequenceRoutines):
         self.psl_target_id_column = 13         # zero-based
         pass
 
-    def label_maf(self, input, output, label_list):
+    def label_maf(self, input, output, label_list, separator="."):
         with open(input, "r") as in_fd, open(output, "r") as out_fd:
+            label_id = 0
+
             for line in in_fd:
-                if line[0] == "a":
+                if line[0] == "s":
+                    out_fd.write("s %s%s%s" % (label_list[label_id], separator, line[2:]))
+                    label_id += 1
+                elif line[0] == "a":
                     out_fd.write(line)
-                    pass
+                    label_id = 0
+                elif (line[0] == "q") or (line[0] == "i"):
+                    out_fd.write("%s %s%s%s" % (line[0], label_list[label_id-1], separator, line[2:]))
                 else:
                     out_fd.write(line)
