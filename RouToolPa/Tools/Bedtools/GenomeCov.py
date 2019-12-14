@@ -113,7 +113,7 @@ class GenomeCov(Tool):
                 #print("11111")
                 return float(sorted_coverage[i] + sorted_coverage[i+1]) / 2
 
-    def get_stats_from_coverage_file_stream_version(self, coverage_file, output, verbose=True,
+    def get_stats_from_coverage_file_stream_version(self, coverage_file, output_prefix, verbose=True,
                                                     scaffold_column=0, coverage_column=1,
                                                     separator="\t", buffering=None):
 
@@ -170,8 +170,8 @@ class GenomeCov(Tool):
         #print(stats)
         stats = pd.DataFrame.from_dict(stats, orient="index", columns=["length", "min", "max", "mean", "median"])
         summary_stats = pd.DataFrame.from_dict(summary_stats, orient="index", columns=["length", "min", "max", "mean", "median"])
-        stats.to_csv(output, sep="\t", index_label="#scaffold")
-        summary_stats.to_csv(output, sep="\t", index_label="#scaffold")
+        stats.to_csv("%s.per_scaffold.stat" % output_prefix, sep="\t", index_label="#scaffold")
+        summary_stats.to_csv("%s.all.stat" % output_prefix, sep="\t", index_label="#scaffold")
         if verbose:
             print(stats)
 
