@@ -2605,6 +2605,14 @@ class SequenceRoutines(FileRoutines):
         fasta_collection.write_by_syn(output_fasta, syn_dict)
 
     @staticmethod
+    def p_distance(seq_a, seq_b, seq_len):
+        dist = 0
+        for a, b in range(0, seq_len):
+            if a != b:
+                dist += 1
+        return dist
+
+    @staticmethod
     def draw_length_pie(length_file, output_prefix, thresholds=(1000, 10000, 100000, 1000000, 10000000),
                         labels=("1-10 kbp", "10-100 kbp", "0.1-1 Mbp", "1-10 Mbp", "10+ Mbp"),
                         colors=("red", "orange", "yellow", "blue", "green"),

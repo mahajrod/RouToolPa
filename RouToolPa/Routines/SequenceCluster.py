@@ -87,6 +87,43 @@ class SequenceClusterRoutines(SequenceRoutines):
         merged_clusters.write(output_file, splited_values=True)
         return merged_clusters
 
+    @staticmethod
+    def extract_clusters_by_size(cluster_dict, min_cluster_size=None, max_cluster_size=None, white_list_ids=None, out_file=None):
+        filtered_cluster_dict = SynDict()
+
+        if (min_cluster_size is not None) and (max_cluster_size is not None):
+            def filt_exp(element_list):
+                return True if min_cluster_size <= len(element_list) <= max_cluster_size else False
+        elif max_cluster_size is not None:
+            def filt_exp(element_list):
+                return True if len(element_list) <= max_cluster_size else False
+        elif min_cluster_size is not None:
+            def filt_exp(element_list):
+                return True if min_cluster_size <= len(element_list) else False
+        else:
+            raise ValueError("ERROR!!! Neither minimum nor maximum cluster size thresholds were set")
+
+        for cluster_id in cluster_dict:
+            if white_list_ids and (cluster_id not in white_list_ids):
+                continue
+
+            if filt_exp(cluster_dict[cluster_id]):
+                filtered_cluster_dict[cluster_id] = cluster_dict[cluster_id]
+
+        if out_file:
+            filtered_cluster_dict.write(filename=out_file, splited_values=True)
+
+        return filtered_cluster_dict
+
+    def extract_clusters_by_size_from_file(self, cluster_file,
+                                           min_cluster_size=None, max_cluster_size=None,
+                                           white_list_ids=None, out_file=None):
+        cluster_dict = SynDict(filename=cluster_file, split_values=True)
+
+        return self.extract_clusters_by_size(cluster_dict, min_cluster_size=min_cluster_size,
+                                             max_cluster_size=max_cluster_size,
+                                             white_list_ids=white_list_ids, out_file=out_file)
+
     def extract_monocluster_ids(self, clusters_dict, white_list_ids=None, out_file=None):
         """
         Extracts clusters with only one sequence in all species.
@@ -189,7 +226,8 @@ class SequenceClusterRoutines(SequenceRoutines):
                                     elements_with_absent_synonyms_file=None,
                                     syn_file_key_column_index=0,
                                     syn_file_value_column_index=1,
-                                    syn_file_column_separator='\t'):
+                                    syn_file_column_separator='\t',
+                                    keep_only_unique_elements=False):
         syn_dict = SynDict()
         syn_dict.read(syn_file, comments_prefix="#", key_index=syn_file_key_column_index,
                       value_index=syn_file_value_column_index, separator=syn_file_column_separator)
@@ -216,7 +254,7 @@ class SequenceClusterRoutines(SequenceRoutines):
                     renamed_element_list.append(element)
 
             if (not remove_clusters_with_not_renamed_elements) or (remove_clusters_with_not_renamed_elements and all_elements_were_renamed_flag):
-                output_clusters_dict[cluster] = renamed_element_list
+                output_clusters_dict[cluster] = set(renamed_element_list) if keep_only_unique_elements else renamed_element_list
 
         output_clusters_dict.write(output_clusters_file, splited_values=True)
 

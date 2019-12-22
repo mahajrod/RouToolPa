@@ -2,7 +2,7 @@ __author__ = 'mahajrod'
 import os
 from collections import OrderedDict
 from Bio.Seq import Seq
-from RouToolPa.Collections.General import TwoLvlDict
+from RouToolPa.Collections.General import TwoLvlDict, IdSet
 from RouToolPa.Routines.File import FileRoutines
 
 
@@ -268,3 +268,30 @@ class FastQRoutines(FileRoutines):
 
         if stat_file:
             counts.write(stat_file)
+    """
+    def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix):
+        barcode_set = IdSet(filename=barcode_file)
+
+        output_dict = {
+                       "good": {
+                                "forward": "%s.good_1.fastq" % output_prefix,
+                                "reverse": "%s.good_2.fastq" % output_prefix,
+                                "index": "%s.good_I.fastq" % output_prefix,
+                                "linker": "%s.good_L.fastq" % output_prefix,
+                                },
+                       "bad":  {
+                                "forward": "%s.bad_1.fastq" % output_prefix,
+                                "reverse": "%s.bad_2.fastq" % output_prefix,
+                                "index": "%s.bad_I.fastq" % output_prefix,
+                           "linker": "%s.good_L.fastq" % output_prefix,
+                                },
+                       }
+        output_dict_fd = {}
+
+        for quality in "good", "bad":
+            output_dict_fd[quality] = {}
+            for seq_type in ["forward", "reverse", "index", "linker"]:
+                output_dict_fd[quality][seq_type] = open(output_dict[quality][seq_type], "w")
+        for forward, re
+        with open(forward_file, "")
+    """

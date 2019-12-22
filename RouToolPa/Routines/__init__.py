@@ -17,6 +17,7 @@ from RouToolPa.Routines.Ensembl import EnsemblRoutines
 from RouToolPa.Routines.TreeFam import TreeFamRoutines
 from RouToolPa.Routines.Drawing import DrawingRoutines
 from RouToolPa.Routines.Sequence import SequenceRoutines
+from RouToolPa.Routines.Haplotype import HaplotypeRoutines
 from RouToolPa.Routines.Evolution import EvolutionRoutines
 from RouToolPa.Routines.Alignment import AlignmentRoutines
 from RouToolPa.Routines.Expression import ExpressionRoutines
@@ -44,6 +45,7 @@ EnsemblRoutines = EnsemblRoutines()
 TreeFamRoutines = TreeFamRoutines()
 DrawingRoutines = DrawingRoutines()
 SequenceRoutines = SequenceRoutines()
+HaplotypeRoutines = HaplotypeRoutines()
 EvolutionRoutines = EvolutionRoutines()
 AlignmentRoutines = AlignmentRoutines()
 ExpressionRoutines = ExpressionRoutines()
