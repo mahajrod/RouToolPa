@@ -12,11 +12,11 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 
-class CollectionSequence(FileRoutines):
+class CollectionSequence(SequenceRoutines):
 
     def __init__(self, in_file=None, records=None, description=None,
                  external_description=None,
@@ -326,3 +326,27 @@ class CollectionSequence(FileRoutines):
 
         if not in_place:
             return collection
+
+    def calculate_p_distance(self):
+        if self.parsing_mode == "generator":
+            raise ValueError("ERROR!!! P distance calculation was not implemented for generator mode!")
+
+        if self.seq_lengths is None:
+            self.get_stats_and_features(count_gaps=False, sort=False)
+        seq_len = self.seq_lengths["length"].unique()
+        if len(seq_len) > 1:
+            raise ValueError("ERROR!!! Some sequences have different length!")
+        else:
+            seq_len = seq_len[0]
+
+        distance_df = pd.DataFrame(0, index=self.scaffolds, columns=self.scaffolds)
+        for record_id_a in self.scaffolds:
+            for record_id_b in self.scaffolds:
+                if record_id_a == record_id_b:
+                    continue
+
+                distance_df.loc[record_id_a, record_id_b] = distance_df.loc[record_id_b, record_id_a] = self.p_distance(self.records[record_id_a], self.records[record_id_b], seq_len)
+
+        return distance_df
+
+
