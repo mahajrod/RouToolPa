@@ -52,7 +52,7 @@ class GenomeCov(Tool):
 
     def get_bam_coverage_stats(self, input_bam, output_prefix, genome_bed=None,
                                max_coverage=None, min_coverage=None,
-                               verbose=True):
+                               verbose=True, calc_stats=True):
         #options_list = []
 
         each_position_coverage_file = "%s.tab" % output_prefix
@@ -72,11 +72,11 @@ class GenomeCov(Tool):
         self.parallel_execute(options_list, threads=2)
 
         #~/Soft/MAVR/scripts/math/get_stats_from_numer_data.py -i A_ventralis_pe.nodup.q20.tab -o A_ventralis_pe.nodup.q20.stat -l 2
-
-        MathRoutines.get_stats_from_file(each_position_coverage_file, minimum=min_coverage, maximum=max_coverage,
-                                         dtype=float, comments="#", delimiter="\t", converters=None, skiprows=0,
-                                         usecols=2, unpack=False, ndmin=0, output_file=coverage_stat_file,
-                                         verbose=verbose)
+        if calc_stats:
+            MathRoutines.get_stats_from_file(each_position_coverage_file, minimum=min_coverage, maximum=max_coverage,
+                                             dtype=float, comments="#", delimiter="\t", converters=None, skiprows=0,
+                                             usecols=2, unpack=False, ndmin=0, output_file=coverage_stat_file,
+                                             verbose=verbose)
 
     @staticmethod
     def mean_from_dict(coverage_dict):
