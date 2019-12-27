@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines import FileRoutines
 
 
 class FastqDump(Tool):
@@ -24,7 +23,7 @@ class FastqDump(Tool):
 
         option_list = []
         for sra_id in sra_id_list:
-            sra_id_dir = "%s/%s" % output_dir, sra_id
+            sra_id_dir = "%s/%s/" % (output_dir, sra_id)
             try:
                 os.mkdir(sra_id_dir)
             except OSError:
