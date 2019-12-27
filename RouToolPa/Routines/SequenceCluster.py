@@ -7,8 +7,6 @@ from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Collections.General import SynDict, IdSet, IdList
 
 
-
-
 class SequenceClusterRoutines(SequenceRoutines):
 
     def __init__(self):
@@ -617,3 +615,10 @@ class SequenceClusterRoutines(SequenceRoutines):
 
         self.cluster_sequence_names_by_id_fragment(seq_id_list, id_element_index,
                                                    id_separator=id_separator, output_prefix=output_prefix)
+
+    @staticmethod
+    def syn2fam(syn_file, fam_file, key_column=0, value_column=1, separator="\t"):
+        syn_dict = SynDict(filename=syn_file, allow_repeats_of_key=True, key_index=key_column,
+                           value_index=value_column, separator=separator, split_values=True)
+        syn_dict.write(fam_file, splited_values=True)
+
