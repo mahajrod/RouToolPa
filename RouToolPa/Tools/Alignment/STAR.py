@@ -123,7 +123,8 @@ class STAR(Tool):
                       adapter_seq_for_three_prime_clip=None, max_mismatch_percent_for_adapter_trimming=None,
                       three_prime_trim_after_adapter_clip=None, output_type="BAM", sort_bam=True,
                       max_memory_per_thread_for_bam_sorting="4G", include_unmapped_reads_in_bam=True,
-                      output_unmapped_reads=True, two_pass_mode=True, max_intron_length=None):
+                      output_unmapped_reads=True, two_pass_mode=True, max_intron_length=None,
+                      input_is_se=None, filename_fragment_to_mark_se_reads=".se."):
         #STAR.threads = threads
         #STAR.path = star_dir
         
@@ -142,11 +143,13 @@ class STAR(Tool):
             sample_dir = "%s/%s/" % (samples_dir, sample)
             alignment_sample_dir = "%s/%s/" % (output_dir, sample)
             FileRoutines.safe_mkdir(alignment_sample_dir)
-            filetypes, forward_files, reverse_files, se_files = FileRoutines.make_lists_forward_and_reverse_files(sample_dir)
+            filetypes, forward_files, reverse_files, se_files = FileRoutines.make_lists_forward_and_reverse_files(sample_dir,
+                                                                                                                  filename_fragment_to_mark_se_reads=filename_fragment_to_mark_se_reads,
+                                                                                                                  input_is_se=input_is_se)
         
             print("\tAligning reads...")
         
-            self.align(genome_dir, forward_files, reverse_read_list=reverse_files,
+            self.align(genome_dir, forward_files if forward_files else se_files, reverse_read_list=reverse_files,
                        annotation_gtf=annotation_gtf if not genome_fasta else None,
                        feature_from_gtf_to_use_as_exon=feature_from_gtf_to_use_as_exon,
                        exon_tag_to_use_as_transcript_id=exon_tag_to_use_as_transcript_id,
