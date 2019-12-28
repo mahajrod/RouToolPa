@@ -306,14 +306,15 @@ class FastQRoutines(FileRoutines):
         for key, filelist in zip(["forward", "reverse", "index"], [forward_file_list, reverse_file_list, index_file_list]):
             input_dict_fd[key] = list(map(lambda s: self.metaopen(s, "r", buffering=buffering), filelist))
 
-        for quality in "good", "bad", "short":
+        for quality in "good", "bad", "linker", "short":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
                 output_dict_fd[quality][seq_type] = self.metaopen(output_dict[quality][seq_type], "w", buffering=buffering)
 
         counter_dict = OrderedDict({"handled": 0,
                                     "good": 0,
-                                    "bad": 0})
+                                    "bad": 0,
+                                    "short": 0})
         print("%s\tStarting...\n" % str(datetime.datetime.now()))
         for forward_fd, reverse_fd, index_fd in zip(input_dict_fd["forward"], input_dict_fd["reverse"], input_dict_fd["index"]):
 
