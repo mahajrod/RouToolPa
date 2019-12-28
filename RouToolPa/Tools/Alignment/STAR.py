@@ -5,6 +5,7 @@ from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import FileRoutines
 from RouToolPa.Tools.Samtools import SamtoolsV1
 
+
 class STAR(Tool):
     """
     STAR doesn't understand local paths that is why os.path.abspath is used everywhere
@@ -107,7 +108,7 @@ class STAR(Tool):
         options += " --twopassMode Basic" if two_pass_mode else ""
         options += " --alignIntronMax %i" % max_intron_length if max_intron_length else ""
 
-        self.execute(options)
+        #self.execute(options)
 
         if sort_bam:
             print("\tSorting...")
