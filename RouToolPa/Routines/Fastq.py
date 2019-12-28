@@ -320,7 +320,7 @@ class FastQRoutines(FileRoutines):
             for line in forward_fd:
                 counter_dict["handled"] += 1
                 if counter_dict["handled"] % 1000000 == 0:
-                    print("%s\tHandled %i read pairs\n" % (str(datetime), counter_dict["handled"]))
+                    print("%s\tHandled %i read pairs\n" % (str(datetime.datetime.now()), counter_dict["handled"]))
 
                 read_seq = forward_fd.readline()
                 delimiter = forward_fd.readline()
