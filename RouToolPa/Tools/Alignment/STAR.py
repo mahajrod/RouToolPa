@@ -80,8 +80,8 @@ class STAR(Tool):
 
         print(forward_read_list)
 
-        forward_read_abs_path_list = [os.path.abspath(forward_read_list)] if isinstance(forward_read_list, str) else map(os.path.abspath, reverse_read_list)
-        reverse_read_abs_path_list = ([os.path.abspath(reverse_read_list)] if isinstance(reverse_read_list, str) else map(os.path.abspath, reverse_read_list)) if reverse_read_list else None
+        forward_read_abs_path_list = [os.path.abspath(forward_read_list)] if isinstance(forward_read_list, str) else list(map(os.path.abspath, reverse_read_list))
+        reverse_read_abs_path_list = ([os.path.abspath(reverse_read_list)] if isinstance(reverse_read_list, str) else list(map(os.path.abspath, reverse_read_list))) if reverse_read_list else None
 
         print(forward_read_abs_path_list)
         forward_read_abs_path_list = self.add_external_extraction_to_filelist(forward_read_abs_path_list)
