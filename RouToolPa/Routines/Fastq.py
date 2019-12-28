@@ -271,7 +271,7 @@ class FastQRoutines(FileRoutines):
             counts.write(stat_file)
 
     def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix,
-                             buffering=100000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
+                             buffering=1000000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
         index_end = linker_start = read_index_length
         linker_end = read_start = read_index_length + linker_length
 
@@ -306,7 +306,7 @@ class FastQRoutines(FileRoutines):
         for key, filelist in zip(["forward", "reverse", "index"], [forward_file_list, reverse_file_list, index_file_list]):
             input_dict_fd[key] = list(map(lambda s: self.metaopen(s, "r", buffering=buffering), filelist))
 
-        for quality in "good", "bad":
+        for quality in "good", "bad", "short":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
                 output_dict_fd[quality][seq_type] = self.metaopen(output_dict[quality][seq_type], "w", buffering=buffering)
