@@ -78,16 +78,16 @@ class STAR(Tool):
         options += " --sjdbOverhang %i" % length_of_sequences_flanking_junction if length_of_sequences_flanking_junction else ""
         options += (" --sjdbFileChrStartEnd %s" % (os.path.abspath(junction_tab_file_list) if isinstance(junction_tab_file_list, str) else " ".join(map(os.path.abspath, junction_tab_file_list)))) if junction_tab_file_list else ""
 
-        print(forward_read_list)
+        #print(forward_read_list)
 
         forward_read_abs_path_list = [os.path.abspath(forward_read_list)] if isinstance(forward_read_list, str) else list(map(os.path.abspath, forward_read_list))
         reverse_read_abs_path_list = ([os.path.abspath(reverse_read_list)] if isinstance(reverse_read_list, str) else list(map(os.path.abspath, reverse_read_list))) if reverse_read_list else None
 
-        print(forward_read_abs_path_list)
+        #print(forward_read_abs_path_list)
         forward_read_abs_path_list = self.add_external_extraction_to_filelist(forward_read_abs_path_list)
         reverse_read_abs_path_list = self.add_external_extraction_to_filelist(reverse_read_abs_path_list) if reverse_read_list else None
 
-        print(forward_read_abs_path_list)
+        #print(forward_read_abs_path_list)
 
         options += " --readFilesIn %s" % " ".join(forward_read_abs_path_list)
 
@@ -151,7 +151,7 @@ class STAR(Tool):
             filetypes, forward_files, reverse_files, se_files = FileRoutines.make_lists_forward_and_reverse_files(sample_dir,
                                                                                                                   filename_fragment_to_mark_se_reads=filename_fragment_to_mark_se_reads,
                                                                                                                   input_is_se=input_is_se)
-            print (se_files)
+            #print (se_files)
             print("\tAligning reads...")
         
             self.align(genome_dir, forward_files if forward_files else se_files, reverse_read_list=reverse_files,
