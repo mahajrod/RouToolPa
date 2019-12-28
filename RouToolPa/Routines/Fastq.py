@@ -298,6 +298,7 @@ class FastQRoutines(FileRoutines):
                                  "forward": "%s.short_1.fastq" % output_prefix,
                                  "reverse": "%s.short_2.fastq" % output_prefix,
                                  "index": "%s.short_I.fastq" % output_prefix,
+                                 "linker": "%s.short_L.fastq" % output_prefix,
                                 }
                        }
         output_dict_fd = {}
@@ -306,7 +307,7 @@ class FastQRoutines(FileRoutines):
         for key, filelist in zip(["forward", "reverse", "index"], [forward_file_list, reverse_file_list, index_file_list]):
             input_dict_fd[key] = list(map(lambda s: self.metaopen(s, "r", buffering=buffering), filelist))
 
-        for quality in "good", "bad", "linker", "short":
+        for quality in "good", "bad", "short":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
                 output_dict_fd[quality][seq_type] = self.metaopen(output_dict[quality][seq_type], "w", buffering=buffering)
