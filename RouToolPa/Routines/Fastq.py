@@ -274,7 +274,7 @@ class FastQRoutines(FileRoutines):
                              buffering=100000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
         index_end = read_index_length
         linker_start = read_index_length
-        linker_end = linker_length + linker_length
+        linker_end = read_index_length + linker_length
         read_start = read_index_length + linker_length
 
         service_seq_length = read_index_length + linker_length
