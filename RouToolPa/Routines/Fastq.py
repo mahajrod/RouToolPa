@@ -314,7 +314,7 @@ class FastQRoutines(FileRoutines):
         counter_dict = OrderedDict({"handled": 0,
                                     "good": 0,
                                     "bad": 0})
-
+        print("%s\tStarting...\n" % str(datetime.datetime.now()))
         for forward_fd, reverse_fd, index_fd in zip(input_dict_fd["forward"], input_dict_fd["reverse"], input_dict_fd["index"]):
 
             for line in forward_fd:
