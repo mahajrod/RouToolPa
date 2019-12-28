@@ -1,5 +1,6 @@
 __author__ = 'mahajrod'
 import os
+import datetime
 from collections import OrderedDict
 from Bio.Seq import Seq
 from RouToolPa.Collections.General import TwoLvlDict, IdSet
@@ -268,9 +269,19 @@ class FastQRoutines(FileRoutines):
 
         if stat_file:
             counts.write(stat_file)
-    """
-    def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix):
-        barcode_set = IdSet(filename=barcode_file)
+
+    def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix,
+                             buffering=100000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
+        index_end = read_index_length
+        linker_start = read_index_length
+        linker_end = linker_length + linker_length
+        read_start = read_index_length + linker_length
+
+        service_seq_length = read_index_length + linker_length
+        min_forward_seq_length = service_seq_length + min_forward_read_len
+
+        with self.metaopen(barcode_file, buffering=buffering) as in_fd:
+            barcode_set = set(map(lambda s: s.strip(), in_fd.readlines()))
 
         output_dict = {
                        "good": {
@@ -283,15 +294,76 @@ class FastQRoutines(FileRoutines):
                                 "forward": "%s.bad_1.fastq" % output_prefix,
                                 "reverse": "%s.bad_2.fastq" % output_prefix,
                                 "index": "%s.bad_I.fastq" % output_prefix,
-                           "linker": "%s.good_L.fastq" % output_prefix,
+                                "linker": "%s.bad_L.fastq" % output_prefix,
                                 },
+                       "short": {
+                                 "forward": "%s.short_1.fastq" % output_prefix,
+                                 "reverse": "%s.short_2.fastq" % output_prefix,
+                                 "index": "%s.short_I.fastq" % output_prefix,
+                                }
                        }
         output_dict_fd = {}
+        input_dict_fd = {}
+
+        for key, filelist in zip(["forward", "reverse", "index"], [forward_file_list, reverse_file_list, index_file_list]):
+            input_dict_fd[key] = list(map(lambda s: self.metaopen(s, buffering=buffering), filelist))
 
         for quality in "good", "bad":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
-                output_dict_fd[quality][seq_type] = open(output_dict[quality][seq_type], "w")
-        for forward, re
-        with open(forward_file, "")
-    """
+                output_dict_fd[quality][seq_type] = open(output_dict[quality][seq_type], "w", buffering=buffering)
+
+        counter_dict = OrderedDict({"handled": 0,
+                                    "good": 0,
+                                    "bad": 0})
+
+        for forward_fd, reverse_fd, index_fd in zip(input_dict_fd["forward"], input_dict_fd["reverse"], input_dict_fd["index"]):
+
+            for line in forward_fd:
+                counter_dict["handled"] += 1
+                if counter_dict["handled"] % 1000000 == 0:
+                    print("%s\tHandled %i read pairs\n" % (str(datetime), counter_dict["handled"]))
+
+                read_seq = forward_fd.readline()
+                delimiter = forward_fd.readline()
+                read_qual = forward_fd.readline()
+
+                if len(read_seq) - 1 < min_forward_seq_length:
+                    label = "short"
+
+                    for i in (0, 1, 2, 3):
+                        output_dict_fd[label]["index"].write(index_fd.readline())
+                else:
+                    index = read_seq[:index_end]
+                    label = "good" if index in barcode_set else "bad"
+
+                    output_dict_fd[label]["linker"].write(line)
+                    output_dict_fd[label]["linker"].write(read_seq[linker_start:linker_end] + "\n")
+                    output_dict_fd[label]["linker"].write(delimiter)
+                    output_dict_fd[label]["linker"].write(read_qual[linker_start:linker_end] + "\n")
+
+                    output_dict_fd[label]["index"].write(index_fd.readline())
+                    output_dict_fd[label]["index"].write(index_fd.readline()[:-1] + read_seq[:index_end] + "\n")
+                    output_dict_fd[label]["index"].write(index_fd.readline())
+                    output_dict_fd[label]["index"].write(index_fd.readline()[:-1] + read_qual[:index_end] + "\n")
+
+                counter_dict[label] += 1
+
+                output_dict_fd[label]["forward"].write(line)
+                output_dict_fd[label]["forward"].write(read_seq[read_start:])
+                output_dict_fd[label]["forward"].write(delimiter)
+                output_dict_fd[label]["forward"].write(read_qual[read_start:])
+
+                for i in (0, 1, 2, 3):
+                    output_dict_fd[label]["reverse"].write(reverse_fd.readline())
+
+        for seq_type in input_dict_fd:
+            for fd in input_dict_fd[seq_type]:
+                fd.close()
+
+        for quality in output_dict_fd:
+            for seq_type in output_dict_fd[quality]:
+                output_dict_fd[quality][seq_type].close()
+
+        for key in counter_dict:
+            print("%s read pairs: %i\n" % (key, counter_dict[key]))
