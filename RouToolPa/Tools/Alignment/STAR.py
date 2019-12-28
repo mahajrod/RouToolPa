@@ -146,7 +146,7 @@ class STAR(Tool):
             filetypes, forward_files, reverse_files, se_files = FileRoutines.make_lists_forward_and_reverse_files(sample_dir,
                                                                                                                   filename_fragment_to_mark_se_reads=filename_fragment_to_mark_se_reads,
                                                                                                                   input_is_se=input_is_se)
-            print se_files
+            print (se_files)
             print("\tAligning reads...")
         
             self.align(genome_dir, forward_files if forward_files else se_files, reverse_read_list=reverse_files,
