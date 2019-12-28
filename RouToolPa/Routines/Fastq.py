@@ -280,7 +280,7 @@ class FastQRoutines(FileRoutines):
         service_seq_length = read_index_length + linker_length
         min_forward_seq_length = service_seq_length + min_forward_read_len
 
-        with self.metaopen(barcode_file, buffering=buffering) as in_fd:
+        with self.metaopen(barcode_file, "r", buffering=buffering) as in_fd:
             barcode_set = set(map(lambda s: s.strip(), in_fd.readlines()))
 
         output_dict = {
@@ -306,12 +306,12 @@ class FastQRoutines(FileRoutines):
         input_dict_fd = {}
 
         for key, filelist in zip(["forward", "reverse", "index"], [forward_file_list, reverse_file_list, index_file_list]):
-            input_dict_fd[key] = list(map(lambda s: self.metaopen(s, buffering=buffering), filelist))
+            input_dict_fd[key] = list(map(lambda s: self.metaopen(s, "r", buffering=buffering), filelist))
 
         for quality in "good", "bad":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
-                output_dict_fd[quality][seq_type] = open(output_dict[quality][seq_type], "w", buffering=buffering)
+                output_dict_fd[quality][seq_type] = self.metaopen(output_dict[quality][seq_type], "w", buffering=buffering)
 
         counter_dict = OrderedDict({"handled": 0,
                                     "good": 0,
