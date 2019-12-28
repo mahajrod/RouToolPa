@@ -272,10 +272,8 @@ class FastQRoutines(FileRoutines):
 
     def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix,
                              buffering=100000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
-        index_end = read_index_length
-        linker_start = read_index_length
-        linker_end = read_index_length + linker_length
-        read_start = read_index_length + linker_length
+        index_end = linker_start = read_index_length
+        linker_end = read_start = read_index_length + linker_length
 
         service_seq_length = read_index_length + linker_length
         min_forward_seq_length = service_seq_length + min_forward_read_len
