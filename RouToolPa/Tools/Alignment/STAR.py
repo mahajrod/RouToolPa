@@ -82,11 +82,11 @@ class STAR(Tool):
         reverse_read_abs_path_list = ([os.path.abspath(reverse_read_list)] if isinstance(reverse_read_list, str) else map(os.path.abspath, reverse_read_list)) if reverse_read_list else None
 
         forward_read_abs_path_list = self.add_external_extraction_to_filelist(forward_read_abs_path_list)
-        reverse_read_abs_path_list = self.add_external_extraction_to_filelist(reverse_read_abs_path_list)
+        reverse_read_abs_path_list = self.add_external_extraction_to_filelist(reverse_read_abs_path_list) if reverse_read_list else None
 
         options += " --readFilesIn %s" % " ".join(forward_read_abs_path_list)
 
-        options += " %s" % " ".join(reverse_read_abs_path_list) if reverse_read_abs_path_list else ""
+        options += (" %s" % " ".join(reverse_read_abs_path_list) if reverse_read_abs_path_list else "") if reverse_read_abs_path_list else ""
 
         options += " --clip3pNbases %i" % three_prime_trim if three_prime_trim else ""
         options += " --clip5pNbases %i" % five_prime_trim if five_prime_trim else ""
@@ -146,7 +146,7 @@ class STAR(Tool):
             filetypes, forward_files, reverse_files, se_files = FileRoutines.make_lists_forward_and_reverse_files(sample_dir,
                                                                                                                   filename_fragment_to_mark_se_reads=filename_fragment_to_mark_se_reads,
                                                                                                                   input_is_se=input_is_se)
-        
+            print se_files
             print("\tAligning reads...")
         
             self.align(genome_dir, forward_files if forward_files else se_files, reverse_read_list=reverse_files,
