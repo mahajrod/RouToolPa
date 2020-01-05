@@ -210,7 +210,9 @@ class LAST(Tool):
         with self.metaopen(input_maf, "r", buffering=buffering) as in_fd, self.metaopen(output_maf, "w", buffering=buffering) as out_fd:
             for line in in_fd:
                 if line[0] == "a":
+                    print line
                     for entry in list(map(lambda s: s.split("="), line.strip().split("\t"))):
+                        print entry
                         if entry[0] == "EG2":
                             eg2 = float(entry[1])
                         elif entry[0] == "E":
