@@ -205,17 +205,18 @@ class LAST(Tool):
         self.execute(options=options, cmd="last-dotplot")
 
     def filter_lastall_maf(self, input_maf, output_maf, max_eg2=None, max_e=None, min_score=None,
-                           buffering=1000000000):
+                           buffering=1000000000, verbose=True):
 
         aln_line_starts = set(["s", "q", "i"])
         kept_count = 0
         removed_count = 0
         alignment_count = 0
+
         with self.metaopen(input_maf, "r", buffering=buffering) as in_fd, self.metaopen(output_maf, "w", buffering=buffering) as out_fd:
             for line in in_fd:
                 if line[0] == "a":
                     alignment_count += 1
-                    if alignment_count % 100000 == 0:
+                    if verbose and (alignment_count % 100000 == 0):
                         print("%s\t %i alignments handled" % (str(datetime.datetime.now()), alignment_count))
 
                     #print line
@@ -249,5 +250,5 @@ class LAST(Tool):
                         out_fd.write(line)
                 else:
                     out_fd.write(line)
-
-        print("\n%i alignments handled\n %i kept\n %i removed" % (alignment_count, kept_count, removed_count))
+        if verbose:
+            print("\n%i alignments handled\n %i kept\n %i removed" % (alignment_count, kept_count, removed_count))
