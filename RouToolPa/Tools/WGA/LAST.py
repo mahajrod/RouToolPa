@@ -203,4 +203,36 @@ class LAST(Tool):
 
         self.execute(options=options, cmd="last-dotplot")
 
+    def filter_lastall_maf(self, input_maf, output_maf, max_eg2=None, max_e=None, min_score=None,
+                           buffering=1000000000):
 
+        aln_line_starts = set(["s", "q", "i"])
+        with self.metaopen(input_maf, "r", buffering=buffering) as in_fd, self.metaopen(output_maf, "w", buffering=buffering) as out_fd:
+            for line in in_fd:
+                if line[0] == "a":
+                    for entry in list(map(lambda s: s.split("="), line.strip().split("\t"))):
+                        if entry[0] == "EG2":
+                            eg2 = float(entry[1])
+                        elif entry[0] == "E":
+                            e = float(entry[1])
+                        elif entry[0] == "score":
+                            score = float(entry[1])
+
+                    if max_eg2 and eg2 > max_eg2:
+                        store = False
+                        continue
+                    if max_e and e > max_e:
+                        store = False
+                        continue
+                    if min_score and score < min_score:
+                        store = False
+                        continue
+
+                    store = True
+                    out_fd.write(line)
+
+                elif line[0] in aln_line_starts:
+                    if store:
+                        out_fd.write(line)
+                else:
+                    out_fd.write(line)

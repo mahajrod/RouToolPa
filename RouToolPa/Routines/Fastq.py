@@ -310,19 +310,23 @@ class FastQRoutines(FileRoutines):
         for quality in "good", "bad", "short":
             output_dict_fd[quality] = {}
             for seq_type in ["forward", "reverse", "index", "linker"]:
+                if not index_file_list:
+                    continue
                 output_dict_fd[quality][seq_type] = self.metaopen(output_dict[quality][seq_type], "w", buffering=buffering)
 
         counter_dict = OrderedDict({"handled": 0,
                                     "good": 0,
                                     "bad": 0,
                                     "short": 0})
+
         print("%s\tStarting...\n" % str(datetime.datetime.now()))
+
         for forward_fd, reverse_fd, index_fd in zip(input_dict_fd["forward"], input_dict_fd["reverse"], input_dict_fd["index"]):
 
             for line in forward_fd:
                 counter_dict["handled"] += 1
                 if counter_dict["handled"] % 1000000 == 0:
-                    print("%s\tHandled %i read pairs\n" % (str(datetime.datetime.now()), counter_dict["handled"]))
+                    print("%s\tHandled %i read pairs" % (str(datetime.datetime.now()), counter_dict["handled"]))
 
                 read_seq = forward_fd.readline()
                 delimiter = forward_fd.readline()
@@ -366,4 +370,4 @@ class FastQRoutines(FileRoutines):
                 output_dict_fd[quality][seq_type].close()
 
         for key in counter_dict:
-            print("%s read pairs: %i\n" % (key, counter_dict[key]))
+            print("%s read pairs: %i" % (key, counter_dict[key]))
