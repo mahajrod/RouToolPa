@@ -215,7 +215,7 @@ class LAST(Tool):
             for line in in_fd:
                 if line[0] == "a":
                     alignment_count += 1
-                    if alignment_count % 10000:
+                    if alignment_count % 100000 == 0:
                         print("%s\t %i alignments handled" % (str(datetime.datetime.now()), alignment_count))
 
                     #print line
