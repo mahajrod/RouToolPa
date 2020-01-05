@@ -211,7 +211,7 @@ class LAST(Tool):
             for line in in_fd:
                 if line[0] == "a":
                     print line
-                    for entry in list(map(lambda s: s.split("="), line.strip().split("\t"))):
+                    for entry in list(map(lambda s: s.split("="), line.strip().split())):
                         print entry
                         if entry[0] == "EG2":
                             eg2 = float(entry[1])
