@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import datetime
 from RouToolPa.Tools.Abstract import Tool
 import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 
@@ -209,10 +210,14 @@ class LAST(Tool):
         aln_line_starts = set(["s", "q", "i"])
         kept_count = 0
         removed_count = 0
-
+        alignment_count = 0
         with self.metaopen(input_maf, "r", buffering=buffering) as in_fd, self.metaopen(output_maf, "w", buffering=buffering) as out_fd:
             for line in in_fd:
                 if line[0] == "a":
+                    alignment_count += 1
+                    if alignment_count % 10000:
+                        print("%s\t %i alignments handled" % (str(datetime.datetime.now()), alignment_count))
+
                     #print line
                     for entry in list(map(lambda s: s.split("="), line.strip().split())):
                         #print entry
@@ -244,3 +249,5 @@ class LAST(Tool):
                         out_fd.write(line)
                 else:
                     out_fd.write(line)
+
+        print("\n%i alignments handled\n %i kept\n %i removed" % (alignment_count, kept_count, removed_count))
