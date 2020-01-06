@@ -12,9 +12,6 @@ from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
 
 
-from RouToolPa.Parsers.Sequence import CollectionSequence
-
-
 class HaplotypeRoutines(SequenceClusterRoutines):
 
     def __init__(self):
@@ -45,6 +42,7 @@ class HaplotypeRoutines(SequenceClusterRoutines):
 
     @staticmethod
     def prepare_template_for_popart(alignment_file, haplotype_fam_file, output_file):
+        from RouToolPa.Parsers.Sequence import CollectionSequence
         haplotype_dict = SynDict(filename=haplotype_fam_file, split_values=True)
 
         sequence_collection = CollectionSequence(in_file=alignment_file, parsing_mode="parse")
