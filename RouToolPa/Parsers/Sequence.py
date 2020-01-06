@@ -230,6 +230,26 @@ class CollectionSequence(SequenceRoutines):
         else:
             return None
 
+    def write_splited(self, out_dir, expression=None, max_symbols_per_line=60):
+        if self.parsing_mode == "parse":
+            for seq_id in self.records:
+                if expression:
+                    if not expression(seq_id, self.records[seq_id]):
+                        continue
+                with self.metaopen("%s/%s.fasta" % (out_dir, seq_id), "w") as out_fd:
+                    out_fd.write(">%s\n" % seq_id if seq_id not in self.description else ">%s %s\n" % (seq_id, self.description[seq_id]))
+                    length = self.seq_lengths[seq_id][0] if self.seq_lengths else len(self.records[seq_id])
+                    line_number = length // max_symbols_per_line
+                    index = 0
+                    while index < line_number:
+                        out_fd.write(self.records[seq_id][
+                                     index * max_symbols_per_line:(index + 1) * max_symbols_per_line] + "\n")
+                        index += 1
+                    if line_number * max_symbols_per_line < length:
+                        out_fd.write(self.records[seq_id][index * max_symbols_per_line:] + "\n")
+        else:
+            raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
+
     def write(self, outfile, expression=None, max_symbols_per_line=60):
         if self.parsing_mode == "parse":
             with self.metaopen(outfile, "w") as out_fd:
