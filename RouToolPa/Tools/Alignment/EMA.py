@@ -13,7 +13,7 @@ class EMA(Tool):
         with self.metaopen(input, "r", buffering=bufferig) as in_fd, \
              self.metaopen(forward_output, "w", buffering=bufferig) as f_fd, \
              self.metaopen(reverse_output, "w", buffering=bufferig) as r_fd, \
-             self.metaopen(index_output, "w", bufferig=bufferig) as i_fd:
+             self.metaopen(index_output, "w", buffering=bufferig) as i_fd:
             for line in in_fd:
                 line_list = line.strip().split()
 
