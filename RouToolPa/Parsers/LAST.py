@@ -381,6 +381,7 @@ class CollectionLast:
         self.records = self.records[retained_columns]
 
         if (self.format == "tab") and (parsing_mode == "complete"):
+            print(self.records)
             self.records["EG2"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["EG2"]))
             self.records["E"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["E"]))
         elif (self.format == "tab_mismap") and (parsing_mode == "complete"):
@@ -506,6 +507,7 @@ class CollectionLast:
         for row in row_iterator:
             curr_row = list(row)
             for index in 0, 3, 4, 7:
+                # check for target and query scaffold and id
                 if prev_row[index] != curr_row[index]:
                     collapsed_row_list.append(prev_row)
                     prev_row = curr_row
@@ -551,3 +553,14 @@ class CollectionLast:
         
         return np.array(target_list), np.array(query_list)
 
+    def convert_coordinates(self, scaffold, start, stop, source="target"):
+
+
+        if source == "target":
+            pass
+        elif source == "query":
+            pass
+        else:
+            raise ValueError("ERROR!!! Unrecognized source! Only 'target' or 'query' are allowed.")
+
+        self.records.loc[scaffold]
