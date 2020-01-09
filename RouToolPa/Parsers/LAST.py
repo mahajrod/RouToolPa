@@ -62,7 +62,7 @@ class CollectionLast:
                                                    "col_names": ["score", "target_id", "target_start", "target_hit_len",
                                                                  "target_strand", "target_len", "query_id",
                                                                  "query_start", "query_hit_len", "query_strand",
-                                                                 "query_len", "alignment", "EG", "E"],
+                                                                 "query_len", "alignment", "EG2", "E"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                                                    "index_cols": None,
                                                    "converters": {
@@ -78,7 +78,7 @@ class CollectionLast:
                                                                   "query_strand":   str,
                                                                   "query_len":      np.int64,
                                                                   "alignment":      str,
-                                                                  "EG":             str,
+                                                                  "EG2":             str,
                                                                   "E":              str,
                                                                   },
                                                    "col_name_indexes": {
@@ -94,7 +94,7 @@ class CollectionLast:
                                                                         "query_strand": 9,
                                                                         "query_len": 10,
                                                                         "alignment": 11,
-                                                                        "EG": 12,
+                                                                        "EG2": 12,
                                                                         "E": 13,
                                                                         },
                                                    },
@@ -102,7 +102,7 @@ class CollectionLast:
                                                         "col_names": ["score", "target_id", "target_start", "target_hit_len",
                                                                       "target_strand", "target_len", "query_id",
                                                                       "query_start", "query_hit_len", "query_strand",
-                                                                      "query_len", "alignment", "EG", "E"],
+                                                                      "query_len", "alignment", "EG2", "E"],
                                                         "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                                                         "index_cols": None,
                                                         "converters": {
@@ -118,7 +118,7 @@ class CollectionLast:
                                                                        "query_strand":   str,
                                                                        "query_len":      np.int64,
                                                                        "alignment":      str,
-                                                                       "EG":             str,
+                                                                       "EG2":             str,
                                                                        "E":              str,
                                                                        },
                                                         "col_name_indexes": {
@@ -134,7 +134,7 @@ class CollectionLast:
                                                                              "query_strand": 9,
                                                                              "query_len": 10,
                                                                              "alignment": 11,
-                                                                             "EG": 12,
+                                                                             "EG2": 12,
                                                                              "E": 13,
                                                                              },
                                                    },
