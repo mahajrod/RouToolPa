@@ -30,7 +30,7 @@ class Sambamba(Tool):
                           }
 
     def mkdup(self, input_bam, output_bam, verbose=None, tmp_dir=None, hash_table_size=None,
-              overflow_list_size=None, io_buffer=None):
+              overflow_list_size=None, io_buffer=3000):
         """
 
         :param input_bam:
