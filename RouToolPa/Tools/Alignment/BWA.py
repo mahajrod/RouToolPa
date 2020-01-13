@@ -34,7 +34,8 @@ class BWA(Tool):
               SM="sample",
               platform="Illumina",
               LB="x",
-              sort_by_coordinate=True,
+              mark_duplicates=True,
+              sort_by_coordinate=False,
               sort_by_name=False,
               max_per_sorting_thread_memory=None
               ):
@@ -64,7 +65,20 @@ class BWA(Tool):
             options += " -m %s" % max_per_sorting_thread_memory if max_per_sorting_thread_memory else self.max_per_thread_memory
             options += " -O %s" % output_format.upper()
 
-        options += " > %s.%s" % (output_prefix, output_format)
+        if mark_duplicates:
+            options += " | samtools fixmate"
+            options += " -@ %i" % self.threads
+            options += " -m - - "
+
+            options += " | samtools sort"
+            options += " -@ %i" % self.threads
+            options += " -m %s" % max_per_sorting_thread_memory if max_per_sorting_thread_memory else self.max_per_thread_memory
+
+            options += " | samtools markdup"
+            options += " -@ %i" % self.threads
+            options += " - %s.%s" % (output_prefix, output_format)
+        else:
+            options += " > %s.%s" % (output_prefix, output_format)
         self.execute(options, cmd="bwa mem")
 
     def aln(self, in_db_fasta, in_query_fastq, out_sai, max_edit_dist=0.04, max_gaps=1, max_gap_ext=-1, disallow_lond_del_limit=16,
