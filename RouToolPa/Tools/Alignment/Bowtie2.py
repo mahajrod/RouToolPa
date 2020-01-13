@@ -29,7 +29,8 @@ class Bowtie2(Tool):
               SM="sample",
               platform="Illumina",
               LB="x",
-              sort_by_coordinate=True,
+              mark_duplicates=True,
+              sort_by_coordinate=False,
               sort_by_name=False,
               max_per_sorting_thread_memory=None):
 
@@ -41,7 +42,7 @@ class Bowtie2(Tool):
         options += " --no-discordant" if not find_discordant_alignments else ""
         options += " --no-mixed" if not find_separated_alignments else ""
         options += " -1 %s -2 %s" % (",".join(forward_reads_list), ",".join(reverse_reads_list)) \
-            if forward_right_reads_list and reverse_left_reads_list else ""
+            if forward_reads_list and reverse_reads_list else ""
         options += " -U %s" % ",".join(unpaired_reads_list) if unpaired_reads_list else ""
 
         if sort_by_coordinate or sort_by_name:
@@ -54,7 +55,20 @@ class Bowtie2(Tool):
             options += " -m %s" % max_per_sorting_thread_memory if max_per_sorting_thread_memory else self.max_per_thread_memory
             options += " -O %s" % output_format.upper()
 
-        options += " > %s.%s" % (output_prefix, output_format)
+        if mark_duplicates:
+            options += " | samtools fixmate"
+            options += " -@ %i" % self.threads
+            options += " -m - - "
+
+            options += " | samtools sort"
+            options += " -@ %i" % self.threads
+            options += " -m %s" % max_per_sorting_thread_memory if max_per_sorting_thread_memory else self.max_per_thread_memory
+
+            options += " | samtools markdup"
+            options += " -@ %i" % self.threads
+            options += " - %s.%s" % (output_prefix, output_format)
+        else:
+            options += " > %s.%s" % (output_prefix, output_format)
 
         self.execute(options)
 
