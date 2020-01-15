@@ -54,9 +54,26 @@ class SequenceRoutines(FileRoutines):
                                             "D": "H",
                                             "H": "D",
                                             "V": "B",
-                                            "N": "N"})
+                                            "N": "N",
+                                            "a": "t",
+                                            "c": "g",
+                                            "g": "c",
+                                            "t": "a",
+                                            "r": "y",
+                                            "y": "r",
+                                            "s": "s",
+                                            "w": "w",
+                                            "k": "m",
+                                            "m": "k",
+                                            "b": "v",
+                                            "d": "h",
+                                            "h": "d",
+                                            "v": "b",
+                                            "n": "n"
+                                            })
         if sys.version_info[0] == 2:
-            self.complement_table = maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
+            self.complement_table = maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-",
+                                              "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
 
         self.ambiguous_nucleotides_string_dict = OrderedDict({"R": "AG",
                                                               "Y": "CT",
@@ -86,7 +103,7 @@ class SequenceRoutines(FileRoutines):
         if sys.version_info[0] == 2:
             return seq[::-1].translate(self.complement_table)
         else:
-            return seq[::-1].maketrans("ACGTRYSWKMBDHVN-", "TGCAYRSWMKVHDBN-")
+            return seq[::-1].maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-", "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
                     parsing_mode="parse", index_file=None, sort_by_length=False):

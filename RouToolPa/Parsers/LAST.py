@@ -20,7 +20,7 @@ class CollectionLast:
                  query_black_list=(), query_white_list=(),
                  target_syn_dict=None, query_syn_dict=None,
                  min_target_hit_len=None, min_query_hit_len=None,
-                 min_target_len=None, min_query_len=None):
+                 min_target_len=None, min_query_len=None, keep_seq_length_in_df=False):
 
         self.formats = ["tab", "tab_mismap"]
         self.TAB_COLS = AlignmentFormats.LAST_TAB_COLS
@@ -303,7 +303,8 @@ class CollectionLast:
                       min_target_hit_len=min_target_hit_len,
                       min_query_hit_len=min_query_hit_len,
                       min_target_len=min_target_len,
-                      min_query_len=min_query_len)
+                      min_query_len=min_query_len,
+                      keep_seq_length_in_df=keep_seq_length_in_df)
 
         else:
             self.records = records
@@ -313,7 +314,8 @@ class CollectionLast:
              target_black_list=(), target_white_list=(),
              query_black_list=(), query_white_list=(),
              min_target_hit_len=None, min_query_hit_len=None,
-             min_target_len=None, min_query_len=None):
+             min_target_len=None, min_query_len=None,
+             keep_seq_length_in_df=False):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         elif parsing_mode not in self.parsing_parameters[format]:
@@ -326,7 +328,7 @@ class CollectionLast:
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
-
+        self.records.index.name = "row"
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))
         if target_white_list or target_black_list:
@@ -375,13 +377,13 @@ class CollectionLast:
         self.query_scaffold_list = self.query_scaffold_lengths.index.tolist()
 
         retained_columns = deepcopy(self.parsing_parameters[self.format][self.parsing_mode]["col_names"])
-        for entry in "target_len", "query_len":
-            retained_columns.remove(entry)
+        if not keep_seq_length_in_df:
+            for entry in "target_len", "query_len":
+                retained_columns.remove(entry)
 
         self.records = self.records[retained_columns]
 
         if (self.format == "tab") and (parsing_mode == "complete"):
-            print(self.records)
             self.records["EG2"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["EG2"]))
             self.records["E"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["E"]))
         elif (self.format == "tab_mismap") and (parsing_mode == "complete"):
@@ -553,8 +555,7 @@ class CollectionLast:
         
         return np.array(target_list), np.array(query_list)
 
-    def convert_coordinates(self, scaffold, start, stop, source="target"):
-
+    def transfer_coordinates(self, scaffold, start, stop, source="target"):
 
         if source == "target":
             pass
