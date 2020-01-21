@@ -9,6 +9,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.ioff()
 import numpy as np
+import pandas as pd
 
 from RouToolPa.Collections.General import TwoLvlDict, IdList, SynDict
 from RouToolPa.Parsers.Abstract import Record, Collection
@@ -419,6 +420,28 @@ class MultipleAlignmentStatCollection(Collection):
         for ext in extensions:
             plt.savefig("%s.%s" % (output_prefix, ext))
 
+    @staticmethod
+    def pdist_str(self, string_a, string_b):
+        pdist = 0
+        for i in len(string_a):
+            if string_a[i] != string_b[i]:
+                pdist += 1
+
+        return pdist
+
+    def get_pairwise_pdist(self, records_dict, outfile=None):
+        records_id_list = list(records_dict.keys())
+        record_number = len(records_id_list)
+        distance_array = np.zeros((record_number, record_number))
+
+        for i in range(0, record_number):
+            for j in range(i, record_number):
+                distance_array[j][i] = distance_array[i][j] = self.pdist(records_dict[records_id_list[i]], records_dict[records_id_list[j]])
+
+        distance_array = pd.DataFrame(distance_array, columns=records_id_list, index=records_id_list)
+        distance_array.index.name = "record_id"
+        if outfile:
+            distance_array.to_csv(outfile, sep="\t")
     """
     def __str__(self):
         collection_string = ""
