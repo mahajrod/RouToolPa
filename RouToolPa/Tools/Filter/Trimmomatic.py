@@ -17,7 +17,8 @@ class Trimmomatic(JavaTool):
                       mismatch_number=2, pe_reads_score=30, se_read_score=10, min_adapter_len=1,
                       sliding_window_size=None, average_quality_threshold=15,
                       leading_base_quality_threshold=None, trailing_base_quality_threshold=None,
-                      crop_length=None, head_crop_length=None, min_length=50, base_quality="phred33"):
+                      crop_length=None, head_crop_length=None, min_length=50, base_quality="phred33",
+                      output_file_naming=1):
 
         options = " PE" if right_reads else " SE"
         options += " -threads %i" % self.threads
@@ -31,10 +32,16 @@ class Trimmomatic(JavaTool):
                 options += " %s.pe.%s" % (output_prefix_left, output_extension)
                 options += " %s.se.%s" % (output_prefix_left, output_extension)
             else:
-                options += " %s_1.pe.%s" % (output_prefix, output_extension)
-                options += " %s_1.se.%s" % (output_prefix, output_extension)
-                options += " %s_2.pe.%s" % (output_prefix, output_extension)
-                options += " %s_2.se.%s" % (output_prefix, output_extension)
+                if output_file_naming == 1:
+                    options += " %s_1.pe.%s" % (output_prefix, output_extension)
+                    options += " %s_1.se.%s" % (output_prefix, output_extension)
+                    options += " %s_2.pe.%s" % (output_prefix, output_extension)
+                    options += " %s_2.se.%s" % (output_prefix, output_extension)
+                elif output_file_naming == 2:
+                    options += " %s.pe_1.%s" % (output_prefix, output_extension)
+                    options += " %s.se_1.%s" % (output_prefix, output_extension)
+                    options += " %s.pe_2.%s" % (output_prefix, output_extension)
+                    options += " %s.se_2.%s" % (output_prefix, output_extension)
         else:
             options += " %s.se.%s" % (output_prefix, output_extension)
 
