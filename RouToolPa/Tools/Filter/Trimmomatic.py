@@ -66,7 +66,7 @@ class Trimmomatic(JavaTool):
                sliding_window_size=None, average_quality_threshold=15,
                leading_base_quality_threshold=None, trailing_base_quality_threshold=None,
                crop_length=None, head_crop_length=None, min_length=50, logfile="trimmomatic.log",
-               base_quality="phred33"):
+               base_quality="phred33", output_file_naming=1):
 
         options = self.parse_options(left_reads, output_prefix, output_prefix_left=output_prefix_left,
                                      output_extension=output_extension,
@@ -77,7 +77,8 @@ class Trimmomatic(JavaTool):
                                      leading_base_quality_threshold=leading_base_quality_threshold,
                                      trailing_base_quality_threshold=trailing_base_quality_threshold,
                                      crop_length=crop_length, head_crop_length=head_crop_length, min_length=min_length,
-                                     base_quality=base_quality)
+                                     base_quality=base_quality,
+                                     output_file_naming=output_file_naming)
 
         options += " > %s 2>&1" % logfile if logfile else ""
 
