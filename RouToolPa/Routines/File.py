@@ -29,7 +29,7 @@ class FileRoutines:
 
     @staticmethod
     def metaopen(filename, flags, buffering=None):
-        if isinstance(filename, file):
+        if isinstance(filename, file) or isinstance(filename, gzip.GzipFile) or isinstance(filename, bz2.BZ2File):
             return filename
         elif filename[-3:] == ".gz":
             return gzip.open(filename, flags)
