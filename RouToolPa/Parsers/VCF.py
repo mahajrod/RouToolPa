@@ -35,7 +35,7 @@ ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]
                     }
 
 
-class MetadataVCF(OrderedDict):
+class MetadataVCF(OrderedDict, FileRoutines):
     """
     MetadataVCF class
     """
@@ -169,7 +169,7 @@ class MetadataVCF(OrderedDict):
                     return line
                 self.add_metadata(line)
         else:
-            with open(in_file, "r") as fd:
+            with self.metaopen(in_file, "r") as fd:
                 while True:
                     line = fd.readline()
                     if line[:2] != "##":
