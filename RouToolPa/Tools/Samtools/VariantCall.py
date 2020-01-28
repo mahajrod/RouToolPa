@@ -35,7 +35,7 @@ class VariantCall(Tool):
         """
 
         options = " mkdir -p %s;" % split_dir
-        options += " time vcfutils.pl splitchr -l %i %s.fasta | " % (chunk_length, reference_fasta)
+        options += " time vcfutils.pl splitchr -l %i %s.fai | " % (chunk_length, reference_fasta)
         options += " xargs -I {} -P %i" % self.threads
         options += " sh -c \"bcftools mpileup "
         options += " -d %i" % max_coverage if max_coverage else ""
