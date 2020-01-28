@@ -14,6 +14,7 @@ plt.ioff()
 from matplotlib.patches import Rectangle, Circle
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
+import scipy.stats as stats
 
 from BCBio import GFF
 
@@ -466,6 +467,42 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         plt.tight_layout()
         for ext in extensions:
             plt.savefig("%s.%s" % (output_prefix, ext))
+
+    @staticmethod
+    def draw_plot(input_file, output_prefix, x_column_index=0, y_column_index=1, separator="\t", min_x=None,
+                  max_x=None, min_y=None, max_y=None, extensions=["png", "svg"], xlabel=None, ylabel=None,
+                  title=None, width=6, height=6, markersize=2, ylogbase=10, type="plot", grid=False, correlation=False):
+
+        data = np.loadtxt(input_file, comments="#", usecols=(x_column_index, y_column_index), delimiter=separator)
+        plt.figure(1, figsize=(width, height), dpi=300)
+        plt.subplot(1, 1, 1)
+        if type == "plot":
+            plt.plot(data[:, 0], data[:, 1], markersize=markersize)
+        elif type == "scatter":
+            plt.scatter(data[:, 0], data[:, 1], s=markersize)
+        plt.xlim(xmin=min_x, xmax=max_x)
+        plt.ylim(ymin=min_y, ymax=max_y)
+        if xlabel:
+            plt.xlabel(xlabel)
+        if ylabel:
+            plt.ylabel(ylabel)
+        if title:
+            plt.title(title)
+        if grid:
+            plt.grid()
+        if correlation:
+            print("Kendal's tau")
+            print(stats.kendalltau(data[:, 0], data[:, 1]))
+
+            print("Pearson's r")
+            print(stats.pearsonr(data[:, 0], data[:, 1]))
+        for ext in extensions:
+            plt.savefig("%s.%s.%s" % (output_prefix, type, ext))
+
+        plt.yscale("log")
+
+        for ext in extensions:
+            plt.savefig("%s.%s.ylog%i.%s" % (output_prefix, type, ylogbase, ext))
 
     @staticmethod
     def draw_precalculated_heatmap(heatmap_array, output_prefix=None, figsize=(5, 5), extensions=("png", "svg")):
