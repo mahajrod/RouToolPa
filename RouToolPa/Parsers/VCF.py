@@ -35,7 +35,7 @@ ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]
                     }
 
 
-class MetadataVCF(OrderedDict, FileRoutines):
+class MetadataVCF(OrderedDict):
     """
     MetadataVCF class
     """
@@ -157,19 +157,9 @@ class MetadataVCF(OrderedDict, FileRoutines):
         :param in_file:
         :return:
         """
-        if isinstance(in_file, file):
-            while True:
-                line = in_file.readline()
-                if line[:2] != "##":
-                    # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
-                    # self.samples = self.header[9:]
-                    if "contig" in self:
-                        self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
-                        self["contig"].columns = ["length"]
-                    return line
-                self.add_metadata(line)
-        else:
-            with self.metaopen(in_file, "r") as fd:
+        #print type(in_file)
+        if isinstance(in_file, str):
+            with FileRoutines.metaopen(in_file, "r") as fd:
                 while True:
                     line = fd.readline()
                     if line[:2] != "##":
@@ -180,6 +170,18 @@ class MetadataVCF(OrderedDict, FileRoutines):
                             self["contig"].columns = ["length"]
                         return line
                     self.add_metadata(line)
+        else:
+            while True:
+                line = in_file.readline()
+                if line[:2] != "##":
+                    # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
+                    # self.samples = self.header[9:]
+                    if "contig" in self:
+                        self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
+                        self["contig"].columns = ["length"]
+                    return line
+                self.add_metadata(line)
+
 
     @staticmethod
     def _split_by_equal_sign(string):
