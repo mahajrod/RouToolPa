@@ -1015,3 +1015,32 @@ class MultipleAlignmentRoutines(SequenceRoutines):
                                                    target_sequence_id=target_sequence_id,
                                                    absent_symbol=absent_symbol)
 
+    @staticmethod
+    def hamming(string_a, string_b):
+        hamming = 0
+        for i in range(0, len(string_a)):
+            if string_a[i] != string_b[i]:
+                hamming += 1
+
+        return hamming
+
+    def get_pairwise_hamming(self, records_dict, output_prefix=None, min_distance=None):
+        records_id_list = list(records_dict.keys())
+        record_number = len(records_id_list)
+        distance_array = np.zeros((record_number, record_number))
+        low_distance_list = []
+
+        for i in range(0, record_number):
+            for j in range(i+1, record_number):
+                distance_array[j][i] = distance_array[i][j] = self.hamming(records_dict[records_id_list[i]], records_dict[records_id_list[j]])
+                if min_distance and (distance_array[i][j] <= min_distance):
+                    low_distance_list.append([records_id_list[i], records_id_list[j], distance_array[i][j]])
+
+        distance_array = pd.DataFrame(distance_array, columns=records_id_list, index=records_id_list)
+        distance_array.index.name = "record_id"
+        if output_prefix:
+            distance_array.to_csv("%s.pdst" % output_prefix, sep="\t")
+            if min_distance:
+                low_distance_list = pd.DataFrame(low_distance_list, columns=("seq_a", "seq_b", "distance"))
+                low_distance_list.to_csv("%s.max%i.pdist" % (output_prefix, min_distance), sep="\t", index=False)
+        return distance_array

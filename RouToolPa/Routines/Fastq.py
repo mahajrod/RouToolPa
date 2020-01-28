@@ -95,7 +95,8 @@ class FastQRoutines(FileRoutines):
         filtered_out_reverse_se_fd.close()
 
     def combine_fastq_files(self, samples_directory, sample, output_directory,
-                            use_links_if_merge_not_necessary=True, input_is_se=False):
+                            use_links_if_merge_not_necessary=True, input_is_se=False,
+                            output_fastq_ext="fq"):
         sample_dir = "%s/%s/" % (samples_directory, sample)
 
         filetypes, forward_files, reverse_files, se_files = self.make_lists_forward_and_reverse_files(sample_dir,
@@ -112,9 +113,9 @@ class FastQRoutines(FileRoutines):
             else:
                 command = "cat"
 
-            merged_forward = "%s/%s_1.fq" % (output_directory, sample)
-            merged_reverse = "%s/%s_2.fq" % (output_directory, sample)
-            merged_se = "%s/%s.se.fq" % (output_directory, sample)
+            merged_forward = "%s/%s_1.%s" % (output_directory, sample, output_fastq_ext)
+            merged_reverse = "%s/%s_2.%s" % (output_directory, sample, output_fastq_ext)
+            merged_se = "%s/%s.se.%s" % (output_directory, sample, output_fastq_ext)
 
             if use_links_if_merge_not_necessary and (len(forward_files) == 1) and (len(reverse_files) == 1) and (uncompresed == True):
                 forward_string = "ln -s %s %s" % (forward_files[0], merged_forward)

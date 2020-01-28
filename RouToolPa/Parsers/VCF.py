@@ -163,8 +163,9 @@ class MetadataVCF(OrderedDict):
                 if line[:2] != "##":
                     # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
                     # self.samples = self.header[9:]
-                    self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
-                    self["contig"].columns = ["length"]
+                    if "contig" in self:
+                        self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
+                        self["contig"].columns = ["length"]
                     return line
                 self.add_metadata(line)
         else:
@@ -174,9 +175,9 @@ class MetadataVCF(OrderedDict):
                     if line[:2] != "##":
                         # self.header = HeaderVCF(line[1:].strip().split("\t"))   # line[1:].strip().split("\t")
                         # self.samples = self.header[9:]
-
-                        self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
-                        self["contig"].columns = ["length"]
+                        if "contig" in self:
+                            self["contig"] = pd.DataFrame.from_dict(self["contig"], orient="index")
+                            self["contig"].columns = ["length"]
                         return line
                     self.add_metadata(line)
 
@@ -439,7 +440,8 @@ class CollectionVCF:
         if in_file:
             self.read(in_file, external_metadata=external_metadata,
                       parsing_mode=self.parsing_mode, sparse=sparse)
-            self.scaffold_length = self.metadata["contig"]
+            if "contig" in self.metadata:
+                self.scaffold_length = self.metadata["contig"]
         else:
             self.metadata = metadata
             self.records = None if records is None else records
@@ -608,8 +610,10 @@ class CollectionVCF:
                 col = col.astype(self.metadata.converters[param_group][param])
             else:
                 if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
-
+                    #print self.metadata.converters[param_group][param]
+                    #print col
                     col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
+
                 else:
                     col = col.apply(self.metadata.converters[param_group][param])
         else:
