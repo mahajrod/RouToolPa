@@ -471,7 +471,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
     @staticmethod
     def draw_plot(input_file, output_prefix, x_column_index=0, y_column_index=1, separator="\t", min_x=None,
                   max_x=None, min_y=None, max_y=None, extensions=["png", "svg"], xlabel=None, ylabel=None,
-                  title=None, width=6, height=6, markersize=2, ylogbase=10, type="plot", grid=False, correlation=False):
+                  title=None, width=6, height=6, markersize=2, ylogbase=10, type="plot", grid=False, 
+                  correlation=False, close_plot=True):
 
         data = np.loadtxt(input_file, comments="#", usecols=(x_column_index, y_column_index), delimiter=separator)
         plt.figure(1, figsize=(width, height), dpi=300)
@@ -503,6 +504,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         for ext in extensions:
             plt.savefig("%s.%s.ylog%i.%s" % (output_prefix, type, ylogbase, ext))
+
+        if close_plot:
+            plt.close()
 
     @staticmethod
     def draw_precalculated_heatmap(heatmap_array, output_prefix=None, figsize=(5, 5), extensions=("png", "svg")):
