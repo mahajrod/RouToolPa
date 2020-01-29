@@ -36,7 +36,7 @@ class BamUtil(Tool):
         for sample in samples_to_handle:
             sample_dir = "%s/%s/" % (output_dir, sample)
             self.safe_mkdir(sample_dir)
-            input_bam = "%s/%s/%s%s.bam" % (sample_dir, sample, sample, bam_suffix)
+            input_bam = "%s/%s%s.bam" % (sample_dir, sample, bam_suffix)
             output_bam = "%s/%s.bam" % (output_dir, sample)
 
             options_list.append(self.parse_options(input_bam, output_bam, poolsize=poolsize))
