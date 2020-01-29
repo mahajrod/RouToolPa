@@ -26,7 +26,7 @@ class BamUtil(Tool):
 
     def parallel_clipoverlap(self, input_dir, output_dir, samples_list, bam_suffix="", poolsize=None):
         from RouToolPa.Tools.Samtools import SamtoolsV1
-        samples_to_handle = sample_list if sample_list else self.get_sample_list(input_dir)
+        samples_to_handle = samples_list if samples_list else self.get_sample_list(input_dir)
 
         self.safe_mkdir(output_dir)
 
@@ -42,6 +42,6 @@ class BamUtil(Tool):
             options_list.append(self.parse_options(input_bam, output_bam, poolsize=poolsize))
             samtools_option_list.append(output_bam)
 
-        self.parallel_execute(options_list=option)
+        self.parallel_execute(options_list=options_list)
         self.parallel_execute(options_list=samtools_option_list, cmd="samtools index")
 
