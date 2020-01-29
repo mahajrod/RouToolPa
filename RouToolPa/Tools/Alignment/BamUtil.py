@@ -37,11 +37,14 @@ class BamUtil(Tool):
             sample_dir = "%s/%s/" % (output_dir, sample)
             self.safe_mkdir(sample_dir)
             input_bam = "%s/%s%s.bam" % (sample_dir, sample, bam_suffix)
-            output_bam = "%s/%s.bam" % (output_dir, sample)
+            output_bam = "%s/%s.clipped.bam" % (output_dir, sample)
 
             options_list.append(self.parse_options(input_bam, output_bam, poolsize=poolsize))
             samtools_option_list.append(output_bam)
 
         self.parallel_execute(options_list=options_list)
         self.parallel_execute(options_list=samtools_option_list, cmd="samtools index")
+
+    def get_stats_from_bam(self):
+        pass
 
