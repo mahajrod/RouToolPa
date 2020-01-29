@@ -37,7 +37,8 @@ class BWA(Tool):
               mark_duplicates=True,
               sort_by_coordinate=False,
               sort_by_name=False,
-              max_per_sorting_thread_memory=None
+              max_per_sorting_thread_memory=None,
+              softclipping_penalty=None
               ):
         """
         Common method for all aligners
@@ -54,6 +55,7 @@ class BWA(Tool):
         options += " %s" % index
         options += " %s " % reads
         options += " -R \'@RG\\tID:%s\\tPU:%s\\tSM:%s\\tPL:%s\\tLB:%s\'" % (read_group_name, PU, SM, platform, LB)
+        options += " -L %i,%i" % (softclipping_penalty[0], softclipping_penalty[1]) if softclipping_penalty else ""
 
         if sort_by_coordinate or sort_by_name:
             if sort_by_coordinate and sort_by_name:
