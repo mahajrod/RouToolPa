@@ -38,7 +38,8 @@ class BWA(Tool):
               sort_by_coordinate=False,
               sort_by_name=False,
               max_per_sorting_thread_memory=None,
-              softclipping_penalty=None
+              softclipping_penalty=None,
+              max_insert_size=None,
               ):
         """
         Common method for all aligners
