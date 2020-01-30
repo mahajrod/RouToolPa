@@ -42,14 +42,15 @@ class Bowtie2(Tool):
         options += " -X %i" % concordant_upper_threshold if concordant_upper_threshold else ""
         options += " --no-discordant" if not find_discordant_alignments else ""
         options += " --no-mixed" if not find_separated_alignments else ""
-        options += " -1 %s -2 %s" % (",".join(forward_reads_list), ",".join(reverse_reads_list)) \
+        options += " -1 %s -2 %s" % (forward_reads_list if isinstance(forward_reads_list, str) else ",".join(forward_reads_list),
+                                     reverse_reads_list if isinstance(reverse_reads_list, str) else",".join(reverse_reads_list)) \
             if forward_reads_list and reverse_reads_list else ""
         options += " -U %s" % ",".join(unpaired_reads_list) if unpaired_reads_list else ""
 
         if sort_by_coordinate or sort_by_name:
             if sort_by_coordinate and sort_by_name:
                 raise ValueError("Sorting by both coordinate and read name was requested")
-            options += " samtools sort"
+            options += " | samtools view -b | samtools sort"
             if sort_by_name:
                 options += " -n"
             options += " -@ %i" % self.threads
