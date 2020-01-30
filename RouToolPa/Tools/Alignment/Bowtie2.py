@@ -32,7 +32,8 @@ class Bowtie2(Tool):
               mark_duplicates=True,
               sort_by_coordinate=False,
               sort_by_name=False,
-              max_per_sorting_thread_memory=None):
+              max_per_sorting_thread_memory=None,
+              softclipping_penalty=None):
 
         options = " -p %i" % self.threads
         options += " --%s" % alignment_mode
