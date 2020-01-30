@@ -40,6 +40,7 @@ class Bowtie2(Tool):
         options += " --%s" % quality_score
         options += " -x %s" % bowtie2_index
         options += " -X %i" % max_insert_size if max_insert_size else ""
+        options += " --rg-id %s" % read_group_name
         options += " --rg \'@RG\\tID:%s\\tPU:%s\\tSM:%s\\tPL:%s\\tLB:%s\'" % (read_group_name, PU, SM, platform, LB)
         options += " --no-discordant" if not find_discordant_alignments else ""
         options += " --no-mixed" if not find_separated_alignments else ""
