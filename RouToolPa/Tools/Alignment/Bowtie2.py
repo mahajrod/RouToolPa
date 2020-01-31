@@ -73,6 +73,6 @@ class Bowtie2(Tool):
             options += " - %s.%s" % (output_prefix, output_format)
         else:
             options += " > %s.%s" % (output_prefix, output_format)
-
+        options += " 2>%s.stats" % output_prefix
         self.execute(options)
 
