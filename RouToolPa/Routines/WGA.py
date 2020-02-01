@@ -22,12 +22,13 @@ import numpy as np
 
 class WGARoutines(SequenceRoutines):
     def __init__(self):
+        SequenceRoutines.__init__(self)
         self.psl_query_id_column = 9           # zero-based
         self.psl_target_id_column = 13         # zero-based
         pass
 
     def label_maf(self, input, output, label_list, separator="."):
-        with open(input, "r") as in_fd, open(output, "w") as out_fd:
+        with self.metaopen(input, "r") as in_fd, open(output, "w") as out_fd:
             label_id = 0
 
             for line in in_fd:
