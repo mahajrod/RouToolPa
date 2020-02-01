@@ -42,3 +42,15 @@ class WGARoutines(SequenceRoutines):
                     out_fd.write("%s %s%s%s" % (line[0], label_list[label_id-1], separator, line[2:]))
                 else:
                     out_fd.write(line)
+
+    def replace_ambigious_nucleotides_in_maf(self, input_maf, output_maf):
+
+        with self.metaopen(input_maf, "r") as in_fd, self.metaopen(output_maf, "w") as out_fd:
+            for line in in_fd:
+                if line[0] == "s":
+                    tmp = line.split()
+                    tmp[-1] = self.replace_ambiguous_nucleotides(tmp[-1])
+                    out_fd.write(" ".join(tmp))
+                else:
+                    out_fd.write(line)
+

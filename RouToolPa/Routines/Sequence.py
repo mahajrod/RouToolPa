@@ -74,6 +74,8 @@ class SequenceRoutines(FileRoutines):
         if sys.version_info[0] == 2:
             self.complement_table = maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-",
                                               "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
+            self.ambiguous_nucleotides_replacenment_table = maketrans("RYSWKMBDHVryswkmbdhv",
+                                                                      "NNNNNNNNNNnnnnnnnnnn")
 
         self.ambiguous_nucleotides_string_dict = OrderedDict({"R": "AG",
                                                               "Y": "CT",
@@ -104,6 +106,12 @@ class SequenceRoutines(FileRoutines):
             return seq[::-1].translate(self.complement_table)
         else:
             return seq[::-1].maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-", "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
+
+    def replace_ambiguous_nucleotides(self, seq):
+        if sys.version_info[0] == 2:
+            return seq.translate(self.ambiguous_nucleotides_replacenment_table)
+        else:
+            return seq.maketrans("RYSWKMBDHVryswkmbdhv", "NNNNNNNNNNnnnnnnnnnn")
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
                     parsing_mode="parse", index_file=None, sort_by_length=False):

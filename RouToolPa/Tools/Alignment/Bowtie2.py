@@ -3,7 +3,6 @@ import os
 from RouToolPa.Tools.Abstract import Tool
 
 
-
 class Bowtie2(Tool):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "bowtie2", path=path, max_threads=max_threads)
