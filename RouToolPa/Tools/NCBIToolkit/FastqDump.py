@@ -24,6 +24,7 @@ class FastqDump(Tool):
         option_list = []
         for sra_id in sra_id_list:
             sra_id_dir = "%s/%s/" % (output_dir, sra_id)
+            sra_id_prefix = "%s/%s" % (sra_id_dir, sra_id)
             try:
                 os.mkdir(sra_id_dir)
             except OSError:
@@ -32,6 +33,7 @@ class FastqDump(Tool):
             option = common_options
             option += " -O %s" % sra_id_dir
             option += " %s" % sra_id
+            option += " > %s.stats 2>%s.error" % (sra_id_prefix, sra_id_prefix) 
 
             option_list.append(option)
 
