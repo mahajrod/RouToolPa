@@ -58,7 +58,7 @@ class STAR(Tool):
         options += " --sjdbGTFfeatureExon %s" % feature_from_gtf_to_use_as_exon if feature_from_gtf_to_use_as_exon else ""
         self.execute(options)
 
-    def align(self, genome_dir, forward_read_list, reverse_read_list=None, annotation_gtf=None,
+    def align(self, genome_dir, forward_read_list, reverse_read_list=None, annotation_gtf=None, sample=None,
               feature_from_gtf_to_use_as_exon=None, exon_tag_to_use_as_transcript_id=None,
               exon_tag_to_use_as_gene_id=None, length_of_sequences_flanking_junction=None, junction_tab_file_list=None,
               three_prime_trim=None, five_prime_trim=None, adapter_seq_for_three_prime_clip=None,
@@ -113,7 +113,7 @@ class STAR(Tool):
         if sort_bam:
             print("\tSorting...")
             unsorted_bam = "%s/Aligned.out.bam" % output_dir
-            sorted_bam = "%s/Aligned.sortedByCoord.out.bam" % output_dir
+            sorted_bam = "%s/%s.bam" % (output_dir, ("%s.sorted" % sample if sample else "Aligned.sortedByCoord.out"))
             SamtoolsV1.threads = self.threads
             SamtoolsV1.sort(unsorted_bam, sorted_bam, max_memory_per_thread=max_memory_per_thread_for_bam_sorting)
 
