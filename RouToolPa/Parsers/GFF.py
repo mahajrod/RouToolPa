@@ -422,6 +422,7 @@ class CollectionGFF(Parser):
 
     def get_introns(self, exon_feature="CDS", parent_id_field="Parent",
                     id_field="ID", intron_id_prefix="intron", intron_id_digit_number=8):
+        # TODO: CORRECT ERRORS FOR INTRONS IN - STRAND IN CASE WHEN EXONS ARE REVERSE SORTED BY COORDINATE
         if self.featuretype_separation:
             intron_index = 1
             intron_id_template = "%s%%0%ii" % (intron_id_prefix, intron_id_digit_number)
