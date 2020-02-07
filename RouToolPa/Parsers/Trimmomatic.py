@@ -49,22 +49,28 @@ class TrimmomaticReport:
             both_number = pyp.Word(pyp.nums)
 
             str1 = pyp.Literal("(")
-            both_percent = pyp.Word(pyp.nums + ".-")
+            both_percent = pyp.Word(pyp.alphanums + ".-")
             forward = pyp.Literal("%) Forward Only Surviving: ")
             forward_number = pyp.Word(pyp.nums)
-            forward_percent = pyp.Word(pyp.nums + ".-")
+            forward_percent = pyp.Word(pyp.pyp.alphanums + ".-")
             reverse = pyp.Literal("%) Reverse Only Surviving: ")
             reverse_number = pyp.Word(pyp.nums)
-            reverse_percent = pyp.Word(pyp.nums + ".-")
+            reverse_percent = pyp.Word(pyp.pyp.alphanums + ".-")
             dropped = pyp.Literal("%) Dropped: ")
             dropped_number = pyp.Word(pyp.nums)
-            dropped_percent = pyp.Word(pyp.nums + ".-")
+            dropped_percent = pyp.Word(pyp.pyp.alphanums + ".-")
             end = pyp.Literal("%)")
+
+            def convert_percent(s, l, t):
+                try:
+                    return [float(t[0]), ]
+                except:
+                    return [0.0, ]
 
             for token in both_number, forward_number, reverse_number, dropped_number, input_number:
                 token.setParseAction(lambda s, l, t: [int(t[0])])
             for token in both_percent, forward_percent, reverse_percent, dropped_percent:
-                token.setParseAction(lambda s, l, t: [float(t[0])])
+                token.setParseAction(convert_percent)
 
             both_number.setParseAction(lambda s, l, t: [int(t[0])])
 
