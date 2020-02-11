@@ -270,7 +270,6 @@ class MetadataVCF(OrderedDict):
                                                                for param in self[key][att_id]])
                         metadata_string += prefix + middle + suffix
                 except:
-                    print key, self[key]
                     raise ValueError()
 
         return metadata_string[:-1]
