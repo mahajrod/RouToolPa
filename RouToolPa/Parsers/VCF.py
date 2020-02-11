@@ -1673,7 +1673,7 @@ class CollectionVCF:
                     normalized_data += list(normalized_variant_window_counts[scaffold_id]) + [0, ]
                 data = np.array(data)
                 normalized_data = np.array(normalized_data)
-                print normalized_data
+                #print normalized_data
                 bins = np.arange(len(data)) #* window_step
                 #print data
                 #print max(data)
