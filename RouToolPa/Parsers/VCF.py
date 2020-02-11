@@ -463,7 +463,7 @@ class CollectionVCF:
         return pd.to_numeric(value, errors="coerce")
 
     def read(self, in_file, external_metadata=None, parsing_mode=None, sparse=False):
-        print self.parsing_mode
+
         """
         Reads collection from vcf file
         :param in_file: path to file
@@ -1180,9 +1180,9 @@ class CollectionVCF:
             else:
                 bins = np.arange(0, max(param_max), 0.1)
         else:
-            print np.max(param_median)
-            print np.max(param_median)[0]
-            print max(param_median)
+            print(np.max(param_median))
+            print(np.max(param_median)[0])
+            print(max(param_median))
             if param_max > max(param_median) * 10:
                 bins = np.arange(1, max(param_median) * 10, bin_width)
                 bins = np.concat(bins, [max(param_max)])
@@ -1190,8 +1190,8 @@ class CollectionVCF:
                 bins = np.arange(1, max(param_max), bin_width)
         bins = np.concatenate((bins, [bins[-1] + bin_width, bins[-1] + 2 * bin_width]))
 
-        print "Bins:"
-        print bins
+        print("Bins:")
+        print(bins)
 
         figure, subplot_array = plt.subplots(nrows=n, ncols=m, sharex=True, sharey=True,
                                              figsize=(m*subplot_size, n*subplot_size), dpi=dpi)
@@ -1200,7 +1200,7 @@ class CollectionVCF:
         #print n, m
         for row in range(0, n):
             for col in range(0, m):
-                print row, col
+                #print row, col
                 sample_index = row * m + col
                 if ylabel and col == 0:
                     subplot_array[row][col].ylabel = ylabel
@@ -1289,9 +1289,9 @@ class CollectionVCF:
             else:
                 sp_coverage = coverage.apply(np.median)
             #coverage = coverage / coverage_median
-            print sp_coverage
-            print "UUUU"
-            print coverage.apply(np.median)
+            #print sp_coverage
+            #print "UUUU"
+            #print coverage.apply(np.median)
             boolean_array = coverage >= (max_coverage * sp_coverage)
             if min_coverage:
                 boolean_array &= coverage <= (min_coverage * sp_coverage)
@@ -1538,7 +1538,7 @@ class CollectionVCF:
 
         normalized_ylabel = "%s per %i %s" % (ylabel, mb if mb >= 1 else kb if kb >=1 else multiplier, "Mbp" if mb >= 1 else "Kbp" if kb >= 1 else "bp")
 
-        print "Parsing reference and..."
+        print("Parsing reference and...")
         reference = ReferenceGenome(reference_genome,
                                     masked_regions=None,
                                     index_file="refgen.idx",
