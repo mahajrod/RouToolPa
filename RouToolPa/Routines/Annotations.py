@@ -870,6 +870,17 @@ class AnnotationsRoutines(SequenceRoutines):
 
         skipped_id_list.write(skipped_id_file)
 
+    def label_scaffolds_in_gff(self, input_gff, label, output_gff, separator="."):
+
+        with self.metaopen(input_gff, "r") as in_fd, \
+             self.metaopen(output_gff, "w") as out_fd:
+
+            for line in in_fd:
+                if line[0] == "#":
+                    out_fd.write(line)
+                else:
+                    out_fd.write("%s%s%s" % (label, separator, line))
+
     @staticmethod
     def feature_list_entry_to_tab_str(feature_entry):
         return "%s\t%s\t%s\t%s" % (feature_entry[0],
