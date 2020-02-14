@@ -69,6 +69,17 @@ class AnnotationsRoutines(SequenceRoutines):
             if len(new_record.features) > 0:
                 yield new_record
 
+    @staticmethod
+    def record_with_extracted_genes_generator(gff_file, gene_ids):
+        for record in GFF.parse(open(gff_file)):
+            new_record = deepcopy(record)
+            new_record.features = []
+            for feature in record.features:
+                if (feature.type == "gene") and (feature.id in gene_ids):
+                    new_record.features.append(feature)
+            if len(new_record.features) > 0:
+                yield new_record
+
     def extract_transcripts_by_ids(self, input_gff, transcript_id_file, output_gff):
         transcript_ids = IdSet()
         transcript_ids.read(transcript_id_file, header=False)
