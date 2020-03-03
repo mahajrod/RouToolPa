@@ -22,6 +22,8 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.Parsers.Sequence import CollectionSequence
+
 
 class SequenceRoutines(FileRoutines):
 
@@ -2488,7 +2490,7 @@ class SequenceRoutines(FileRoutines):
                                             input_separator="\t",
                                             sequence_format="fasta"):
 
-        from Routines import AnnotationsRoutines
+        from RouToolPa.Routines import AnnotationsRoutines
 
         sequence_dict = self.parse_seq_file(sequence_file, parsing_mode, format=sequence_format)
 
@@ -2636,6 +2638,96 @@ class SequenceRoutines(FileRoutines):
             if a != b:
                 dist += 1
         return dist
+
+    @staticmethod
+    def get_stats_from_assemblies(input_file_list, labels_list, output_prefix, thresholds_list=(0, 100, 250, 500, 1000)):
+        assemblies_dict = OrderedDict()
+        for i in range(0, len(input_file_list)):
+            assembly_label = labels_list[i] if labels_list else "A%i" % (i + 1)
+            assemblies_dict[assembly_label] = CollectionSequence(in_file=input_file_list[i]).records
+            """    
+                SequenceRoutines.parse_seq_file(args.input_file_list[i],
+                                                                              args.parsing_mode,
+                                                                              format=args.format,
+                                                                              index_file=tmp_index)
+            """
+            # SeqIO.index_db(tmp_index, args.input_file_list[i],format=args.format)
+
+        assembly_N50_dict = TwoLvlDict()
+        assembly_L50 = TwoLvlDict()
+        assembly_bins = []
+        assembly_contig_cumulative_length = OrderedDict()
+        assembly_contig_number_values = OrderedDict()
+        assembly_general_stats = TwoLvlDict()
+        assembly_length_array = OrderedDict()
+        assembly_lengths = TwoLvlDict()
+        for assembly in assemblies_dict:
+            lengths_array, N50_dict, L50_dict, length_dict, total_length, longest_contig, Ns_number, bins, contig_cumulative_length_values, \
+            contig_number_values = SequenceRoutines.calculate_assembly_stats(assemblies_dict[assembly],
+                                                                             thresholds_list=thresholds_list,
+                                                                             seq_len_file="%s.%s.len" % (
+                                                                             output_prefix, assembly))
+            assembly_N50_dict[assembly] = N50_dict
+            assembly_L50[assembly] = L50_dict
+            assembly_contig_cumulative_length[assembly] = contig_cumulative_length_values
+            assembly_contig_number_values[assembly] = contig_number_values
+            assembly_general_stats[assembly] = OrderedDict()
+            assembly_general_stats[assembly]["Ns"] = Ns_number
+            assembly_general_stats[assembly]["Longest contig"] = longest_contig
+            assembly_general_stats[assembly]["Total length"] = total_length
+            assembly_length_array[assembly] = lengths_array
+            assembly_lengths[assembly] = length_dict
+            if len(assembly_bins) < len(bins):
+                assembly_bins = bins
+
+        number_of_bins = len(bins) - 1
+
+        # add zeroes to absent bins for all assemblies
+        for assembly in assembly_contig_cumulative_length:
+            bin_number_difference = number_of_bins - len(assembly_contig_cumulative_length[assembly])
+            if bin_number_difference > 0:
+                assembly_contig_cumulative_length[assembly] += [0 for i in range(0, bin_number_difference)]
+                assembly_contig_number_values[assembly] += [0 for i in range(0, bin_number_difference)]
+
+        assembly_N50_dict.write("%s.N50" % output_prefix)
+        assembly_L50.write("%s.L50" % output_prefix)
+        assembly_general_stats.write("%s.general" % output_prefix)
+        assembly_lengths.write("%s.lengths" % output_prefix)
+        # assembly_bins.write("%s.bins" % args.output_prefix)
+        # print(assembly_contig_cumulative_length)
+        # assembly_contig_cumulative_length.write("%s.cumulative_length" % args.output_prefix)
+        # assembly_contig_number_values.write("%s.contig_number_values" % args.output_prefix)
+
+        fig = plt.figure(figsize=(12, 6))
+        subplot_1 = plt.subplot(1, 2, 1)
+
+        plt.hist([assembly_length_array[assembly] for assembly in assembly_length_array], bins,
+                 label=assembly_length_array.keys())
+
+        plt.xlabel("Sequence length")
+        plt.ylabel("Number of sequences")
+        # plt.xscale('log', logbase=10)
+        # plt.yscale('log', logbase=10)
+        plt.xscale('log', basex=10)
+        plt.yscale('log', basey=10)
+
+        plt.legend()
+
+        subplot_2 = plt.subplot(1, 2, 2)
+
+        for assembly in assembly_contig_cumulative_length:
+            # print assembly_contig_cumulative_length[assembly]
+            # print bins[:-1]
+            plt.plot(bins[:-1], assembly_contig_cumulative_length[assembly], label=assembly)
+
+        plt.xlabel("Sequence length")
+        plt.ylabel("Length of sequences")
+        # plt.xscale('log', logbase=10)
+        plt.xscale('log', basex=10)
+        plt.legend()
+
+        for ext in ".png", ".svg":
+            plt.savefig("%s%s" % (output_prefix, ext))
 
     @staticmethod
     def draw_length_pie(length_file, output_prefix, thresholds=(1000, 10000, 100000, 1000000, 10000000),
