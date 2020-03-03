@@ -52,13 +52,13 @@ class TrimmomaticReport:
             both_percent = pyp.Word(pyp.alphanums + ".-")
             forward = pyp.Literal("%) Forward Only Surviving: ")
             forward_number = pyp.Word(pyp.nums)
-            forward_percent = pyp.Word(pyp.pyp.alphanums + ".-")
+            forward_percent = pyp.Word(pyp.alphanums + ".-")
             reverse = pyp.Literal("%) Reverse Only Surviving: ")
             reverse_number = pyp.Word(pyp.nums)
-            reverse_percent = pyp.Word(pyp.pyp.alphanums + ".-")
+            reverse_percent = pyp.Word(pyp.alphanums + ".-")
             dropped = pyp.Literal("%) Dropped: ")
             dropped_number = pyp.Word(pyp.nums)
-            dropped_percent = pyp.Word(pyp.pyp.alphanums + ".-")
+            dropped_percent = pyp.Word(pyp.alphanums + ".-")
             end = pyp.Literal("%)")
 
             def convert_percent(s, l, t):
