@@ -6,6 +6,9 @@ from setuptools import setup, find_packages
 
 dependencies = ['scipy', 'numpy', 'pandas', 'matplotlib', 'matplotlib-venn',
                 'biopython', 'xmltodict', 'bcbio-gff', 'statsmodels']
+
+#  scipy numpy pandas matplotlib matplotlib-venn biopython xmltodict bcbio-gff statsmodels pyparsing ete3
+
 if sys.version_info[0] == 3:
     dependencies += ["ete3"]
 elif sys.version_info[0] == 2:
