@@ -22,7 +22,6 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
-from RouToolPa.Parsers.Sequence import CollectionSequence
 
 
 class SequenceRoutines(FileRoutines):
@@ -2641,6 +2640,7 @@ class SequenceRoutines(FileRoutines):
 
     @staticmethod
     def get_stats_from_assemblies(input_file_list, labels_list, output_prefix, thresholds_list=(0, 100, 250, 500, 1000)):
+        from RouToolPa.Parsers.Sequence import CollectionSequence
         assemblies_dict = OrderedDict()
         for i in range(0, len(input_file_list)):
             assembly_label = labels_list[i] if labels_list else "A%i" % (i + 1)
