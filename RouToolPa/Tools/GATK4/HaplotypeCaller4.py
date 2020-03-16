@@ -16,7 +16,8 @@ class HaplotypeCaller4(Tool):
 
     @staticmethod
     def parse_options_for_parallel_run(reference, alignment, output_mode=None,
-                                       stand_call_conf=30, gvcf_mode=False):
+                                       stand_call_conf=30, gvcf_mode=False,
+                                       ignore_softclipped_bases=False):
 
         options = " -R %s" % reference
 
@@ -30,6 +31,7 @@ class HaplotypeCaller4(Tool):
         #options += " -stand_emit_conf %i" % stand_emit_conf
         options += " --standard-min-confidence-threshold-for-calling %i" % stand_call_conf
         options += " --emit-ref-confidence GVCF" if gvcf_mode else ""
+        options += " --dont-use-soft-clipped-bases" if ignore_softclipped_bases else ""
 
         return options
 
@@ -108,7 +110,8 @@ class HaplotypeCaller4(Tool):
                       modules_list=None,
                       environment_variables_dict=None,
                       black_list_scaffold_id_file=None,
-                      gvcf_mode=False):
+                      gvcf_mode=False,
+                      ignore_softclipped_bases=False):
 
         splited_dir = "%s/splited/" % output_dir
         regions_dir = "%s/regions/" % output_dir
@@ -141,7 +144,8 @@ class HaplotypeCaller4(Tool):
         options = self.parse_options_for_parallel_run(reference, alignment,
 
                                                       stand_call_conf=stand_call_conf,
-                                                      gvcf_mode=gvcf_mode)
+                                                      gvcf_mode=gvcf_mode,
+                                                      ignore_softclipped_bases=False)
         #options += " -nct 1"
         options_list = []
 
