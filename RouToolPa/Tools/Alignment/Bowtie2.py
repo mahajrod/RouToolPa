@@ -32,9 +32,10 @@ class Bowtie2(Tool):
               sort_by_coordinate=False,
               sort_by_name=False,
               max_per_sorting_thread_memory=None,
-              softclipping_penalty=None):
+              softclipping_penalty=None, local_alignment=False):
 
         options = " -p %i" % self.threads
+        options += " --local" if local_alignment else ""
         options += " --%s" % alignment_mode
         options += " --%s" % quality_score
         options += " -x %s" % bowtie2_index
