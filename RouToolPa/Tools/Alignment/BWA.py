@@ -41,6 +41,7 @@ class BWA(Tool):
               softclipping_penalty=None,
               max_insert_size=None,
               local_alignment=False
+
               ):
         """
         Common method for all aligners
