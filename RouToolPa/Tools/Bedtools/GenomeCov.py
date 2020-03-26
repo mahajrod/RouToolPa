@@ -60,12 +60,12 @@ class GenomeCov(Tool):
 
         each_position_options = self.parse_options(input_bam=input_bam, report_zero_coverage=True,
                                                    one_based_coordinates=True, genome_bed=genome_bed)
-        each_position_options += " > %s" % each_position_coverage_file
+        each_position_options += " > %s | gzip" % each_position_coverage_file
 
         region_options = self.parse_options(input_bam=input_bam, report_zero_coverage=True,
                                             bedgraph_output=True, genome_bed=genome_bed)
 
-        region_options += " > %s.bedgraph" % output_prefix
+        region_options += " > %s.bedgraph | gzip" % output_prefix
 
         options_list = [each_position_options, region_options]
 
