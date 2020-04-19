@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 __author__ = 'Sergei F. Kliver'
 
-import os
 from RouToolPa.Tools.Abstract import Tool
 
 
@@ -22,6 +21,9 @@ class Supernova(Tool):
             tmp_options = options
             tmp_options += " --style %s" % out_type
             tmp_options += " --outprefix %s.%s" % (output_prefix, out_type)
+
+            if out_type == "pseudohap2":
+                tmp_options += " --index"
 
             options_list.append(tmp_options)
 
