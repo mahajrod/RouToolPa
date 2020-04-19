@@ -24,9 +24,7 @@ class Supernova(Tool):
                 tmp_options += " --index"
 
             tmp_options += " --style %s" % out_type
-            tmp_options += " --outprefix %s.%s" % (output_prefix, out_type)
-
-
+            tmp_options += " --outprefix %s.min_%i.%s" % (output_prefix, min_length, out_type)
 
             options_list.append(tmp_options)
 
