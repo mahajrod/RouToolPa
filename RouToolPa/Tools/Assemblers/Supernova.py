@@ -19,11 +19,14 @@ class Supernova(Tool):
 
         for out_type in "raw", "megabubbles", "pseudohap", "pseudohap2":
             tmp_options = options
-            tmp_options += " --style %s" % out_type
-            tmp_options += " --outprefix %s.%s" % (output_prefix, out_type)
 
             if out_type == "pseudohap2":
                 tmp_options += " --index"
+
+            tmp_options += " --style %s" % out_type
+            tmp_options += " --outprefix %s.%s" % (output_prefix, out_type)
+
+
 
             options_list.append(tmp_options)
 
