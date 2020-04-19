@@ -9,11 +9,11 @@ class Supernova(Tool):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "supernova", path=path, max_threads=max_threads)
 
-    def generate_fasta(self, assembly_dir, output_prefix, minsize=1000, headers="full"):
+    def generate_fasta(self, assembly_dir, output_prefix, min_length=1000, headers="full"):
 
         options = " mkoutput"
         options += " --asmdir %s" % assembly_dir
-        options += " --minsize %i" % minsize
+        options += " --minsize %i" % min_length
         options += " --headers %s" % headers
 
         options_list = []
