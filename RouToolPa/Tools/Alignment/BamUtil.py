@@ -44,7 +44,7 @@ class BamUtil(Tool):
             options_list.append(self.parse_options(input_bam, output_bam, poolsize=poolsize))
             samtools_option_list.append(output_bam)
 
-        self.parallel_execute(options_list=options_list)
+        #self.parallel_execute(options_list=options_list)
         SamtoolsV1.parallel_execute(options_list=samtools_option_list, cmd="samtools index")
 
     def get_stats_from_bam(self):
