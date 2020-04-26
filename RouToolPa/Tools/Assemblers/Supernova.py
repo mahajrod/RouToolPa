@@ -5,8 +5,8 @@ from RouToolPa.Tools.Abstract import Tool
 
 
 class Supernova(Tool):
-    def __init__(self, path="", max_threads=4):
-        Tool.__init__(self, "supernova", path=path, max_threads=max_threads)
+    def __init__(self, path="", max_threads=4, max_memory=512):
+        Tool.__init__(self, "supernova", path=path, max_threads=max_threads, max_memory=max_memory)
 
     def generate_fasta(self, assembly_dir, output_prefix, min_length=1000, header_style="full"):
 
@@ -29,3 +29,23 @@ class Supernova(Tool):
             options_list.append(tmp_options)
 
         self.parallel_execute(options_list=options_list)
+
+    def assembly(self, input_fastq_dir, output_dir, output_prefix, max_reads="all", disable_ui=True):
+
+        options = " --localcores %i" % self.threads
+        options += " --localmem %i" % self.max_memory
+        options += " --maxreads %s" % str(max_reads)
+
+        options += " --disable-ui" if disable_ui else ""
+
+        options += " --id %s" % output_dir
+        options += " --fastqs %s" % input_fastq_dir
+
+        self.execute(options=options, cmd="supernova run")
+
+        fasta_dir = "%s/fasta/" % output_dir
+        assembly_dir = "%s/outs/assembly/" % output_dir
+        self.safe_mkdir(fasta_dir)
+
+        self.generate_fasta(assembly_dir, output_prefix, min_length=1000, header_style="full")
+        self.generate_fasta(assembly_dir, output_prefix, min_length=150, header_style="full")
