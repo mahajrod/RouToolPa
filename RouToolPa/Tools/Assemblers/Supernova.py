@@ -44,8 +44,9 @@ class Supernova(Tool):
         self.execute(options=options, cmd="supernova run")
 
         fasta_dir = "%s/fasta/" % output_dir
+        fasta_prefix = "%s/%s" % (fasta_dir, output_prefix)
         assembly_dir = "%s/outs/assembly/" % output_dir
         self.safe_mkdir(fasta_dir)
 
-        self.generate_fasta(assembly_dir, output_prefix, min_length=1000, header_style="full")
-        self.generate_fasta(assembly_dir, output_prefix, min_length=150, header_style="full")
+        self.generate_fasta(assembly_dir, fasta_prefix, min_length=1000, header_style="full")
+        self.generate_fasta(assembly_dir, fasta_prefix, min_length=150, header_style="full")
