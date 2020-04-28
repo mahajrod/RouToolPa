@@ -30,7 +30,8 @@ class Supernova(Tool):
 
         self.parallel_execute(options_list=options_list)
 
-    def assembly(self, input_fastq_dir, output_dir, output_prefix, max_reads="all", disable_ui=True):
+    def assembly(self, input_fastq_dir, output_dir, output_prefix, max_reads="all", disable_ui=True,
+                 min_seq_length=150):
 
         options = " --localcores %i" % self.threads
         options += " --localmem %i" % self.max_memory
@@ -49,4 +50,4 @@ class Supernova(Tool):
         self.safe_mkdir(fasta_dir)
 
         self.generate_fasta(assembly_dir, fasta_prefix, min_length=1000, header_style="full")
-        self.generate_fasta(assembly_dir, fasta_prefix, min_length=150, header_style="full")
+        self.generate_fasta(assembly_dir, fasta_prefix, min_length=min_seq_length, header_style="full")
