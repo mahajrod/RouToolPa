@@ -204,7 +204,7 @@ class CollectionSequence(SequenceRoutines):
         stats = OrderedDict()
         for threshold in thresholds_list:
             stats[threshold] = OrderedDict()
-            lengths_df = self.seq_lengths[self.seq_lengths["length"] >= threshold]
+            lengths_df = self.seq_lengths[self.seq_lengths["length"] >= threshold].copy()
             lengths_df["cum_length"] = lengths_df["length"].cumsum()
             half_length = float(lengths_df["cum_length"][-1]) / 2
             lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
