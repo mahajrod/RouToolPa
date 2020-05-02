@@ -198,6 +198,8 @@ class CollectionSequence(SequenceRoutines):
 
         self.get_length_stats(thresholds_list=thresholds_list, count_gaps=count_gaps)
 
+        return self.stats
+
     def get_length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
         stats = OrderedDict()
         for threshold in thresholds_list:
