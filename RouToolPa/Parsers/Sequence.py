@@ -191,13 +191,11 @@ class CollectionSequence(SequenceRoutines):
 
             self.gaps.records.sort_values(by=["scaffold", "start", "end"])
 
-        self.seq_lengths = pd.DataFrame.from_records(length_list, columns=("scaffold", "length"), index="scaffold").sort_values(by="length", ascending=False)
-        if sort:
-            self.seq_lengths.sort_values(by=["length", "scaffold"])
+        self.seq_lengths = pd.DataFrame.from_records(length_list, columns=("scaffold", "length"), index="scaffold").sort_values(by=["length", "scaffold"], ascending=(False, True))
         self.length = np.sum(self.seq_lengths["length"])
         self.scaffolds = self.seq_lengths.index.values
 
-    def length_stats(self, thresholds_list=(0, 500, 1000)):
+    def length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
         stats = OrderedDict()
         for threshold in thresholds_list:
             stats[threshold] = OrderedDict()
@@ -205,16 +203,19 @@ class CollectionSequence(SequenceRoutines):
             lengths_df["cum_length"] = lengths_df["length"].cumsum()
             half_length = float(lengths_df["cum_length"][-1]) / 2
             lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
-            L50 = lengths_df["cumlen_longer"].idxmax() + 1
-            N50 = lengths_df["length"][L50 - 1]
-            gaps_df = self.gaps.records[self.gaps.records["scaffold"].isin(lengths_df.index)]
+            middle_element_index = lengths_df["cumlen_longer"].idxmax()
+            L50 = lengths_df.index.get_loc(middle_element_index) + 1
+            N50 = lengths_df["length"][middle_element_index]
+
 
             stats[threshold]["Total length"] = lengths_df["length"].sum()
             stats[threshold]["Total scaffolds"] = len(lengths_df["length"])
             stats[threshold]["Longest scaffold"] = lengths_df["length"][0]
             stats[threshold]["L50"] = L50
             stats[threshold]["N50"] = N50
-            stats[threshold]["Ns"] = sum(gaps_df["end"] - gaps_df["start"])
+            if count_gaps:
+                gaps_df = self.gaps.records[self.gaps.records.index.isin(lengths_df.index)]
+                stats[threshold]["Ns"] = sum(gaps_df["end"] - gaps_df["start"])
 
         stats = pd.DataFrame.from_dict(stats)
         self.stats = stats
