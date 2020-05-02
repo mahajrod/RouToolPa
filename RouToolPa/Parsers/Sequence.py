@@ -169,7 +169,8 @@ class CollectionSequence(SequenceRoutines):
         """
         return len(self.scaffolds)
 
-    def get_stats_and_features(self, count_gaps=True, sort=True, min_gap_length=1):
+    def get_stats_and_features(self, thresholds_list=(0, 500, 1000),
+                               count_gaps=True, sort=True, min_gap_length=1):
         length_list = []
         gaps_list = []
         if self.parsing_mode == "generator":
@@ -195,7 +196,9 @@ class CollectionSequence(SequenceRoutines):
         self.length = np.sum(self.seq_lengths["length"])
         self.scaffolds = self.seq_lengths.index.values
 
-    def length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
+        self.get_length_stats(thresholds_list=thresholds_list, count_gaps=count_gaps)
+
+    def get_length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
         stats = OrderedDict()
         for threshold in thresholds_list:
             stats[threshold] = OrderedDict()
@@ -206,7 +209,6 @@ class CollectionSequence(SequenceRoutines):
             middle_element_index = lengths_df["cumlen_longer"].idxmax()
             L50 = lengths_df.index.get_loc(middle_element_index) + 1
             N50 = lengths_df["length"][middle_element_index]
-
 
             stats[threshold]["Total length"] = lengths_df["length"].sum()
             stats[threshold]["Total scaffolds"] = len(lengths_df["length"])
