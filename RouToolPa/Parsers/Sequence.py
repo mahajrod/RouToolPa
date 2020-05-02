@@ -33,6 +33,7 @@ class CollectionSequence(SequenceRoutines):
         self.black_list = black_list
         self.seq_file = in_file
         self.description = OrderedDict()
+        self.stats = OrderedDict()
 
         if in_file:
             self.read(in_file, format=format, parsing_mode=parsing_mode,
@@ -92,7 +93,6 @@ class CollectionSequence(SequenceRoutines):
 
     def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta", black_list=(), white_list=(), verbose=False,
                            ):
-
         if format == "fasta":
             with self.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
@@ -191,11 +191,34 @@ class CollectionSequence(SequenceRoutines):
 
             self.gaps.records.sort_values(by=["scaffold", "start", "end"])
 
-        self.seq_lengths = pd.DataFrame.from_records(length_list, columns=("scaffold", "length"), index="scaffold")
+        self.seq_lengths = pd.DataFrame.from_records(length_list, columns=("scaffold", "length"), index="scaffold").sort_values(by="length", ascending=False)
         if sort:
             self.seq_lengths.sort_values(by=["length", "scaffold"])
         self.length = np.sum(self.seq_lengths["length"])
         self.scaffolds = self.seq_lengths.index.values
+
+    def length_stats(self, thresholds_list=(0, 500, 1000)):
+        stats = OrderedDict()
+        for threshold in thresholds_list:
+            stats[threshold] = OrderedDict()
+            lengths_df = self.seq_lengths[self.seq_lengths["length"] >= threshold]
+            lengths_df["cum_length"] = lengths_df["length"].cumsum()
+            half_length = float(lengths_df["cum_length"][-1]) / 2
+            lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
+            L50 = lengths_df["cumlen_longer"].idxmax() + 1
+            N50 = lengths_df["length"][L50 - 1]
+            gaps_df = self.gaps.records[self.gaps.records["scaffold"].isin(lengths_df.index)]
+
+            stats[threshold]["Total length"] = lengths_df["length"].sum()
+            stats[threshold]["Total scaffolds"] = len(lengths_df["length"])
+            stats[threshold]["Longest scaffold"] = lengths_df["length"][0]
+            stats[threshold]["L50"] = L50
+            stats[threshold]["N50"] = N50
+            stats[threshold]["Ns"] = sum(gaps_df["end"] - gaps_df["start"])
+
+        stats = pd.DataFrame.from_dict(stats)
+        self.stats = stats
+        return self.stats
 
     @staticmethod
     def find_gaps_in_seq(sequence, seq_id=None, min_gap_length=1):
