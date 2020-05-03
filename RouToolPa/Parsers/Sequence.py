@@ -33,7 +33,6 @@ class CollectionSequence(SequenceRoutines):
         self.black_list = black_list
         self.seq_file = in_file
         self.description = OrderedDict()
-        self.stats = OrderedDict()
 
         if in_file:
             self.read(in_file, format=format, parsing_mode=parsing_mode,
@@ -56,10 +55,11 @@ class CollectionSequence(SequenceRoutines):
         else:
             self.masking = masking
 
-        self.seq_lengths = None # None or pandas dataframe with seq_id as index
+        self.seq_lengths = None   # None or pandas dataframe with seq_id as index
         self.length = 0
         self.scaffolds = None
         self.gaps = None          # None or pandas dataframe with seq_id as index
+        self.stats = None         # None or pandas dataframe with seq_id as index
 
         if get_stats:
             self.get_stats_and_features(count_gaps=False, sort=False, min_gap_length=1)
@@ -185,6 +185,7 @@ class CollectionSequence(SequenceRoutines):
                 length_list.append([seq_id, len(self.records[seq_id])])
                 if count_gaps:
                     gaps_list.append(self.find_gaps_in_seq(self.records[seq_id], seq_id, min_gap_length=min_gap_length))
+
         if count_gaps:
             self.gaps = CollectionGFF(records=pd.concat(gaps_list), format="gff", parsing_mode="only_coordinates",
                                       black_list=self.black_list, white_list=self.white_list
