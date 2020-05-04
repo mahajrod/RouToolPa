@@ -175,6 +175,41 @@ class GenomeCov(Tool):
         if verbose:
             print(stats)
 
+    def get_coverage_stats_in_windows(self, coverage_file, window_size, output, window_step=None,
+                                      buffering=None):
+        win_step = window_size if window_step is None else window_step
+        stats = []
+
+        with self.metaopen(coverage_file, "r", buffering=buffering) as in_fd:
+            prev_scaffold, position, coverage = in_fd.readline().strip().split("\t")
+            coverage_list = [coverage]
+            for line in in_fd:
+                current_scaffold, position, coverage = line.strip().split("\t")
+                coverage = int(coverage)
+                if current_scaffold == prev_scaffold:
+                    coverage_list.append(coverage)
+                else:
+                    scaffold_length = len(coverage_list)
+                    if scaffold_length >= window_size:
+                        window_number = int((scaffold_length - window_size) / win_step) + 1
+                        for i in range(0, window_number):
+                            start = window_number * win_step
+                            window_coverage_list = coverage_list[start:start + window_size]
+                            stats.append([prev_scaffold,
+                                          i,
+                                          np.mean(window_coverage_list),
+                                          np.median(window_coverage_list),
+                                          np.min(window_coverage_list),
+                                          np.max(window_coverage_list),
+                                          window_coverage_list.count(0)])
+
+                    prev_scaffold = current_scaffold
+                    coverage_list = [coverage]
+
+        stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
+                                          columns=("scaffold, window", "mean", "median", "min", "max", "uncovered"))
+        stats.to_csv(output, sep="\t", header=True, index=True)
+
     @staticmethod
     def get_coverage_stats(coverage_file, output, verbose=True):
         print("Reading...")
