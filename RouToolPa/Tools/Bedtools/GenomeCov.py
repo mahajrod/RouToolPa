@@ -195,6 +195,7 @@ class GenomeCov(Tool):
                         for i in range(0, window_number):
                             start = window_number * win_step
                             window_coverage_list = coverage_list[start:start + window_size]
+                            print(stats)
                             stats.append([prev_scaffold,
                                           i,
                                           np.mean(window_coverage_list),
