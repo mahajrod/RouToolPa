@@ -197,6 +197,7 @@ class GenomeCov(Tool):
                             start = i * win_step
                             window_coverage_list = coverage_list[start:start + window_size]
                             stats.append([prev_scaffold,
+                                          len(coverage_list),
                                           i,
                                           np.mean(window_coverage_list),
                                           np.median(window_coverage_list),
@@ -213,16 +214,20 @@ class GenomeCov(Tool):
                 for i in range(0, number_of_windows):
                     start = i * win_step
                     window_coverage_list = coverage_list[start:start + window_size]
+                    uncovered = window_coverage_list.count(0)
                     stats.append([prev_scaffold,
+                                  scaffold_length,
                                   i,
                                   np.mean(window_coverage_list),
                                   np.median(window_coverage_list),
                                   np.min(window_coverage_list),
                                   np.max(window_coverage_list),
-                                  window_coverage_list.count(0)])
+                                  uncovered,
+                                  float(uncovered)/float(scaffold_length)],)
 
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
-                                          columns=("scaffold", "window", "mean", "median", "min", "max", "uncovered"))
+                                          columns=("scaffold", "scaffold_length", "window", "mean",
+                                                   "median", "min", "max", "uncovered", "uncovered,%"))
         stats.to_csv(output, sep="\t", header=True, index=True)
 
     @staticmethod
