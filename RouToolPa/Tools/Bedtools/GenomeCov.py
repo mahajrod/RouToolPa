@@ -175,6 +175,7 @@ class GenomeCov(Tool):
         if verbose:
             print(stats)
 
+
     def get_coverage_stats_in_windows(self, coverage_file, window_size, output, window_step=None,
                                       buffering=None):
         win_step = window_size if window_step is None else window_step
@@ -207,6 +208,22 @@ class GenomeCov(Tool):
 
                     prev_scaffold = current_scaffold
                     coverage_list = [coverage]
+
+            if scaffold_length >= window_size:
+                number_of_windows = int((scaffold_length - window_size) / win_step) + 1
+                for i in range(0, number_of_windows):
+                    start = i * win_step
+                    window_coverage_list = coverage_list[start:start + window_size]
+                    print(stats)
+                    print(window_coverage_list)
+                    stats.append([prev_scaffold,
+                                  i,
+                                  np.mean(window_coverage_list),
+                                  np.median(window_coverage_list),
+                                  np.min(window_coverage_list),
+                                  np.max(window_coverage_list),
+                                  window_coverage_list.count(0)])
+
         print(stats)
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
                                           columns=("scaffold", "window", "mean", "median", "min", "max", "uncovered"))
