@@ -205,7 +205,7 @@ class GenomeCov(Tool):
 
                     prev_scaffold = current_scaffold
                     coverage_list = [coverage]
-
+        print(stats)
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
                                           columns=("scaffold, window", "mean", "median", "min", "max", "uncovered"))
         stats.to_csv(output, sep="\t", header=True, index=True)
