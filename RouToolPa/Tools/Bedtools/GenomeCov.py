@@ -196,14 +196,16 @@ class GenomeCov(Tool):
                         for i in range(0, number_of_windows):
                             start = i * win_step
                             window_coverage_list = coverage_list[start:start + window_size]
+                            uncovered = window_coverage_list.count(0)
                             stats.append([prev_scaffold,
-                                          len(coverage_list),
+                                          scaffold_length,
                                           i,
                                           np.mean(window_coverage_list),
                                           np.median(window_coverage_list),
                                           np.min(window_coverage_list),
                                           np.max(window_coverage_list),
-                                          window_coverage_list.count(0)])
+                                          uncovered,
+                                          float(uncovered) / float(scaffold_length)], )
 
                     prev_scaffold = current_scaffold
                     coverage_list = [coverage]
