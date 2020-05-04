@@ -191,8 +191,8 @@ class GenomeCov(Tool):
                 else:
                     scaffold_length = len(coverage_list)
                     if scaffold_length >= window_size:
-                        window_number = int((scaffold_length - window_size) / win_step) + 1
-                        for i in range(0, window_number):
+                        number_of_windows = int((scaffold_length - window_size) / win_step) + 1
+                        for i in range(0, number_of_windows):
                             start = i * win_step
                             window_coverage_list = coverage_list[start:start + window_size]
                             print(stats)
