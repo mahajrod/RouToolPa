@@ -131,6 +131,15 @@ class RepeatMasker(Tool):
 
         self.execute(options=options)
 
+        output_files = os.listdir(output_dir)
+        for filename in output_files:
+            if "cat.gz" in filename:
+                if filename[-6:] == "cat.gz":
+                    os.remove("%s/%s" % (output_dir, filename))
+            if "masked" in filename:
+                if filename[-5:] == "masked":
+                    os.remove("%s/%s" % (output_dir, filename))
+
         """
     -source
         Includes for each annotation the HSP "evidence". Currently this
