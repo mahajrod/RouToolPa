@@ -18,7 +18,7 @@ class HaplotypeRoutines(SequenceClusterRoutines):
         SequenceClusterRoutines.__init__(self)
 
     @staticmethod
-    def find_indistinguishable_haplotypes(seq_file, haplotype_syn_file, output_prefix,
+    def find_indistinguishable_haplotypes(seq_file,  output_prefix, haplotype_syn_file=None,
                                           threads=1, cdhit_dir=None):
         from RouToolPa.Routines import SequenceClusterRoutines
         from RouToolPa.Tools.Clustering import CDHit
@@ -30,11 +30,12 @@ class HaplotypeRoutines(SequenceClusterRoutines):
         CDHit.threads = threads
         CDHit.path = cdhit_dir
         CDHit.find_duplicates(seq_file, output_prefix)
-        SequenceClusterRoutines.rename_elements_in_clusters(sequence_fam,
-                                                            haplotype_syn_file,
-                                                            haplotypes_fam,
-                                                            keep_only_unique_elements=True)
-        SequenceClusterRoutines.extract_clusters_by_size_from_file(haplotypes_fam,
+        if haplotype_syn_file:
+            SequenceClusterRoutines.rename_elements_in_clusters(sequence_fam,
+                                                                haplotype_syn_file,
+                                                                haplotypes_fam,
+                                                                keep_only_unique_elements=True)
+        SequenceClusterRoutines.extract_clusters_by_size_from_file(haplotypes_fam if haplotype_syn_file else sequence_fam,
                                                                    min_cluster_size=2,
                                                                    max_cluster_size=None,
                                                                    white_list_ids=None,
