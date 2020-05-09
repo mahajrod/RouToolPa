@@ -8,8 +8,8 @@ class CDHit(Tool):
     T
     """
 
-    def __init__(self, path="", max_threads=4):
-        Tool.__init__(self, "cd-hit", path=path, max_threads=max_threads)
+    def __init__(self, path="", max_threads=4, max_memmory=0):
+        Tool.__init__(self, "cd-hit", path=path, max_threads=max_threads, max_memory=max_memmory)
 
     def parse_options(self, input_file, output_prefix, sequence_identity=None,
                       shorter_sequence_fraction_cutoff=None,
@@ -39,6 +39,7 @@ class CDHit(Tool):
         """
 
         options = "-T %i" % self.threads
+        options += " -M %s" % str(self.max_memory)
         options += " -i %s" % input_file
         options += " -o %s" % output_prefix
         options += " -sc 1" if sort_by_cluster_size else ""
