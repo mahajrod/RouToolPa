@@ -42,7 +42,7 @@ class VariantCall(Tool):
         options += " -d %i" % max_coverage if max_coverage else ""
         options += " -q %i" % min_mapping_quality
         options += " -Q %i" % min_base_quality
-        options += " -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP"
+        options += " -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP,SCR,INFO/SCR"
         options += " -O u"
         options += " -f %s " % reference_fasta
         options += " -r '{}' %s| " % " ".join(bam_list)
