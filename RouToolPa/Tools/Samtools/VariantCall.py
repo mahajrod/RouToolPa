@@ -29,7 +29,7 @@ class VariantCall(Tool):
                           }
 
     def prepare_cmd(self, reference_fasta, bam_list, output_prefix, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                    min_base_quality=30, min_mapping_quality=30):
+                    min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None):
         """
         mkdir -p split; time vcfutils.pl splitchr -l 100 ${GENOME}.fai | xargs -I {} -P ${THREADS} sh -c "bcftools mpileup -d 1000000 -q 30 -Q 30 -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP -O u -f ${GENOME} -r '{}' ${BAM_LIST}| bcftools call -O u -v -m -f GQ,GP > split/tmp.{}.bcf" && bcftools concat -O u --threads 20 `ls split/tmp.*.bcf | sort -V` | bcftools view -O z -o ${OUTPUT_PREFIX}.vcf.gz - ; rm -r split/
         """
@@ -42,6 +42,7 @@ class VariantCall(Tool):
         options += " -d %i" % max_coverage if max_coverage else ""
         options += " -q %i" % min_mapping_quality
         options += " -Q %i" % min_base_quality
+        options += " --adjust-MQ %i" % adjust_mapping_quality if adjust_mapping_quality else ""
         options += " -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP,SCR,INFO/SCR"
         options += " -O u"
         options += " -f %s " % reference_fasta
@@ -56,11 +57,12 @@ class VariantCall(Tool):
         return options
 
     def call_variants(self, reference_fasta, output_prefix, bam_list, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                      min_base_quality=30, min_mapping_quality=30):
+                      min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None):
 
         cmd = self.prepare_cmd(reference_fasta, bam_list, output_prefix, chunk_length=chunk_length,
                                split_dir=split_dir, max_coverage=max_coverage,
-                               min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality)
+                               min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality,
+                               adjust_mapping_quality=adjust_mapping_quality)
 
         self.execute(options="", cmd=cmd)
 
