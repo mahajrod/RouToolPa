@@ -29,7 +29,7 @@ class VariantCall(Tool):
                           }
 
     def prepare_cmd(self, reference_fasta, bam_list, output_prefix, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                    min_base_quality=30, min_mapping_quality=30, retain_intermediate_files=False):
+                    min_base_quality=30, min_mapping_quality=30):
         """
         mkdir -p split; time vcfutils.pl splitchr -l 100 ${GENOME}.fai | xargs -I {} -P ${THREADS} sh -c "bcftools mpileup -d 1000000 -q 30 -Q 30 -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP -O u -f ${GENOME} -r '{}' ${BAM_LIST}| bcftools call -O u -v -m -f GQ,GP > split/tmp.{}.bcf" && bcftools concat -O u --threads 20 `ls split/tmp.*.bcf | sort -V` | bcftools view -O z -o ${OUTPUT_PREFIX}.vcf.gz - ; rm -r split/
         """
@@ -46,23 +46,21 @@ class VariantCall(Tool):
         options += " -O u"
         options += " -f %s " % reference_fasta
         options += " -r '{}' %s| " % " ".join(bam_list)
-        options += " tee %s/tmp.{}.mpileup |" % mpileup_dir
+        options += " tee %s/tmp.{}.mpileup.bcf |" % mpileup_dir
         options += " bcftools call -O u -v -m -f GQ,GP > %s/tmp.{}.bcf\" &&" % bcf_dir
         options += " bcftools concat -O u --threads %i `ls %s/tmp.*.bcf | sort -V` |" % (self.threads, bcf_dir)
         options += " bcftools view -O z -o %s.vcf.gz -; " % output_prefix
-        
-        if not retain_intermediate_files:
-            options += " rm -r %s" % split_dir
+        options += " bcftools concat -O u --threads %i `ls %s/tmp.*.mpileup.bcf | sort -V` |" % (self.threads, mpileup_dir)
+        options += " bcftools view -O z -o %s.mpileup.vcf.gz -; " % output_prefix
 
         return options
 
     def call_variants(self, reference_fasta, output_prefix, bam_list, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                      min_base_quality=30, min_mapping_quality=30, retain_intermediate_files=False):
+                      min_base_quality=30, min_mapping_quality=30):
 
         cmd = self.prepare_cmd(reference_fasta, bam_list, output_prefix, chunk_length=chunk_length,
                                split_dir=split_dir, max_coverage=max_coverage,
-                               min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality,
-                               retain_intermediate_files=retain_intermediate_files)
+                               min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality)
 
         self.execute(options="", cmd=cmd)
 
