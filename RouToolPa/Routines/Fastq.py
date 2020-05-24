@@ -271,6 +271,8 @@ class FastQRoutines(FileRoutines):
         if stat_file:
             counts.write(stat_file)
 
+        return counts
+
     def extract_10x_barcodes(self, forward_file_list, reverse_file_list, index_file_list, barcode_file, output_prefix,
                              buffering=1000000000, read_index_length=16, linker_length=6, min_forward_read_len=50):
         index_end = linker_start = read_index_length
@@ -372,3 +374,4 @@ class FastQRoutines(FileRoutines):
 
         for key in counter_dict:
             print("%s read pairs: %i" % (key, counter_dict[key]))
+

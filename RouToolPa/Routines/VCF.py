@@ -6,9 +6,13 @@ if sys.version_info[0] == 3:
 
 from copy import deepcopy
 from collections import OrderedDict
+
+import pandas as pd
+
 from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Formats.VariantFormats import VCF_COLS
+
 
 class VCFRoutines(SequenceRoutines):
     def __init__(self):
@@ -187,6 +191,80 @@ class VCFRoutines(SequenceRoutines):
                 print("Heterozygous variants: %i" % het_counter)
                 print("Homozygous variants: %i" % homo_counter)
                 print("Total variants: %i" % (het_counter + homo_counter))
+
+    @staticmethod
+    def extract_per_sample_freq_df(collection_vcf):
+
+        freq_df_list = [collection_vcf.records[["POS", "REF", "ALT"]].copy()]
+        freq_df_list[0]["POS"] += 1
+        freq_df_list.append(collection_vcf.records[[("INFO", "DP", 0)]].copy())
+        for sample in sorted(collection_vcf.samples):
+            freq_df_list.append(collection_vcf.records.loc[:, (sample, "AD", slice(None))])
+            freq_df_list.append(collection_vcf.records.loc[:, (sample, "AD", slice(None))].divide(
+                collection_vcf.records[(sample, "DP", 0)], axis='index').rename(columns={"AD": "ADF"}))
+        return pd.concat(freq_df_list, axis="columns")
+
+    @staticmethod
+    def filter_freq_df(freq_df, max_alt_allel_freq_minimum, min_total_coverage):
+        samples = set(freq_df.columns.levels[0]) - set(["POS", "REF", "ALT", "DP"])
+        max_alt_allel_freq = freq_df.loc[:,
+                                         pd.IndexSlice[samples, "ADF", range(1, len(freq_df[("ALT", "ALT")].columns) + 1)]].max(
+            axis=1)
+
+        return freq_df[
+            (max_alt_allel_freq >= max_alt_allel_freq_minimum) & (freq_df[("INFO", "DP", 0)] >= min_total_coverage)]
+
+    @staticmethod
+    def save_freq_df_to_xlsx(freq_df, sheet_name, output_file):
+
+        sample_number = len(freq_df.columns.levels[0]) - len(["POS", "REF", "ALT", "DP"])
+        alt_allel_column_number = len(freq_df["ALT"].columns)
+        allel_column_number = alt_allel_column_number + 1
+
+        hor_shift = len(["POS", "REF", "ALT", "DP"]) + allel_column_number
+        ver_shift = 4
+        data_row_number = len(freq_df)
+        writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
+
+        freq_df.to_excel(writer, sheet_name=sheet_name, header=True, index=True, freeze_panes=(ver_shift, hor_shift))
+        workbook = writer.book
+        worksheet = workbook.sheets[sheet_name]
+
+        for sample_index in range(0, sample_number):
+            sample_ref_freq_column = hor_shift + allel_column_number + sample_index * allel_column_number * 2
+            worksheet.write(ver_shift - 2, sample_ref_freq_column, "REF")
+            worksheet.conditional_format(ver_shift, sample_ref_freq_column,
+                                         ver_shift + data_row_number, sample_ref_freq_column,
+                                         {'type': '3_color_scale',
+                                          'min_value': 0,
+                                          'mid_value': 0.50,
+                                          'max_value': 1.00,
+                                          'min_type': 'value',
+                                          'mid_type': 'value',
+                                          'max_type': 'value',
+                                          'min_color': '#F8696B',  # red
+                                          'mid_color': '#FFEB84',  # yellow
+                                          'max_color': '#63BE7B'  # green
+                                          })
+            worksheet.conditional_format(ver_shift,
+                                         sample_ref_freq_column + 1,
+                                         ver_shift + data_row_number,
+                                         sample_ref_freq_column + alt_allel_column_number,
+                                         {'type': '3_color_scale',
+                                          'min_value': 0,
+                                          'mid_value': 0.50,
+                                          'max_value': 1.00,
+                                          'min_type': 'value',
+                                          'mid_type': 'value',
+                                          'max_type': 'value',
+                                          'min_color': '#63BE7B',  # green
+                                          'mid_color': '#FFEB84',  # yellow
+                                          'max_color': '#F8696B'  # red
+                                          })
+
+        writer.save()
+        return writer
+
     """ 
     @staticmethod
     def convert_gvcf_to_coverage_file(self, gvcf_file, coverage_file):
