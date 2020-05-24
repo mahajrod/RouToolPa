@@ -227,8 +227,7 @@ class VCFRoutines(SequenceRoutines):
         writer = pd.ExcelWriter(output_file, engine='xlsxwriter')
 
         freq_df.to_excel(writer, sheet_name=sheet_name, header=True, index=True, freeze_panes=(ver_shift, hor_shift))
-        workbook = writer.book
-        worksheet = workbook.sheets[sheet_name]
+        worksheet = writer.sheets[sheet_name]
 
         for sample_index in range(0, sample_number):
             sample_ref_freq_column = hor_shift + allel_column_number + sample_index * allel_column_number * 2
