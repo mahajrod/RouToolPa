@@ -50,8 +50,8 @@ class Bowtie2Table:
 
         writer.save()
 
-    def draw(self, output_prefix, width=0.35, figsize=(4, 4), dpi=300, extensions=("png",)):
-
+    def draw(self, output_prefix, width=0.35, dpi=300, extensions=("png",)):
+        figsize = (6, int(1 * self.sample_number))
         fig = plt.figure(1, figsize=figsize, dpi=dpi)
 
         ind = np.arange(self.sample_number)  # the x locations for the groups
@@ -72,9 +72,13 @@ class Bowtie2Table:
         plt.title('Alignment statistics')
         plt.xticks(ind, self.samplelist)
         plt.yticks(np.linspace(0, 100, 11))
-        plt.ylim(ymax=140)
+        pl
+        plt.ylim(ymax=150)
 
-        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordant', 'Multi and concordant', "Uniq and discordant", "Not aligned"),
+        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordant',
+                                                   'Multi and concordant',
+                                                   "Uniq and discordant",
+                                                   "Not aligned"),
                    loc='upper right')
 
         for ext in extensions:
