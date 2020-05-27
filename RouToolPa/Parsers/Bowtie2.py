@@ -28,7 +28,7 @@ class Bowtie2Table:
                  ]
 
         for filename in files:
-            with open(filename, "w") as in_fd:
+            with open(filename, "r") as in_fd:
                 linelist = list(map(lambda s: s.strip().split()[0], list(in_fd)))
                 linelist = list(map(int, linelist[1:5] + [linelist[7]] + [linelist[9]]))
                 records_df.append(linelist)
