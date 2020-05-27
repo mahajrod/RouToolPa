@@ -50,7 +50,7 @@ class Bowtie2Table:
 
         writer.save()
 
-    def draw(self, output_prefix, width=0.35, dpi=300, extensions=("png",)):
+    def draw(self, output_prefix, width=0.7, dpi=300, extensions=("png",)):
         figsize = (6, int(1 * self.sample_number))
         fig = plt.figure(1, figsize=figsize, dpi=dpi)
 
@@ -58,6 +58,7 @@ class Bowtie2Table:
         bottom = np.zeros(self.sample_number)
 
         bar_list = []
+
         for stat in ("Uniquely and concordantly mapped pairs",
                      "Multi and concordantly mapped pairs",
                      "Uniquely and discordantly mapped pairs",
