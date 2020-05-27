@@ -71,7 +71,8 @@ class Bowtie2Table:
         plt.ylabel('Read pairs, %')
         plt.title('Alignment statistics')
         plt.xticks(ind, self.samplelist)
-        plt.yticks(np.arange(0, 100, 10))
+        plt.yticks(np.linspace(0, 1.0, 11))
+        plt.ylim(ymax=1.2)
 
         plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordsnt', 'Multi and concordant', "Uniq and discordant", "Not aligned"))
 
