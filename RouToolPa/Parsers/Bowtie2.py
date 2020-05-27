@@ -74,7 +74,7 @@ class Bowtie2Table:
         plt.yticks(np.linspace(0, 100, 11))
         plt.ylim(ymax=140)
 
-        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordsnt', 'Multi and concordant', "Uniq and discordant", "Not aligned"),
+        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordant', 'Multi and concordant', "Uniq and discordant", "Not aligned"),
                    loc='upper right')
 
         for ext in extensions:
