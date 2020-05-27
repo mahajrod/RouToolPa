@@ -33,7 +33,7 @@ class Bowtie2Table:
                 linelist = list(map(int, linelist[1:5] + [linelist[7]] + [linelist[9]]))
                 records_df.append(linelist)
 
-        records_df = pd.DataFrame.from_records(records_df, index=index, columns=samples)
+        records_df = pd.DataFrame.from_records(records_df, index=samples, columns=index).transpose()
 
         return records_df
 
