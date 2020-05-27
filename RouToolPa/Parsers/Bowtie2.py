@@ -63,7 +63,7 @@ class Bowtie2Table:
                      "Uniquely and discordantly mapped pairs",
                      "Not aligned pairs"):
 
-            data = float(self.records.loc[stat]) / float(self.records.loc["Input read pairs"])
+            data = self.records.loc[stat] / self.records.loc["Input read pairs"]
             bar_list.append(plt.bar(ind, data, width, bottom=bottom))
 
             bottom += data
