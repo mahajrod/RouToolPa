@@ -63,7 +63,7 @@ class Bowtie2Table:
                      "Uniquely and discordantly mapped pairs",
                      "Not aligned pairs"):
 
-            data = self.records.loc[stat] / self.records.loc["Input read pairs"]
+            data = self.records.loc[stat] / self.records.loc["Input read pairs"] * 100
             bar_list.append(plt.bar(ind, data, width, bottom=bottom))
 
             bottom += data
@@ -71,10 +71,11 @@ class Bowtie2Table:
         plt.ylabel('Read pairs, %')
         plt.title('Alignment statistics')
         plt.xticks(ind, self.samplelist)
-        plt.yticks(np.linspace(0, 1.0, 11))
-        plt.ylim(ymax=1.2)
+        plt.yticks(np.linspace(0, 100, 11))
+        plt.ylim(ymax=140)
 
-        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordsnt', 'Multi and concordant', "Uniq and discordant", "Not aligned"))
+        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordsnt', 'Multi and concordant', "Uniq and discordant", "Not aligned"),
+                   loc='upper right')
 
         for ext in extensions:
             plt.savefig("%s.%s" % (output_prefix, ext))
