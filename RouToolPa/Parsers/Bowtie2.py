@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Bowtie2Table:
@@ -20,7 +22,7 @@ class Bowtie2Table:
         records_df = []
 
         index = ["Input read pairs",
-                 "Pairs not aligned concordantly",
+                 "Not aligned concordantly pairs",
                  "Uniquely and concordantly mapped pairs",
                  "Multi and concordantly mapped pairs",
                  "Uniquely and discordantly mapped pairs",
@@ -47,6 +49,34 @@ class Bowtie2Table:
         #worksheet = writer.sheets[sheet_name]
 
         writer.save()
+
+    def draw(self, output_prefix, width=0.35, figsize=(4, 4), dpi=300, extensions=("png",)):
+
+        fig = plt.figure(1, figsize=figsize, dpi=dpi)
+
+        ind = np.arange(self.sample_number)  # the x locations for the groups
+        bottom = np.zeros(self.sample_number)
+
+        bar_list = []
+        for stat in ("Uniquely and concordantly mapped pairs",
+                     "Multi and concordantly mapped pairs",
+                     "Uniquely and discordantly mapped pairs",
+                     "Not aligned pairs"):
+
+            data = float(self.records.loc[stat]) / float(self.records.loc["Input read pairs"])
+            bar_list.append(plt.bar(ind, data, width, bottom=bottom))
+
+            bottom += data
+
+        plt.ylabel('Read pairs, %')
+        plt.title('Alignment statistics')
+        plt.xticks(ind, self.samplelist)
+        plt.yticks(np.arange(0, 100, 10))
+
+        plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordsnt', 'Multi and concordant', "Uniq and discordant", "Not aligned"))
+
+        for ext in extensions:
+            plt.savefig("%s.%s" % (output_prefix, ext))
 
 
 
