@@ -72,7 +72,6 @@ class Bowtie2Table:
         plt.title('Alignment statistics')
         plt.xticks(ind, self.samplelist)
         plt.yticks(np.linspace(0, 100, 11))
-        pl
         plt.ylim(ymax=150)
 
         plt.legend(map(lambda s: s[0], bar_list), ('Uniq and concordant',
