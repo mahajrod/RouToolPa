@@ -795,9 +795,9 @@ temp_transcripts/                              Directory with downloaded transcr
         species_syn_dict.write(filename=species_syn_file, header="#latin_name\tcommon_name\n")
         return species_syn_dict
 
-    def get_taxonomy_from_id_file(self, taxa_file, output_file, email, input_type="latin"):
+    def get_taxonomy_from_id_file(self, taxa_file, output_file, email, input_type="latin", column=0, separator="\t"):
 
-        taxa_list = IdList(filename=taxa_file)
+        taxa_list = IdList(filename=taxa_file, column_number=column, column_separator=separator)
 
         return self.get_taxonomy(taxa_list, output_file, email, input_type=input_type)
 
