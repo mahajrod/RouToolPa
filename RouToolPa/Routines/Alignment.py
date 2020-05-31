@@ -19,8 +19,10 @@ from RouToolPa.Collections.General import SynDict, IdList
 
 import numpy as np
 
+
 class AlignmentRoutines(SequenceRoutines):
     def __init__(self):
+        SequenceRoutines.__init__(self)
         self.psl_query_id_column = 9           # zero-based
         self.psl_target_id_column = 13         # zero-based
         pass
@@ -289,7 +291,7 @@ class AlignmentRoutines(SequenceRoutines):
             raise ValueError("ERROR!!! Neither minimum nor maximum threshold was set!")
 
         line_index = 1
-        with self.metaopen(output_file, "w") as out_fd:
+        with self.metaopen(output_file, "w", buffering=10000000) as out_fd:
             out_fd.write("#scaffold\tposition\t%s\n" % (",".join(sample_labels if sample_labels else coverage_file_list)))
 
             for line_list in izip(*[self.file_line_as_list_generator(filename) for filename in coverage_file_list]):
