@@ -624,10 +624,10 @@ class FileRoutines:
 
                     out_fd.write(column_separator.join(line_list) + "\n")
 
-    def file_line_as_list_generator(self, input_file, comments_prefix="#", separator="\t"):
+    def file_line_as_list_generator(self, input_file, comments_prefix="#", separator="\t", buffering=10000000):
         comments_prefix_len = len(comments_prefix)
 
-        with self.metaopen(input_file, "r") as in_fd:
+        with self.metaopen(input_file, "r", buffering=buffering) as in_fd:
             for line in in_fd:
                 if line[:comments_prefix_len] == comments_prefix:
                     continue

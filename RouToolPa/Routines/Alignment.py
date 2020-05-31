@@ -241,7 +241,8 @@ class AlignmentRoutines(SequenceRoutines):
     def calculate_masking_from_coverage_files(self, coverage_file_list, mean_coverage_list, output_file,
                                               sample_labels=None,
                                               max_threshold=2.5, min_threshold=None,min_sample_number=1,
-                                              scaffold_column=0, position_column=1, coverage_column=2):
+                                              scaffold_column=0, position_column=1, coverage_column=2,
+                                              buffering=10000000):
         """
 
         :param coverage_file_list:
@@ -291,10 +292,10 @@ class AlignmentRoutines(SequenceRoutines):
             raise ValueError("ERROR!!! Neither minimum nor maximum threshold was set!")
 
         line_index = 1
-        with self.metaopen(output_file, "w", buffering=10000000) as out_fd:
+        with self.metaopen(output_file, "w", buffering=buffering) as out_fd:
             out_fd.write("#scaffold\tposition\t%s\n" % (",".join(sample_labels if sample_labels else coverage_file_list)))
 
-            for line_list in izip(*[self.file_line_as_list_generator(filename) for filename in coverage_file_list]):
+            for line_list in izip(*[self.file_line_as_list_generator(filename, buffering=buffering) for filename in coverage_file_list]):
 
                 coverage_list = [int(line_list[i][coverage_column]) for i in index_list]
                 if check_pos(coverage_list):
