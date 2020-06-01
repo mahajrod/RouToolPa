@@ -531,7 +531,7 @@ class HMMER3(Tool):
                                           comments_prefix="#", column_number=0)
 
     def extract_top_hits(self, hmmer_hits, output_prefix, parsing_mode="index_db"): #top_hits_file, top_hits_ids_file=None,not_significant_ids_file=None, not_found_ids_file=None):
-
+        print(hmmer_hits)
         top_hits_ids = IdList()
         not_significant_ids = IdList()
         not_found_ids = IdList()
@@ -546,7 +546,7 @@ class HMMER3(Tool):
         #hmm_dict = SearchIO.index_db(index_file, hmmer_hits, "hmmer3-text")
 
         hmm_dict = self.parse_search_file(hmmer_hits, parsing_mode, format="hmmer3-text", index_file=None)
-
+        print(len(hmm_dict))
         with open(top_hits_file, "w") as out_fd:
             out_fd.write("#query\thit\tevalue\tbitscore\n")
 
