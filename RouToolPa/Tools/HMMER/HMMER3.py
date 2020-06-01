@@ -360,9 +360,9 @@ class HMMER3(Tool):
                 CGAS.cat(domtblout_files, output="%s/%s.domtblout" % (output_dir, output_prefix))
                 CGAS.cat(pfamtblout_files, output="%s/%s.pfamtblout" % (output_dir, output_prefix))
 
-            if extract_top_hits:
-                for suffix in ".top_hits", ".top_hits.ids", ".not_significant.ids", ".not_found.ids":
-                    os.system("cat %s/*%s > %s/%s%s\n" % (splited_hit_info, suffix, output_dir, output_prefix, suffix))
+            #if extract_top_hits:
+            #    for suffix in ".top_hits", ".top_hits.ids", ".not_significant.ids", ".not_found.ids":
+            #        os.system("cat %s/*%s > %s/%s%s\n" % (splited_hit_info, suffix, output_dir, output_prefix, suffix))
 
             if remove_tmp_dirs:
                 for tmp_dir in directory_list:
