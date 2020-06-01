@@ -268,7 +268,7 @@ class AlignmentRoutines(SequenceRoutines):
             min_coverage_list = np.array(mean_coverage_list) * min_threshold
 
             def check_pos(entry):
-                if np.sum(np.logical_and(np.less(entry, min_coverage_list),
+                if np.sum(np.logical_or(np.less(entry, min_coverage_list),
                                          np.greater(entry, max_coverage_list))) >= min_sample_number:
                     return True
                 return False
