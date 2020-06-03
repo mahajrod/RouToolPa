@@ -19,7 +19,7 @@ class VEPTable:
         self.so_description.index.name = "#SO term" # = columns = self.so_description.columns.str.lstrip("#")
 
         self.allowed_impact_type_list = self.so_description["IMPACT"].unique()
-        self.allowed_so_terms = self.so_description["SO term"]
+        self.allowed_so_terms = list(self.so_description.index)
 
         self.metadata = metadata if metadata else []
         self.records = self.read(vep_tab_file)
