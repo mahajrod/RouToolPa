@@ -15,7 +15,7 @@ except ImportError:
 class VEPTable:
     def __init__(self, vep_tab_file, metadata=None, get_stats=False):
         self.so_description = pd.read_csv(resources.open_text(Tables, "SO_terms.description.tsv"),
-                                          sep="\t", index="#SO term")
+                                          sep="\t", index_col="#SO term")
         self.so_description.index.name = "#SO term" # = columns = self.so_description.columns.str.lstrip("#")
 
         self.allowed_impact_type_list = self.so_description["IMPACT"].unique()
