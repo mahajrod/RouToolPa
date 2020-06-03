@@ -15,7 +15,8 @@ class VEPTable:
 
         with FileRoutines.metaopen(vep_tab_file, "r") as in_fd:
             metadata = []
-            for line in in_fd:
+            while True:
+                line = in_fd.readline()
                 if line[:19] == "#Uploaded_variation":
                     header_list = line.strip()[1:].split("\t")
                     break
