@@ -27,7 +27,7 @@ class VEPTable:
         # stats
         self.impact_counts = None
         self.consequence_entry_set = None
-        self.count_consequence = None
+        self.consequences = None
 
         if get_stats:
             self.get_stats()
@@ -49,7 +49,7 @@ class VEPTable:
     def get_stats(self):
         self.impact_counts = self.records[["Uploaded_variation", "IMPACT"]].groupby("IMPACT").count()
         self.consequence_entry_set = self.get_consequence_entry_set()
-        self.count_consequence = self.count_consequence().join(self.so_description[["IMPACT"]])
+        self.consequences = self.count_consequence().join(self.so_description[["IMPACT"]])
 
     def get_consequence_entry_set(self):
         consequence_list = []
