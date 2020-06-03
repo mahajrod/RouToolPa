@@ -9,10 +9,14 @@ dependencies = ['scipy', 'numpy', 'pandas', 'matplotlib', 'matplotlib-venn',
 
 #  scipy numpy pandas matplotlib matplotlib-venn biopython xmltodict bcbio-gff statsmodels pyparsing ete3
 
-if sys.version_info[0] == 3:
+if sys.version_info[0] == 3: # major version
     dependencies += ["ete3"]
+    if sys.version_info[1] < 7: # check minor version of python3
+        dependencies += ["importlib_resources"]
+
 elif sys.version_info[0] == 2:
     dependencies += ["ete2"]
+    dependencies += ["importlib_resources"]
 else:
     raise ValueError("ERROR!!! Unsupported python version: %s" % str(sys.version_info[0]))
 
