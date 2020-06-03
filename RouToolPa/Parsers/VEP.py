@@ -12,6 +12,7 @@ except ImportError:
     import importlib_resources as resources
 
 
+
 class VEPTable:
     def __init__(self, vep_tab_file, metadata=None):
 
