@@ -12,12 +12,11 @@ except ImportError:
     import importlib_resources as resources
 
 
-
 class VEPTable:
     def __init__(self, vep_tab_file, metadata=None):
 
         self.impact_type_list = ["HIGH", "MODERATE", "LOW", "MODIFIER"]
-        self.so_description = pd.read_csv(resources.path(Tables, "SO_terms.description.tsv"), sep="\t", header=True)
+        self.so_description = pd.read_csv(resources.open_text(Tables, "SO_terms.description.tsv"), sep="\t", header=True)
         self.so_description.columns = self.so_description.columns.str.lstrip("#")
         self.metadata = metadata if metadata else []
         self.records = self.read(vep_tab_file)
