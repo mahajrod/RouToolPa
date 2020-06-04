@@ -264,6 +264,27 @@ class VCFRoutines(SequenceRoutines):
         writer.save()
         return writer
 
+    def add_variant_ids_to_vcf(self, input_vcf, output_vcf, id_prefix=None, retain_old_id=False):
+        with self.metaopen(input_vcf, "r") as in_fd, self.metaopen(output_vcf, "w") as out_fd:
+            for line in in_fd:
+                out_fd.write(line)
+                if line[:6] == "#CHROM":
+                    break
+            variant_counter = 1
+            for line in in_fd:
+                line_list = line.split("\t")
+
+                if retain_old_id and (line_list[2] != "."):
+                    line_list[2] = "%s%s,%s" % (id_prefix, variant_counter, line_list[2])
+                else:
+                    line_list[2] = "%s%s" % (id_prefix, variant_counter)
+
+                out_fd.write("\t".join(line_list))
+
+                variant_counter += 1
+
+
+
     """ 
     @staticmethod
     def convert_gvcf_to_coverage_file(self, gvcf_file, coverage_file):
