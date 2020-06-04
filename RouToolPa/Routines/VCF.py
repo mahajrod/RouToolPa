@@ -264,7 +264,7 @@ class VCFRoutines(SequenceRoutines):
         writer.save()
         return writer
 
-    def add_variant_ids_to_vcf(self, input_vcf, output_vcf, id_prefix=None, retain_old_id=False):
+    def add_variant_ids_to_vcf(self, input_vcf, output_vcf, id_prefix=None, retain_old_id=True):
         with self.metaopen(input_vcf, "r") as in_fd, self.metaopen(output_vcf, "w") as out_fd:
             for line in in_fd:
                 out_fd.write(line)
