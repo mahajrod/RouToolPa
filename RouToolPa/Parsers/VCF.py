@@ -182,7 +182,6 @@ class MetadataVCF(OrderedDict):
                     return line
                 self.add_metadata(line)
 
-
     @staticmethod
     def _split_by_equal_sign(string):
         try:
@@ -300,7 +299,7 @@ class CollectionVCF:
     def __init__(self, in_file=None, metadata=None, records=None, header=None, samples=None,
                  external_metadata=None, threads=1, parsing_mode="all", sparse=False,
                  scaffold_black_list=(), scaffold_white_list=(),
-                 scaffold_syn_dict=None):
+                 scaffold_syn_dict=None,):
         """
         Initializes collection. If from_file is True collection will be read from file (arguments other then in_file, external_metadata and threads are ignored)
         Otherwise collection will be initialize from meta, records_dict, header, samples
@@ -371,6 +370,19 @@ class CollectionVCF:
                                                                        "FORMAT": str #lambda s: s.split(":")
                                                                        },
                                                         },
+                                   "pos_ref_alt_id_gt_ad":         {
+                                                                    "col_names": ["CHROM", "POS", "ID", "REF", "ALT" , "FORMAT"],
+                                                                    "cols": [0, 1, 2, 3, 4,  8],
+                                                                    "index_cols": "CHROM",
+                                                                    "converters": {
+                                                                        "CHROM": str,
+                                                                        "POS": np.int32,
+                                                                        "ID": str,
+                                                                        "REF": str,
+                                                                        "ALT": str,  # lambda s: s.split(","),
+                                                                        "FORMAT": str  # lambda s: s.split(":")
+                                                                                    },
+                                                                                 },
                                    "read": {
                                         "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT"],
                                         "cols": None,
@@ -422,8 +434,10 @@ class CollectionVCF:
                                                         },
                                    }
 
-        self.parsing_modes_with_genotypes = ["complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"]
+        self.parsing_modes_with_genotypes = ["complete", "genotypes", "coordinates_and_genotypes", 
+                                             "pos_gt_dp"]
         self.parsing_modes_with_sample_coverage = ["complete", "pos_gt_dp"]
+        self.parsing_modes_with_allel_coverage = ["pos_ref_alt_id_gt_ad"]
         self.parsing_modes_with_alt_allells = []
 
         for p_mode in self.parsing_parameters:
@@ -558,7 +572,14 @@ class CollectionVCF:
                                                               self.records.columns
                                                               ])
             self.records = pd.concat([self.records[["POS"]]] + sample_data, axis=1)
-
+            
+        elif parsing_mode == "pos_ref_alt_id_gt_ad":
+            sample_data = self.parse_samples(["GT", "AD"])
+            self.records.columns = pd.MultiIndex.from_arrays([
+                                                              self.records.columns,
+                                                              self.records.columns,
+                                                              ])
+            self.records = pd.concat([self.records[["POS", "REF", "ALT", "ID"]]] + sample_data, axis=1)
         elif self.parsing_mode in ("all", "complete"):
             info = self.parse_info()
             sample_list = self.parse_samples()
@@ -580,7 +601,7 @@ class CollectionVCF:
             self.records = pd.concat([self.records, alt,  info] + sample_list, axis=1)
 
     def parse_column(self, column, param, param_group):
-        if self.parsing_mode == "all":
+        if (self.parsing_mode == "all") or (self.parsing_mode == "pos_ref_alt_id_gt_ad"):
             if self.metadata.converters[param_group][param] == str:
                 return column
             col = column.replace(self.metadata.default_replace_dict)
@@ -678,7 +699,6 @@ class CollectionVCF:
         uniq_format_set = self.records['FORMAT'].drop_duplicates()
         uniq_format_dict = OrderedDict([(format_entry, format_entry.split(":")) for format_entry in uniq_format_set])
         sample_data_dict = {}
-        #print parameter_list
 
         present_parameter_dict = OrderedDict()
 
@@ -692,54 +712,31 @@ class CollectionVCF:
             else:
                 present_parameter_dict[format_entry] = uniq_format_dict[format_entry]
 
-        #print present_parameter_dict
-
         for sample in self.samples:
-
-            #splited_sample_df = pd.DataFrame(map(lambda s: s.split(":"), list(self.records[sample])))
             sample_data_dict[sample] = OrderedDict()
             for format_entry in uniq_format_dict:
                 sample_data_dict[sample][format_entry] = list()
-                #print self.records
 
                 tmp = self.records[self.records['FORMAT'] == format_entry][sample]
                 tmp_index = deepcopy(tmp.index)
                 tmp = pd.DataFrame(map(lambda s: s.split(":"), list(tmp)))
                 tmp.index = tmp_index
-                #########tmp = self.records[self.records['FORMAT'] == format_entry][sample].str.split(":", expand=True)
-                #print self.records[sample]
-                #print self.records[self.records['FORMAT'] == format_entry][sample]
                 tmp.columns = uniq_format_dict[format_entry]
                 sample_data_dict[sample][format_entry] = []
 
                 for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
-                    #print parameter
-                    #print self.metadata.converters["FORMAT"][parameter]
-                    #print parameter, tmp[parameter]
                     parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
-                    #print parameter
-                    #print parameter_col.dtypes.unique()
-                    #print parameter_col.dtypes.unique()[0]
-                    # convert from dense to sparse
-                    #parameter_col = parameter_col.astype(pd.SparseDtype(parameter_col.dtypes.unique()[0]))
-                    #print parameter_col
                     sample_data_dict[sample][format_entry].append(parameter_col)
 
                 for i in range(0, len(present_parameter_dict[format_entry])) if parameter_list else range(0, len(uniq_format_dict[format_entry])):
                     shape = np.shape(sample_data_dict[sample][format_entry][i])
                     column_number = 1 if len(shape) == 1 else shape[1]
-                    if self.parsing_mode == "all":
+                    if (self.parsing_mode == "all") or (self.parsing_mode == "pos_ref_alt_id_gt_ad"):
                         column_index = pd.MultiIndex.from_arrays([
                                                                   [sample] * column_number,
                                                                   [uniq_format_dict[format_entry][i]] * column_number
                                                                   ],)
-                    elif self.parsing_mode in self.parsing_modes_with_genotypes: #("complete",):
-                        #print i
-                        #print uniq_format_dict
-                        #print sample
-                        #print column_number
-                        #print format_entry
-                        #print present_parameter_dict[format_entry]
+                    elif self.parsing_mode in self.parsing_modes_with_genotypes:
 
                         column_index = pd.MultiIndex.from_arrays([
                                                                   [sample] * column_number,
@@ -762,7 +759,7 @@ class CollectionVCF:
             if sample_data_dict[sample]:
                 sample_data_dict[sample] = pd.concat(sample_data_dict[sample].values(),
                                                      axis=0)
-                if self.parsing_mode == "all":
+                if (self.parsing_mode == "all") or (self.parsing_mode == "pos_ref_alt_id_gt_ad"):
                     column_index = pd.MultiIndex.from_arrays([
                                                               [sample] * len(sample_data_dict[sample].columns),
                                                               sample_data_dict[sample].columns
