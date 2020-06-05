@@ -83,6 +83,14 @@ class MetadataVCF(OrderedDict):
                 self.converters["FORMAT"]["GT"] = pd.SparseDtype(np.int8, fill_value=np.nan)
             else:
                 self.converters["FORMAT"]["GT"] = "Int8"
+        elif parsing_mode == "pos_ref_alt_id_gt_ad":
+            if sparse:
+                self.converters["FORMAT"]["GT"] = pd.SparseDtype(str, fill_value=np.nan)
+                self.converters["FORMAT"]["AD"] = pd.SparseDtype(str, fill_value=np.nan)
+            else:
+                self.converters["FORMAT"]["GT"] = str
+                self.converters["FORMAT"]["AD"] = str
+            pass
         elif parsing_mode == "pos_gt_dp":
             self.converters["FORMAT"] = OrderedDict()
             if sparse:
