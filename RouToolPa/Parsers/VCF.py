@@ -498,7 +498,7 @@ class CollectionVCF:
         self.header = HeaderVCF(header_line[1:].strip().split("\t"))
         self.samples = self.header[9:]
 
-        if self.parsing_mode in ("all", "read", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp"):
+        if self.parsing_mode in ("all", "read", "complete", "genotypes", "coordinates_and_genotypes", "pos_gt_dp", "pos_ref_alt_id_gt_ad"):
             self.metadata.create_converters(parsing_mode=self.parsing_mode, sparse=sparse)
             self.parsing_parameters[self.parsing_mode]["col_names"] = self.header
             for sample_col in range(9, 9 + len(self.samples)):
@@ -564,6 +564,7 @@ class CollectionVCF:
                                                          [i for i in range(0, alt_colomn_number)]])
 
                 self.records = pd.concat([self.records, alt] + sample_genotypes, axis=1)
+
         elif parsing_mode == "pos_gt_dp":
             sample_data = self.parse_samples(["GT", "DP"])
             self.records.columns = pd.MultiIndex.from_arrays([
