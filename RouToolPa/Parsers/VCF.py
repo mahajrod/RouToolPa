@@ -724,7 +724,7 @@ class CollectionVCF:
             sample_data_dict[sample] = OrderedDict()
             for format_entry in uniq_format_dict:
                 sample_data_dict[sample][format_entry] = list()
-                print(self.records[self.records['FORMAT'] == format_entry])
+                #print(self.records[self.records['FORMAT'] == format_entry])
                 tmp = self.records[self.records['FORMAT'] == format_entry][sample]
                 tmp_index = deepcopy(tmp.index)
                 tmp = pd.DataFrame(map(lambda s: s.split(":"), list(tmp)))
@@ -733,7 +733,7 @@ class CollectionVCF:
                 sample_data_dict[sample][format_entry] = []
 
                 for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
-                    print(tmp[parameter])
+                    #print(tmp[parameter])
                     parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
                     sample_data_dict[sample][format_entry].append(parameter_col)
 
