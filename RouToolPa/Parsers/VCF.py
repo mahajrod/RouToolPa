@@ -371,8 +371,8 @@ class CollectionVCF:
                                                                        },
                                                         },
                                    "pos_ref_alt_id_gt_ad":         {
-                                                                    "col_names": ["CHROM", "POS", "ID", "REF", "ALT" , "FORMAT"],
-                                                                    "cols": [0, 1, 2, 3, 4,  8],
+                                                                    "col_names": ["CHROM", "POS", "ID", "REF", "ALT", "FORMAT"],
+                                                                    "cols": [0, 1, 2, 3, 4, 8],
                                                                     "index_cols": "CHROM",
                                                                     "converters": {
                                                                         "CHROM": str,
@@ -726,6 +726,7 @@ class CollectionVCF:
                 sample_data_dict[sample][format_entry] = []
 
                 for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
+                    print(tmp[parameter])
                     parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
                     sample_data_dict[sample][format_entry].append(parameter_col)
 
