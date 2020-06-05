@@ -77,8 +77,9 @@ class MetadataVCF(OrderedDict):
                                                            })
 
     def create_converters(self, parsing_mode="all", sparse=False):
+        for field in "INFO", "FORMAT":
+            self.converters[field] = OrderedDict()
         if parsing_mode in ("genotypes", "coordinates_and_genotypes"):
-            self.converters["FORMAT"] = OrderedDict()
             if sparse:
                 self.converters["FORMAT"]["GT"] = pd.SparseDtype(np.int8, fill_value=np.nan)
             else:
@@ -92,7 +93,6 @@ class MetadataVCF(OrderedDict):
                 self.converters["FORMAT"]["AD"] = str
             pass
         elif parsing_mode == "pos_gt_dp":
-            self.converters["FORMAT"] = OrderedDict()
             if sparse:
                 self.converters["FORMAT"]["GT"] = pd.SparseDtype(np.int8, fill_value=np.nan)
                 self.converters["FORMAT"]["DP"] = pd.SparseDtype(np.int32, fill_value=np.nan)
@@ -101,7 +101,6 @@ class MetadataVCF(OrderedDict):
                 self.converters["FORMAT"]["DP"] = "Int32"
         elif parsing_mode in ("all", "complete"):
             for field in "INFO", "FORMAT":
-                self.converters[field] = OrderedDict()
                 for entry in self[field]:
                     try:
                         a = int(self[field][entry]["Number"])
