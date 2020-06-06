@@ -476,7 +476,7 @@ class SequenceRoutines(FileRoutines):
     @staticmethod
     def get_first_record_from_file(seq_file, format="fasta"):
         for record in SeqIO.parse(seq_file, format=format):
-            return record.seq
+            return record
 
     def get_lengths_from_seq_file(self, input_file_list, format="fasta", out_file=None, close_after_if_file_object=False,
                                   parsing_mode="parse"):

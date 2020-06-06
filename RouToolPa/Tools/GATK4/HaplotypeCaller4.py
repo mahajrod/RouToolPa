@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = 'mahajrod'
-
+import os
 import shutil
 from RouToolPa.Collections.General import IdList
 from RouToolPa.Tools.Abstract import Tool
@@ -189,7 +189,7 @@ class HaplotypeCaller4(Tool):
             SortVcf4.sort_vcf(unsorted_combined_vcf, sorted_combined_vcf, sequence_dict)
             shutil.rmtree(splited_dir)
             shutil.rmtree(regions_dir)
-            shutil.rmtree(unsorted_combined_vcf)
+            os.remove(unsorted_combined_vcf)
 
         elif handling_mode == 'slurm':
             number_of_regions = len(region_list)
