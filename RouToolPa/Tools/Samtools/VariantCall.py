@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import shutil
 from RouToolPa.Tools.Abstract import Tool
 
 
@@ -65,6 +65,8 @@ class VariantCall(Tool):
                                split_dir=split_dir, max_coverage=max_coverage,
                                min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality,
                                adjust_mapping_quality=adjust_mapping_quality, consensus_caller_model=consensus_caller_model)
+
+        shutil.rmtree(split_dir)
 
         self.execute(options="", cmd=cmd)
 
