@@ -66,7 +66,6 @@ class VariantCall(Tool):
                                min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality,
                                adjust_mapping_quality=adjust_mapping_quality, consensus_caller_model=consensus_caller_model)
 
-        shutil.rmtree(split_dir)
-
         self.execute(options="", cmd=cmd)
+        shutil.rmtree(split_dir)
 
