@@ -49,8 +49,8 @@ class VariantCall(Tool):
         options += " -r '{}' %s| " % " ".join(bam_list)
         options += " tee %s/tmp.{}.mpileup.bcf |" % mpileup_dir
         options += " bcftools call "
-        options += " -c" if consensus_caller_model else ""
-        options += " -O u -v -m -f GQ,GP > %s/tmp.{}.bcf\" &&" % bcf_dir
+        options += " -c" if consensus_caller_model else "-m "
+        options += " -O u -v -f GQ,GP > %s/tmp.{}.bcf\" &&" % bcf_dir
         options += " bcftools concat -O u --threads %i `ls %s/tmp.*.bcf | sort -V` |" % (self.threads, bcf_dir)
         options += " bcftools view -O z -o %s.vcf.gz -; " % output_prefix
         options += " bcftools concat -O u --threads %i `ls %s/tmp.*.mpileup.bcf | sort -V` |" % (self.threads, mpileup_dir)
