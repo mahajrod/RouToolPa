@@ -29,7 +29,8 @@ class VariantCall(Tool):
                           }
 
     def prepare_cmd(self, reference_fasta, bam_list, output_prefix, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                    min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None, consensus_caller_model=False):
+                    min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None, consensus_caller_model=False,
+                    report_all_positions=False):
         """
         mkdir -p split; time vcfutils.pl splitchr -l 100 ${GENOME}.fai | xargs -I {} -P ${THREADS} sh -c "bcftools mpileup -d 1000000 -q 30 -Q 30 -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP -O u -f ${GENOME} -r '{}' ${BAM_LIST}| bcftools call -O u -v -m -f GQ,GP > split/tmp.{}.bcf" && bcftools concat -O u --threads 20 `ls split/tmp.*.bcf | sort -V` | bcftools view -O z -o ${OUTPUT_PREFIX}.vcf.gz - ; rm -r split/
         """
@@ -50,7 +51,10 @@ class VariantCall(Tool):
         options += " tee %s/tmp.{}.mpileup.bcf |" % mpileup_dir
         options += " bcftools call "
         options += " -c" if consensus_caller_model else "-m "
-        options += " -O u -v %s > %s/tmp.{}.bcf\" &&" % ("-f GQ" if consensus_caller_model else "-f GQ,GP",  bcf_dir)
+        options += " -O u "
+        options += "" if report_all_positions else " -v"
+        options += " -f GQ" if consensus_caller_model else " -f GQ,GP"
+        options += " > %s/tmp.{}.bcf\" &&" % bcf_dir
         options += " bcftools concat -O u --threads %i `ls %s/tmp.*.bcf | sort -V` |" % (self.threads, bcf_dir)
         options += " bcftools view -O z -o %s.vcf.gz -; " % output_prefix
         options += " bcftools concat -O u --threads %i `ls %s/tmp.*.mpileup.bcf | sort -V` |" % (self.threads, mpileup_dir)
@@ -58,13 +62,15 @@ class VariantCall(Tool):
 
         return options
 
-    def call_variants(self, reference_fasta, output_prefix, bam_list, chunk_length=1000000, split_dir="split/", max_coverage=None,
-                      min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None, consensus_caller_model=False):
+    def call_variants(self, reference_fasta, output_prefix, bam_list, chunk_length=1000000, split_dir="split/",
+                      max_coverage=None, min_base_quality=30, min_mapping_quality=30,
+                      adjust_mapping_quality=None, consensus_caller_model=False, report_all_positions=False):
 
         cmd = self.prepare_cmd(reference_fasta, bam_list, output_prefix, chunk_length=chunk_length,
                                split_dir=split_dir, max_coverage=max_coverage,
                                min_base_quality=min_base_quality, min_mapping_quality=min_mapping_quality,
-                               adjust_mapping_quality=adjust_mapping_quality, consensus_caller_model=consensus_caller_model)
+                               adjust_mapping_quality=adjust_mapping_quality, consensus_caller_model=consensus_caller_model,
+                               report_all_positions=report_all_positions)
 
         self.execute(options="", cmd=cmd)
         shutil.rmtree(split_dir)
