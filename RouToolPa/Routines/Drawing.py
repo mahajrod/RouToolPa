@@ -858,7 +858,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
         #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
 
-        figure, axis = venn.venn(count_dict)
+        subplot = venn.venn(count_dict)
 
         if title:
             plt.title(title)
@@ -866,7 +866,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         for ext in extensions:
             plt.savefig("%s.%s" % (output_prefix, ext))
 
-        return figure, axis
+        return subplot
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
 
