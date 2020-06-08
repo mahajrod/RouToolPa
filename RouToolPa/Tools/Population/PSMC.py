@@ -62,6 +62,7 @@ class PSMC(Tool):
         options += " time vcfutils.pl splitchr -l 100000000000 %s.fai | " % reference_fasta
         options += " xargs -I {} -P %i" % self.threads
         options += " sh -c \"bcftools mpileup "
+        options += " -d %i" % (max_coverage * 2)
         options += " -q %i" % min_mapping_quality
         options += " -Q %i" % min_base_quality
         options += " --adjust-MQ %i" % adjust_mapping_quality if adjust_mapping_quality else ""
@@ -77,7 +78,7 @@ class PSMC(Tool):
         #options += " -f GQ |"
         options += "vcfutils.pl vcf2fq -d %i -D %i -Q %i" % (min_coverage, max_coverage, min_rms_mapq)
         options += " > %s/tmp.{}.fq\" &&" % fq_dir
-        options += "cat `ls %s/tmp.*.fq` > %s.diploid.fq" % (fq_dir, output_prefix)
+        options += "for FILE in `ls %s/tmp.*.fq; do cat $FILE >> %s.diploid.fq; done" % (fq_dir, output_prefix)
 
         return options
 
