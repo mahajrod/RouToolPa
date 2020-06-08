@@ -50,3 +50,44 @@ class PSMC(Tool):
         options += " %s" % " ".join(psmc_list)
 
         self.execute(options=options, cmd="psmc_plot.pl")
+
+    def prepare_cmd(self, reference_fasta, bam_file, output_prefix, min_coverage, max_coverage, split_dir="split/",
+                    min_base_quality=30, min_mapping_quality=30, adjust_mapping_quality=None, min_rms_mapq=30):
+        """
+        mkdir -p split; time vcfutils.pl splitchr -l 100 ${GENOME}.fai | xargs -I {} -P ${THREADS} sh -c "bcftools mpileup -d 1000000 -q 30 -Q 30 -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP -O u -f ${GENOME} -r '{}' ${BAM_LIST}| bcftools call -O u -v -m -f GQ,GP > split/tmp.{}.bcf" && bcftools concat -O u --threads 20 `ls split/tmp.*.bcf | sort -V` | bcftools view -O z -o ${OUTPUT_PREFIX}.vcf.gz - ; rm -r split/
+        """
+        fq_dir = "%s/fq/" % split_dir
+
+        options = " mkdir -p %s %s %s;" % (split_dir, fq_dir)
+        options += " time vcfutils.pl splitchr -l 100000000000 %s.fai | " % reference_fasta
+        options += " xargs -I {} -P %i" % self.threads
+        options += " sh -c \"bcftools mpileup "
+        options += " -q %i" % min_mapping_quality
+        options += " -Q %i" % min_base_quality
+        options += " --adjust-MQ %i" % adjust_mapping_quality if adjust_mapping_quality else ""
+        options += " -a AD,INFO/AD,ADF,INFO/ADF,ADR,INFO/ADR,DP,SP,SCR,INFO/SCR"
+        options += " -O u"
+        options += " -f %s " % reference_fasta
+        options += " -r '{}' %s| " % bam_file
+        options += " bcftools call "
+        options += " -c"
+        options += " -O u |"
+        #options += "" if report_all_positions else " -v"
+        #options += " -f GQ |"
+        options += "vcfutils.pl vcf2fq -d %i -D %i -Q %i" % (min_coverage, max_coverage, min_rms_mapq)
+        options += " > %s/tmp.{}.fq\" &&" % fq_dir
+        options += "cat `ls %s/tmp.*.fq` > %s.diploid.fq" % (fq_dir, output_prefix)
+
+        return options
+
+    def generate_diploid_fastq_from_bam(self, reference_fasta, bam_file, output_prefix,
+                                        min_coverage, max_coverage, split_dir="split/",
+                                        min_base_quality=30, min_mapping_quality=30,
+                                        adjust_mapping_quality=None, min_rms_mapq=30):
+
+        cmd = self.prepare_cmd(reference_fasta, bam_file, output_prefix, min_coverage, max_coverage,
+                               split_dir=split_dir, min_base_quality=min_base_quality,
+                               min_mapping_quality=min_mapping_quality,
+                               adjust_mapping_quality=adjust_mapping_quality, min_rms_mapq=min_rms_mapq)
+
+        self.execute(cmd=cmd, options="")
