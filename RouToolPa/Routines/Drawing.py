@@ -868,6 +868,6 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
 
-        set_list = [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]
+        set_list = list(map(set, [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]))
 
         return self.draw_venn(set_list, label_list, output_prefix, extensions=extensions, title=title)
