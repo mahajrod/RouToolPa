@@ -14,6 +14,8 @@ plt.ioff()
 from matplotlib.patches import Rectangle, Circle
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
+
+import venn
 import scipy.stats as stats
 
 from BCBio import GFF
@@ -29,6 +31,14 @@ from RouToolPa.Parsers.DESeq2 import CollectionPWC
 class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
     def __init__(self):
         MatplotlibRoutines.__init__(self)
+
+        self.venn_drawer_dict = {
+                                 2: venn.venn2,
+                                 3: venn.venn3,
+                                 4: venn.venn4,
+                                 5: venn.venn5,
+                                 6: venn.venn6
+                                 }
 
     @staticmethod
     def millions(x, pos):
@@ -840,3 +850,24 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                 plt.savefig("%s.%s" % (output_prefix, extension))
 
             print("%s\tWriting to file finished..." % str(datetime.datetime.now()))
+
+    def draw_venn(self, set_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
+        number_of_sets = len(set_list)
+
+        counts = venn.get_labels(set_list, fill=['number', ])
+
+        figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
+
+        if title:
+            plt.title(title)
+
+        for ext in extensions:
+            plt.savefig("%s.%s" % (output_prefix, ext))
+
+        return figure, axis
+
+    def draw_venn_fom_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
+
+        set_list = [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]
+
+        return self.draw_venn(set_list, label_list, output_prefix, extensions=extensions, title=title)
