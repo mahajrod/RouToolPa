@@ -77,8 +77,8 @@ class PSMC(Tool):
         #options += "" if report_all_positions else " -v"
         #options += " -f GQ |"
         options += "vcfutils.pl vcf2fq -d %i -D %i -Q %i" % (min_coverage, max_coverage, min_rms_mapq)
-        options += " > %s/tmp.{}.fq\" &&" % fq_dir
-        options += "for FILE in `ls %s/tmp.*.fq; do cat $FILE >> %s.diploid.fq; done" % (fq_dir, output_prefix)
+        options += " > %s/tmp.{}.fq\" && " % fq_dir
+        options += "for FILE in `ls %s/tmp.*.fq`; do cat $FILE >> %s.diploid.fq; done" % (fq_dir, output_prefix)
 
         return options
 
