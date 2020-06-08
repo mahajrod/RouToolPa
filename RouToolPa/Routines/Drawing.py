@@ -866,7 +866,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         return figure, axis
 
-    def draw_venn_fom_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
+    def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
 
         set_list = [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]
 
