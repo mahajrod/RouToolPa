@@ -58,7 +58,7 @@ class PSMC(Tool):
         """
         fq_dir = "%s/fq/" % split_dir
 
-        options = " mkdir -p %s %s %s;" % (split_dir, fq_dir)
+        options = " mkdir -p %s %s;" % (split_dir, fq_dir)
         options += " time vcfutils.pl splitchr -l 100000000000 %s.fai | " % reference_fasta
         options += " xargs -I {} -P %i" % self.threads
         options += " sh -c \"bcftools mpileup "
