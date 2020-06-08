@@ -856,7 +856,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         counts = venn.get_labels(set_list, fill=['number', ])
 
-        figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
+        figure, axis = venn.venn(counts, names=label_list) #self.venn_drawer_dict[number_of_sets](counts, names=label_list)
 
         if title:
             plt.title(title)
