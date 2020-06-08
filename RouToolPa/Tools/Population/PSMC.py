@@ -72,6 +72,7 @@ class PSMC(Tool):
         options += " bcftools call "
         options += " -c"
         options += " -O u |"
+        options += " bcftools view -O v | "
         #options += "" if report_all_positions else " -v"
         #options += " -f GQ |"
         options += "vcfutils.pl vcf2fq -d %i -D %i -Q %i" % (min_coverage, max_coverage, min_rms_mapq)
