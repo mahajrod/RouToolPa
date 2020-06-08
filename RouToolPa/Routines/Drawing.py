@@ -852,11 +852,13 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             print("%s\tWriting to file finished..." % str(datetime.datetime.now()))
 
     def draw_venn(self, set_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
-        number_of_sets = len(set_list)
+        #number_of_sets = len(set_list)
 
-        counts = venn.get_labels(set_list, fill=['number', ])
+        #counts = venn.get_labels(set_list, fill=['number', ])
+        count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
+        #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
 
-        figure, axis = venn.venn(counts, names=label_list) #self.venn_drawer_dict[number_of_sets](counts, names=label_list)
+        figure, axis = venn.venn(count_dict)
 
         if title:
             plt.title(title)
