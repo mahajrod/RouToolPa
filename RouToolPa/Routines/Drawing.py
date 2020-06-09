@@ -19,6 +19,7 @@ from matplotlib.collections import LineCollection
 if sys.version_info[0] == 2:
     print("WARNING!!! Package venn doesn't work in Python 2, related functionality is disabled!"
           "Run scripts with Python 3...")
+    venn = None
 else:
     import venn
 
