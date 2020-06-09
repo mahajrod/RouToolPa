@@ -10,7 +10,7 @@ dependencies = ['scipy', 'numpy', 'pandas', 'matplotlib', 'matplotlib-venn',
 #  scipy numpy pandas matplotlib matplotlib-venn biopython xmltodict bcbio-gff statsmodels pyparsing ete3
 
 if sys.version_info[0] == 3: # major version
-    dependencies += ["ete3"]
+    dependencies += ["ete3", 'venn',]
     if sys.version_info[1] < 7: # check minor version of python3
         dependencies += ["importlib_resources"]
 
@@ -21,7 +21,7 @@ else:
     raise ValueError("ERROR!!! Unsupported python version: %s" % str(sys.version_info[0]))
 
 setup(name='RouToolPa',
-      version='0.85',
+      version='0.86',
       packages=find_packages(),
       author='Sergei F. Kliver',
       author_email='mahajrod@gmail.com',
