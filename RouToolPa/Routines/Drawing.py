@@ -38,14 +38,6 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
     def __init__(self):
         MatplotlibRoutines.__init__(self)
 
-        self.venn_drawer_dict = {
-                                 2: venn.venn2,
-                                 3: venn.venn3,
-                                 4: venn.venn4,
-                                 5: venn.venn5,
-                                 6: venn.venn6
-                                 }
-
     @staticmethod
     def millions(x, pos):
         return '%1.1fMbp' % (x*1e-6)
@@ -861,17 +853,17 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         if sys.version_info[0] == 2:
             raise ImportError("Package venn doesn't work in Python 2")
         else:
-            try:
-                count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
-                subplot = venn.venn(count_dict)
-                if title:
-                    plt.title(title)
-                for ext in extensions:
-                    plt.savefig("%s.%s" % (output_prefix, ext))
+            #try:
+            count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
+            subplot = venn.venn(count_dict)
+            if title:
+                plt.title(title)
+            for ext in extensions:
+                plt.savefig("%s.%s" % (output_prefix, ext))
 
-                return subplot
-            except NameError:
-                pass
+            return subplot
+            #except NameError:
+            #    pass
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
         if sys.version_info[0] == 2:
