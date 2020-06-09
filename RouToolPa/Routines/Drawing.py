@@ -1,4 +1,5 @@
 __author__ = 'mahajrod'
+import sys
 import datetime
 from collections import OrderedDict
 import numpy as np
@@ -15,7 +16,11 @@ from matplotlib.patches import Rectangle, Circle
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 
-import venn
+if sys.version_info[0] == 2:
+    print("WARNING!!! Package venn doesn't work in Python 2, related functionality is disabled!")
+else:
+    import venn
+
 import scipy.stats as stats
 
 from BCBio import GFF
@@ -852,6 +857,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             print("%s\tWriting to file finished..." % str(datetime.datetime.now()))
 
     def draw_venn(self, set_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
+        if sys.version_info[0] == 2:
+            raise ImportError("Package venn doesn't work in Python 2")
+
         #number_of_sets = len(set_list)
 
         #counts = venn.get_labels(set_list, fill=['number', ])
@@ -869,7 +877,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         return subplot
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
-
+        if sys.version_info[0] == 2:
+            raise ImportError("Package venn doesn't work in Python 2")
         set_list = list(map(set, [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]))
 
         return self.draw_venn(set_list, label_list, output_prefix, extensions=extensions, title=title)
