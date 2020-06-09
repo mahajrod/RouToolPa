@@ -19,7 +19,6 @@ from matplotlib.collections import LineCollection
 if sys.version_info[0] == 2:
     print("WARNING!!! Package venn doesn't work in Python 2, related functionality is disabled!"
           "Run scripts with Python 3...")
-    venn = None
 else:
     import venn
 
@@ -862,21 +861,21 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         if sys.version_info[0] == 2:
             raise ImportError("Package venn doesn't work in Python 2")
         else:
-            #number_of_sets = len(set_list)
+            try:
+                count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
+                #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
 
-            #counts = venn.get_labels(set_list, fill=['number', ])
-            count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
-            #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
+                subplot = venn.venn(count_dict)
 
-            subplot = venn.venn(count_dict)
+                if title:
+                    plt.title(title)
 
-            if title:
-                plt.title(title)
+                for ext in extensions:
+                    plt.savefig("%s.%s" % (output_prefix, ext))
 
-            for ext in extensions:
-                plt.savefig("%s.%s" % (output_prefix, ext))
-
-            return subplot
+                return subplot
+            except NameError:
+                pass
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
         if sys.version_info[0] == 2:
