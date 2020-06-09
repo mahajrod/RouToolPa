@@ -860,26 +860,27 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
     def draw_venn(self, set_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
         if sys.version_info[0] == 2:
             raise ImportError("Package venn doesn't work in Python 2")
+        else:
+            #number_of_sets = len(set_list)
 
-        #number_of_sets = len(set_list)
+            #counts = venn.get_labels(set_list, fill=['number', ])
+            count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
+            #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
 
-        #counts = venn.get_labels(set_list, fill=['number', ])
-        count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
-        #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
+            subplot = venn.venn(count_dict)
 
-        subplot = venn.venn(count_dict)
+            if title:
+                plt.title(title)
 
-        if title:
-            plt.title(title)
+            for ext in extensions:
+                plt.savefig("%s.%s" % (output_prefix, ext))
 
-        for ext in extensions:
-            plt.savefig("%s.%s" % (output_prefix, ext))
-
-        return subplot
+            return subplot
 
     def draw_venn_from_files(self, file_list, label_list, output_prefix, extensions=("png", "svg"), title=None):
         if sys.version_info[0] == 2:
             raise ImportError("Package venn doesn't work in Python 2")
-        set_list = list(map(set, [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]))
+        else:
+            set_list = list(map(set, [pd.read_csv(filename, sep="\t", squeeze=True) for filename in file_list]))
 
-        return self.draw_venn(set_list, label_list, output_prefix, extensions=extensions, title=title)
+            return self.draw_venn(set_list, label_list, output_prefix, extensions=extensions, title=title)
