@@ -863,13 +863,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         else:
             try:
                 count_dict = OrderedDict(dict([(sample, set) for sample, set in zip(label_list, set_list)]))
-                #figure, axis = self.venn_drawer_dict[number_of_sets](counts, names=label_list)
-
                 subplot = venn.venn(count_dict)
-
                 if title:
                     plt.title(title)
-
                 for ext in extensions:
                     plt.savefig("%s.%s" % (output_prefix, ext))
 
