@@ -644,7 +644,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                             y_axis_visible=False):
 
         for scaffold in scaffold_white_list:
-            draw_dot_plot_from_last_alignment(last_collection,
+            self.draw_dot_plot_from_last_alignment(last_collection,
                                               output_prefix="%s.%s" % (output_prefix, scaffold),
                                               extension_list=extension_list,
                                               target_black_list=scaffold_black_list, target_white_list=scaffold,
