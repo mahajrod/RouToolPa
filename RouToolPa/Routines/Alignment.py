@@ -352,7 +352,7 @@ class AlignmentRoutines(SequenceRoutines):
                                                                                                index))
                 index += 1
             coordinates_df = pd.DataFrame(coordinates_df, columns=("#scaffold", "start", "end"))
-            coordinates_df.set_index("scaffold", inplace=True)
+            coordinates_df.set_index("#scaffold", inplace=True)
             coordinates_df.to_csv(fd_dict["tab"], sep="\t", index=True)
             coordinates_df["start"] -= 1
             coordinates_df.to_csv(fd_dict["bed"], sep="\t", index=False)
