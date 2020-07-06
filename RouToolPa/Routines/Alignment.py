@@ -351,13 +351,14 @@ class AlignmentRoutines(SequenceRoutines):
                                                                                                entry[2],
                                                                                                index))
                 index += 1
-            coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"))
+            coordinates_df = pd.DataFrame(coordinates_df, columns=("#scaffold", "start", "end"))
             coordinates_df.set_index("scaffold", inplace=True)
             coordinates_df.to_csv(fd_dict["tab"], sep="\t", index=True)
             coordinates_df["start"] -= 1
-            coordinates_df.to_csv(fd_dict["bed"], sep="\t", index=True)
+            coordinates_df.to_csv(fd_dict["bed"], sep="\t", index=False)
         else:
             index = 1
+            fd_dict["tab"].write("#scaffold\tstart\tend\n")
             for line_list in line_list_generator:
                 pos = int(line_list[position_column])
                 if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
