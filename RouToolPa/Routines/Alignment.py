@@ -356,6 +356,8 @@ class AlignmentRoutines(SequenceRoutines):
             coordinates_df.to_csv(fd_dict["tab"], sep="\t", index=True)
             coordinates_df["start"] -= 1
             coordinates_df.to_csv(fd_dict["bed"], sep="\t", index=False)
+
+            return coordinates_df
         else:
             index = 1
             fd_dict["tab"].write("#scaffold\tstart\tend\n")
