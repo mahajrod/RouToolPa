@@ -308,51 +308,75 @@ class AlignmentRoutines(SequenceRoutines):
 
                 line_index += 1
 
-    def collapse_per_base_coverage_mask(self, mask_file, out_file,
+    def collapse_per_base_coverage_mask(self, mask_file, output_prefix,
                                         scaffold_column=0,
                                         position_column=1,
                                         comments_prefix="#",
-                                        zero_based_output=False,
-                                        in_memory=True):
+                                        in_memory=True,
+                                        gzip_output=True):
 
         line_list_generator = self.file_line_as_list_generator(mask_file, comments_prefix=comments_prefix)
-        with self.metaopen(out_file, "w") as out_fd:
-            tmp = next(line_list_generator)
+        filename_dict = OrderedDict({"tab": "%s.tab%s" % (output_prefix, ".gz" if gzip_output else "" ),
+                                     "bed": "%s.bed%s" % (output_prefix, ".gz" if gzip_output else "" ),
+                                     "gff": "%s.gff%s" % (output_prefix, ".gz" if gzip_output else "" )})
 
-            prev_scaffold = tmp[scaffold_column]
-            prev_start = int(tmp[position_column])
-            prev_end = int(tmp[position_column])
+        fd_dict = OrderedDict()
+        for file_format in filename_dict:
+            fd_dict[file_format] = self.metaopen(filename_dict[file_format], "w")
 
-            coordinates_df = []
-            if in_memory:
-                for line_list in line_list_generator:
-                    pos = int(line_list[position_column])
-                    if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
-                        coordinates_df.append((prev_scaffold, prev_start, prev_end))
+        tmp = next(line_list_generator)
 
-                        prev_scaffold = line_list[scaffold_column]
-                        prev_start = pos
-                        prev_end = pos
-                    else:
-                        prev_end += 1
+        prev_scaffold = tmp[scaffold_column]
+        prev_start = int(tmp[position_column])
+        prev_end = int(tmp[position_column])
 
-                coordinates_df.append((prev_scaffold, prev_start, prev_end))
-                coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"))
-                coordinates_df.set_index("scaffold", inplace=True)
-                if zero_based_output:
-                    coordinates_df["start"] -= 1
+        coordinates_df = []
+        if in_memory:
+            for line_list in line_list_generator:
+                pos = int(line_list[position_column])
+                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
+                    coordinates_df.append((prev_scaffold, prev_start, prev_end))
 
-                coordinates_df.to_csv(out_fd, sep="\t", index=True)
-            else:
-                for line_list in line_list_generator:
-                    pos = int(line_list[position_column])
-                    if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
-                        out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if zero_based_output == "0-based" else prev_start, prev_end))
+                    prev_scaffold = line_list[scaffold_column]
+                    prev_start = pos
+                    prev_end = pos
+                else:
+                    prev_end += 1
 
-                        prev_scaffold = line_list[scaffold_column]
-                        prev_start = pos
-                        prev_end = pos
-                    else:
-                        prev_end += 1
+            coordinates_df.append((prev_scaffold, prev_start, prev_end))
+            index = 1
+            for entry in coordinates_df:
+                fd_dict["gff"].write("%s\tcoverage\tregion\t%i\t%i\t.\t.\t.\tID=region%i\n" % (entry[0],
+                                                                                               entry[1],
+                                                                                               entry[2],
+                                                                                               index))
+                index += 1
+            coordinates_df = pd.DataFrame(coordinates_df, columns=("scaffold", "start", "end"))
+            coordinates_df.set_index("scaffold", inplace=True)
+            coordinates_df.to_csv(fd_dict["tab"], sep="\t", index=True)
+            coordinates_df["start"] -= 1
+            coordinates_df.to_csv(fd_dict["bed"], sep="\t", index=True)
+        else:
+            index = 1
+            for line_list in line_list_generator:
+                pos = int(line_list[position_column])
+                if (prev_scaffold != line_list[scaffold_column]) or (pos != prev_end + 1):
+                    fd_dict["tab"].write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
+                    fd_dict["bed"].write("%s\t%i\t%i\n" % (prev_scaffold, prev_start - 1, prev_end))
+                    fd_dict["gff"].write("%s\tcoverage\tregion\t%i\t%i\t.\t.\t.\tID=region%i\n" % (prev_scaffold,
+                                                                                                   prev_start,
+                                                                                                   prev_end,
+                                                                                                   index))
+                    prev_scaffold = line_list[scaffold_column]
+                    prev_start = pos
+                    prev_end = pos
+                    index += 1
+                else:
+                    prev_end += 1
 
-                out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, (prev_start - 1) if zero_based_output == "0-based" else prev_start, prev_end))
+            fd_dict["tab"].write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
+            fd_dict["bed"].write("%s\t%i\t%i\n" % (prev_scaffold, prev_start - 1, prev_end))
+            fd_dict["gff"].write("%s\tcoverage\tregion\t%i\t%i\t.\t.\t.\tID=region%i\n" % (prev_scaffold,
+                                                                                           prev_start,
+                                                                                           prev_end,
+                                                                                           index))
