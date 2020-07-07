@@ -7,9 +7,9 @@ class EMA(Tool):
         Tool.__init__(self, "ema", path=path, max_threads=max_threads, max_memory=max_memory, max_per_thread_memory=max_per_thread_memory)
 
     def convert_ema_read_format_to_fastq(self, input, output_prefix, bufferig=1000000000):
-        forward_output = "%s_1.fastq" % output_prefix
-        reverse_output = "%s_2.fastq" % output_prefix
-        index_output = "%s.index" % output_prefix
+        forward_output = "%s_1.fastq.gz" % output_prefix
+        reverse_output = "%s_2.fastq.gz" % output_prefix
+        index_output = "%s.index.gz" % output_prefix
         with self.metaopen(input, "r", buffering=bufferig) as in_fd, \
              self.metaopen(forward_output, "w", buffering=bufferig) as f_fd, \
              self.metaopen(reverse_output, "w", buffering=bufferig) as r_fd, \
