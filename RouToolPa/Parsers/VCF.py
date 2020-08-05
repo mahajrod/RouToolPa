@@ -306,7 +306,7 @@ class CollectionVCF:
     def __init__(self, in_file=None, metadata=None, records=None, header=None, samples=None,
                  external_metadata=None, threads=1, parsing_mode="all", sparse=False,
                  scaffold_black_list=(), scaffold_white_list=(),
-                 scaffold_syn_dict=None,):
+                 scaffold_syn_dict=None, sample_syn_dict=None):
         """
         Initializes collection. If from_file is True collection will be read from file (arguments other then in_file, external_metadata and threads are ignored)
         Otherwise collection will be initialize from meta, records_dict, header, samples
@@ -458,6 +458,7 @@ class CollectionVCF:
         self.scaffold_black_list = scaffold_black_list
         self.scaffold_white_list = scaffold_white_list
         self.scaffold_syn_dict = scaffold_syn_dict
+        self.sample_syn_dict = sample_syn_dict
         
         if in_file:
             self.read(in_file, external_metadata=external_metadata,
@@ -535,6 +536,11 @@ class CollectionVCF:
 
         if self.scaffold_syn_dict:
             self.records.rename(index=self.scaffold_syn_dict, inplace=True)
+
+        if self.sample_syn_dict:
+            self.records.rename(columns=self.sample_syn_dict, inplace=True)
+            self.samples = [self.sample_syn_dict.get(element, element) for element in self.samples]
+            self.header = self.header[:9] + self.samples
 
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("CHROM", "ROW"))
