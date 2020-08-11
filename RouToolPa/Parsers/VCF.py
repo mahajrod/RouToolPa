@@ -567,7 +567,7 @@ class CollectionVCF:
                 self.records.columns = pd.MultiIndex.from_arrays([["POS"], ["POS"], ["POS"]])
                 self.records = pd.concat([self.records] + sample_genotypes, axis=1)
             else:
-                self.records = self.records[["POS", "ID", "REF", "QUAL", "FILTER"]],
+                self.records = self.records[["POS", "ID", "REF", "QUAL", "FILTER"]]
                 self.records.columns = pd.MultiIndex.from_arrays([self.records.columns,
                                                                   self.records.columns,
                                                                   self.records.columns
