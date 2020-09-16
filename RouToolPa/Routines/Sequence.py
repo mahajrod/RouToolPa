@@ -342,10 +342,10 @@ class SequenceRoutines(FileRoutines):
                                                          splited_values=True)
         else:
             if region_file_format == "samtools":
-                for regions in regions_list:
+                for regions in region_list:
                     sys.stdout.write("-r " + ",".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
             elif region_file_format == "GATK":
-                for regions in regions_list:
+                for regions in region_list:
                     sys.stdout.write(" -L " + " -L ".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
         return region_list, scaffold_to_region_correspondence_dict
 
