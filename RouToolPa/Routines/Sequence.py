@@ -156,7 +156,10 @@ class SequenceRoutines(FileRoutines):
                                       split_scaffolds=True, min_scaffold_length=None, black_list_scaffolds=None,
                                       region_file_format='simple'):
 
-        raw_len_dict = length_dict if length_dict else self.get_lengths(record_dict=self.parse_seq_file(reference,
+        if reference[-4:] == ".fai":
+            raw_len_dict = SynDict(input=reference, key_index=0, value_index=1, expression=int)
+        else:
+            raw_len_dict = length_dict if length_dict else self.get_lengths(record_dict=self.parse_seq_file(reference,
                                                                                                         mode=parsing_mode),
                                                                         out_file=None,
                                                                         close_after_if_file_object=False)
