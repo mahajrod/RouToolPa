@@ -343,10 +343,10 @@ class SequenceRoutines(FileRoutines):
         else:
             if region_file_format == "samtools":
                 for regions in region_list:
-                    sys.stdout.write("-r " + ",".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
+                    sys.stdout.write("-r " + ",".join(["{0}:{1}-{2}".format(*region) for region in regions]) + "\n")
             elif region_file_format == "GATK":
                 for regions in region_list:
-                    sys.stdout.write(" -L " + " -L ".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
+                    sys.stdout.write(" -L " + " -L ".join(["{0}:{1}-{2}".format(*region) for region in regions]) + "\n")
         return region_list, scaffold_to_region_correspondence_dict
 
     def split_fasta_by_seq_len(self, input_fasta, output_dir, max_len_per_file=None, output_prefix=None,
