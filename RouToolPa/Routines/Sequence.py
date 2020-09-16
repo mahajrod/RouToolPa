@@ -340,6 +340,13 @@ class SequenceRoutines(FileRoutines):
                 index += 1
             scaffold_to_region_correspondence_dict.write("%s/SCAFFOLD_TO_REGION.correspondence" % output_dir,
                                                          splited_values=True)
+        else:
+            if region_file_format == "samtools":
+                for regions in regions_list:
+                    sys.stdout.write("-r " + ",".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
+            elif region_file_format == "GATK":
+                for regions in regions_list:
+                    sys.stdout.write(" -L " + " -L ".join(["{0}:{1}-{2}\n".format(*region) for region in regions]))
         return region_list, scaffold_to_region_correspondence_dict
 
     def split_fasta_by_seq_len(self, input_fasta, output_dir, max_len_per_file=None, output_prefix=None,
