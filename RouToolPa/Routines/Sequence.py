@@ -346,7 +346,7 @@ class SequenceRoutines(FileRoutines):
         else:
             if region_file_format == "samtools":
                 for regions in region_list:
-                    sys.stdout.write("-r " + ",".join(["{0}:{1}-{2}".format(*region) for region in regions]) + "\n")
+                    sys.stdout.write(",".join(["{0}:{1}-{2}".format(*region) for region in regions]) + "\n")
             elif region_file_format == "GATK":
                 for regions in region_list:
                     sys.stdout.write(" -L " + " -L ".join(["{0}:{1}-{2}".format(*region) for region in regions]) + "\n")
