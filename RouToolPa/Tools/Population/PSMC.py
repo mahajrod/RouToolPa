@@ -43,7 +43,7 @@ class PSMC(Tool):
         options += " -u %e" % absolute_mutation_rate
         options += " -p" # TODO: find sence of this options
         options += " -G" if plot_grid else ""
-        options += " -M %s" % ",".join(sample_label_list)
+        options += " -M \"%s\"" % ",".join(sample_label_list)
         options += " -X %f" % max_generations if max_generations else ""
         options += " -x %f" % min_generations if min_generations else ""
         options += " %s" % output_prefix

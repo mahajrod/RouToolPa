@@ -40,7 +40,7 @@ class VariantCall(Tool):
         options += " time vcfutils.pl splitchr -l %i %s.fai | " % (chunk_length, reference_fasta)
         options += " xargs -I {} -P %i" % self.threads
         options += " sh -c \"bcftools mpileup "
-        options += " -d %i" % max_coverage if max_coverage else ""
+        options += " -d %i" % max_coverage if max_coverage is not None else ""
         options += " -q %i" % min_mapping_quality
         options += " -Q %i" % min_base_quality
         options += " --adjust-MQ %i" % adjust_mapping_quality if adjust_mapping_quality else ""
