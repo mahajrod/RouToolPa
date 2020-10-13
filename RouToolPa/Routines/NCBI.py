@@ -198,8 +198,8 @@ class AssemblySummaryList(list):
             for assembly_summary_biopython_dict_element in entrez_summary_biopython['DocumentSummarySet']['DocumentSummary']:
             #print assembly_summary_biopython_dict_element
                 self.append(AssemblySummary(assembly_summary_biopython_dict_element))
-
-            self.header = self[0].get_header()
+            if len(self) > 0:
+                self.header = self[0].get_header()
 
         else:
             self.header = "\t".join(['SpeciesName', 'Taxid', 'Isolate', 'Sub_type', 'Sub_value', 'Sex', 'BioSampleId',

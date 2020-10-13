@@ -155,9 +155,10 @@ class SamtoolsV1(Tool):
         if not os.path.exists(fasta_file + ".fai"):
             self.faidx(fasta_file)
 
-    def index(self, bam_file):
+    def index(self, bam_file, threads=None):
 
         options = " %s" % bam_file
+        options += " -@ %i" % threads if threads else self.threads
 
         self.execute(options=options, cmd="samtools index")
 
