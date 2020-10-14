@@ -158,9 +158,7 @@ class SamtoolsV1(Tool):
     def index(self, bam_file, threads=None):
 
         options = " %s" % bam_file
-        print(type(threads))
-        print(type(threads))
-        options += (" -@ %i" % threads) if threads is not None else self.threads
+        options += " -@ %i" % (threads if threads is not None else self.threads)
 
         self.execute(options=options, cmd="samtools index")
 
