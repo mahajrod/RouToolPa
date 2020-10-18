@@ -30,7 +30,10 @@ class FileRoutines:
     @staticmethod
     def metaopen(filename, flags, buffering=None):
         if not isinstance(filename, str): # or isinstance(filename, gzip.GzipFile) or isinstance(filename, bz2.BZ2File):
-            return filename
+            if isinstance(file):
+                return filename
+            else:
+                raise ValueError("ERROR!!! Not str of file object ")
         elif filename[-3:] == ".gz":
             return gzip.open(filename, flags)
         elif filename[-4:] == ".bz2":
