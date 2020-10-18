@@ -280,10 +280,13 @@ class CollectionSequence(FileRoutines):
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
 
-    def write(self, outfile, expression=None, max_symbols_per_line=60):
+    def write(self, outfile, expression=None, max_symbols_per_line=60, whitelist=None):
         if self.parsing_mode == "parse":
             with self.metaopen(outfile, "w") as out_fd:
                 for seq_id in self.records:
+                    if whitelist:
+                        if seq_id not in whitelist:
+                            continue
                     if expression:
                         if not expression(seq_id, self.records[seq_id]):
                             continue
@@ -299,6 +302,9 @@ class CollectionSequence(FileRoutines):
         if self.parsing_mode == "generator":
             with self.metaopen(outfile, "w") as out_fd:
                 for seq_id, description, seq in self.records:
+                    if whitelist:
+                        if seq_id not in whitelist:
+                            continue
                     if expression:
                         if not expression(seq_id, seq):
                             continue
