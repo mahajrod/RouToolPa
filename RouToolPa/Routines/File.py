@@ -33,7 +33,7 @@ class FileRoutines:
             if isinstance(filename, file):
                 return filename
             else:
-                raise ValueError("ERROR!!! Not str of file object ")
+                raise ValueError("ERROR!!! Not file object or str: {}".format(str(filename)))
         elif filename[-3:] == ".gz":
             return gzip.open(filename, flags)
         elif filename[-4:] == ".bz2":
