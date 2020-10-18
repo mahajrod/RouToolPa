@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import os
-from copy import deepcopy
 from collections import OrderedDict
-from Bio import SeqIO
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.GeneralRoutines.File import FileRoutines
 from RouToolPa.Parsers.Sequence import CollectionSequence
 from RouToolPa.Collections.General import SynDict, IdSet, IdList
 
@@ -286,7 +284,6 @@ class SequenceClusterRoutines(FileRoutines):
                                                  skip_cluster_if_no_sequence_for_element=True,
                                                  ):
         # TODO: TEST IT BEFORE USAGE.WAS SIGNIFICANTLY CHANGED WITHOUT TESTING
-        from RouToolPa.Routines import SequenceRoutines
         cluster_id_list = IdList()
         cluster_dict = SynDict()
         #print(pep_file)

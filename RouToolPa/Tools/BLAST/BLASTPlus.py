@@ -4,7 +4,7 @@ __author__ = 'mahajrod'
 import os
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Tools.LinuxTools import CGAS
-from RouToolPa.Routines import FileRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
 from RouToolPa.Collections.General import SynDict
 
 

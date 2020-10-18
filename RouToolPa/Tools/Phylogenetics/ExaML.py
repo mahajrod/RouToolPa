@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines.File import split_filename
+from RouToolPa.GeneralRoutines.File import split_filename
 
 class MAFFT(Tool):
     def __init__(self, path="", max_threads=4):

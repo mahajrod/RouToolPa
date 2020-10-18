@@ -4,7 +4,6 @@ from RouToolPa.Routines.GO import GORoutines
 from RouToolPa.Routines.WGA import WGARoutines
 from RouToolPa.Routines.VCF import VCFRoutines
 from RouToolPa.Routines.Math import MathRoutines
-from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Routines.Tree import TreeRoutines
 from RouToolPa.Routines.NCBI import NCBIRoutines
 from RouToolPa.Routines.Math import SmoothRoutines
@@ -32,7 +31,7 @@ GORoutines = GORoutines()
 WGARoutines = WGARoutines()
 VCFRoutines = VCFRoutines()
 MathRoutines = MathRoutines()
-FileRoutines = FileRoutines()
+
 TreeRoutines = TreeRoutines()
 NCBIRoutines = NCBIRoutines()
 MtDNARoutines = MtDNARoutines()

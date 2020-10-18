@@ -15,7 +15,7 @@ from copy import deepcopy
 from collections import OrderedDict, Iterable
 
 if sys.version_info[0] == 3:
-    from io import TextIOWrapper as file
+    pass
 
 import numpy as np
 import pandas as pd
@@ -26,9 +26,9 @@ from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet,
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from RouToolPa.Collections.General import IdList, IdSet, SynDict
+from RouToolPa.Collections.General import SynDict
 from RouToolPa.Routines import DrawingRoutines
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.GeneralRoutines.File import FileRoutines
 import RouToolPa.Formats.VariantFormats as VariantFormats
 
 ref_alt_variants = {"deaminases": [("C", ["T"]), ("G", ["A"])]

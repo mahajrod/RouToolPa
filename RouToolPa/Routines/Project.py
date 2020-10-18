@@ -2,7 +2,7 @@
 __author__ = 'mahajrod'
 
 from collections import OrderedDict
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.GeneralRoutines.File import FileRoutines
 
 
 class ProjectRoutines(FileRoutines):

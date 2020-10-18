@@ -5,7 +5,8 @@ import os
 import shutil
 from RouToolPa.Collections.General import IdList
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines import VCFRoutines, FileRoutines
+
+from RouToolPa.Routines import VCFRoutines
 
 
 class HaplotypeCaller4(Tool):

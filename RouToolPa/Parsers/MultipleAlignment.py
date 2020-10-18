@@ -13,7 +13,8 @@ import pandas as pd
 
 from RouToolPa.Collections.General import TwoLvlDict, IdList, SynDict
 from RouToolPa.Parsers.Abstract import Record, Collection
-from RouToolPa.Routines import FileRoutines, MatplotlibRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
+from RouToolPa.Routines import MatplotlibRoutines
 from Bio import AlignIO
 
 

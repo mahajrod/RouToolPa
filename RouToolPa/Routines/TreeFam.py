@@ -3,6 +3,7 @@ import os
 from Bio import SeqIO
 from RouToolPa.Collections.General import IdList, SynDict
 from RouToolPa.Routines.SequenceCluster import SequenceClusterRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
 
 
 class TreeFamRoutines(SequenceClusterRoutines):
@@ -14,7 +15,8 @@ class TreeFamRoutines(SequenceClusterRoutines):
     def extract_proteins_from_selected_families(families_id_file, fam_file, pep_file,
                                                 output_dir="./", pep_format="fasta",
                                                 out_prefix=None, create_dir_for_each_family=False):
-        from RouToolPa.Routines import SequenceRoutines, FileRoutines
+        from RouToolPa.Routines import SequenceRoutines
+
         fam_id_list = IdList()
         fam_dict = SynDict()
         #print(pep_file)

@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from RouToolPa.Routines import FileRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
 from RouToolPa.Data import Tables
 
 try:

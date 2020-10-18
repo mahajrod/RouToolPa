@@ -2,7 +2,7 @@
 __author__ = 'Sergei F. Kliver'
 
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines.File import save_mkdir, split_filename, check_path
+from RouToolPa.GeneralRoutines.File import save_mkdir, split_filename, check_path
 
 
 

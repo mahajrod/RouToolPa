@@ -5,7 +5,8 @@ import os
 import shutil
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Parsers.TRF import CollectionTRF
-from RouToolPa.Routines import FileRoutines, AnnotationsRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
+from RouToolPa.Routines import AnnotationsRoutines
 from RouToolPa.Collections.General import SynDict
 
 

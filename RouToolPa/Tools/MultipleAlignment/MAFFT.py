@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines import FileRoutines
-
-
+from RouToolPa.GeneralRoutines import FileRoutines
 class MAFFT(Tool):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "mafft", path=path, max_threads=max_threads)

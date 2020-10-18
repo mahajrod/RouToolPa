@@ -14,7 +14,7 @@ import math
 import pickle
 
 if sys.version_info[0] == 2:
-    from string import maketrans
+    pass
 
 from random import randint
 from copy import deepcopy
@@ -29,7 +29,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.GeneralRoutines.File import FileRoutines
 
 from RouToolPa.Parsers.Sequence import CollectionSequence
 

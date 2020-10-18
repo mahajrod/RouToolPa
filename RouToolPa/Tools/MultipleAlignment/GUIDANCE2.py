@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines import FileRoutines
-
-
+from RouToolPa.GeneralRoutines import FileRoutines
 class GUIDANCE2(Tool):
     def __init__(self, path="", max_threads=1):
         Tool.__init__(self, "guidance.pl", path=path, max_threads=max_threads)

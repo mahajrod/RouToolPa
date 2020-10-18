@@ -2,9 +2,7 @@
 import os
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Collections.General import IdSet
-from RouToolPa.Routines import FileRoutines
-
-
+from RouToolPa.GeneralRoutines import FileRoutines
 class RepeatMasker(Tool):
     def __init__(self, path="", max_threads=1):
         Tool.__init__(self, "RepeatMasker", path=path, max_threads=max_threads)

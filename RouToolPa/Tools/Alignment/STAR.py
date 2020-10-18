@@ -2,7 +2,7 @@
 import os
 from math import log, floor
 from RouToolPa.Tools.Abstract import Tool
-from RouToolPa.Routines import FileRoutines
+from RouToolPa.GeneralRoutines import FileRoutines
 from RouToolPa.Tools.Samtools import SamtoolsV1
 
 

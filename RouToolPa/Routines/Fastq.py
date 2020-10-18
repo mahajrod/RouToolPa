@@ -3,8 +3,8 @@ import os
 import datetime
 from collections import OrderedDict
 from Bio.Seq import Seq
-from RouToolPa.Collections.General import TwoLvlDict, IdSet
-from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.Collections.General import TwoLvlDict
+from RouToolPa.GeneralRoutines.File import FileRoutines
 
 
 class FastQRoutines(FileRoutines):

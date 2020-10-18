@@ -17,8 +17,7 @@ from statsmodels.sandbox.stats.multicomp import fdrcorrection0
 
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Parsers.PAML import CodeMLReport
-from RouToolPa.Routines import FileRoutines
-
+from RouToolPa.GeneralRoutines import FileRoutines
 from RouToolPa.Collections.General import TwoLvlDict
 
 print_mutex = mp.Lock()

@@ -1,7 +1,6 @@
 __author__ = 'mahajrod'
 import os
-from RouToolPa.Routines import FileRoutines
-
+from RouToolPa.GeneralRoutines import FileRoutines
 #from Converters.Converters import gff22gff3, gff32gtf
 
 def RepeatModeler_search(query_file, db_name, output_file="run.out",
