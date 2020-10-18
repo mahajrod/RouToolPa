@@ -65,57 +65,59 @@ class CollectionSequence(FileRoutines):
 
     def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
 
-        if format == "fasta":
-            with FileRoutines.metaopen(sequence_file, "r") as seq_fd:
-                seq_id = None
-                description = None
-                seq = ""
-                for line in seq_fd:
-                    if line[0] == ">":
+        for filename in [sequence_file] if isinstance(sequence_file, str) else sequence_file:
+            if format == "fasta":
+                with FileRoutines.metaopen(filename, "r") as seq_fd:
+                    seq_id = None
+                    description = None
+                    seq = ""
+                    for line in seq_fd:
+                        if line[0] == ">":
+                            if seq_id and (seq_id not in black_list):
+                                if (not white_list) or (seq_id in white_list):
+                                    if verbose:
+                                        print("Parsing %s" % seq_id)
+                                    yield seq_id, description, seq
+                            tmp = line[1:].strip().split(None, 1)
+                            seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
+
+                            seq = ""
+                        else:
+                            seq += line[:-1]
+                    else:
                         if seq_id and (seq_id not in black_list):
                             if (not white_list) or (seq_id in white_list):
                                 if verbose:
                                     print("Parsing %s" % seq_id)
                                 yield seq_id, description, seq
-                        tmp = line[1:].strip().split(None, 1)
-                        seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
-
-                        seq = ""
-                    else:
-                        seq += line[:-1]
-                else:
-                    if seq_id and (seq_id not in black_list):
-                        if (not white_list) or (seq_id in white_list):
-                            if verbose:
-                                print("Parsing %s" % seq_id)
-                            yield seq_id, description, seq
 
     def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta",
                                            black_list=(), white_list=(), verbose=False,):
-        if format == "fasta":
-            with self.metaopen(sequence_file, "r") as seq_fd:
-                seq_id = None
-                description = None
-                seq = ""
-                for line in seq_fd:
-                    if line[0] == ">":
+        for filename in [sequence_file] if isinstance(sequence_file, str) else sequence_file:
+            if format == "fasta":
+                with self.metaopen(filename, "r") as seq_fd:
+                    seq_id = None
+                    description = None
+                    seq = ""
+                    for line in seq_fd:
+                        if line[0] == ">":
+                            if seq_id and (seq_id not in black_list):
+                                if (not white_list) or (seq_id in white_list):
+                                    if verbose:
+                                        print("Parsing %s" % seq_id)
+                                    yield seq_id, description, seq
+                            tmp = line[1:].strip().split(None, 1)
+                            seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
+
+                            seq = ""
+                        else:
+                            seq += line[:-1]
+                    else:
                         if seq_id and (seq_id not in black_list):
                             if (not white_list) or (seq_id in white_list):
                                 if verbose:
                                     print("Parsing %s" % seq_id)
-                                yield seq_id, description, seq
-                        tmp = line[1:].strip().split(None, 1)
-                        seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
-
-                        seq = ""
-                    else:
-                        seq += line[:-1]
-                else:
-                    if seq_id and (seq_id not in black_list):
-                        if (not white_list) or (seq_id in white_list):
-                            if verbose:
-                                print("Parsing %s" % seq_id)
-                            yield seq_id, description, seq_expression(seq)
+                                yield seq_id, description, seq_expression(seq)
 
     def sequence_tuple_generator(self):
         if self.parsing_mode == "parse":
