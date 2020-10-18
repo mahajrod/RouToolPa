@@ -1,6 +1,11 @@
 __author__ = 'mahajrod'
+"""
+Here will be SequenceCollectionRoutines with methods working only with sequence_collections
+Work in progress
 
-#TODO: refactor code to have here methods dealing only with sequences directly.Move methods dealing with sequence collections to SequenceCollection.py
+"""
+#TODO: refactor code in accordance with comment above
+
 
 import os
 import re
@@ -29,95 +34,10 @@ from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Parsers.Sequence import CollectionSequence
 
 
-class SequenceRoutines(FileRoutines):
+class SequenceCollectionRoutines(FileRoutines):
 
     def __init__(self):
         FileRoutines.__init__(self)
-
-        self.ambiguous_nucleotides_dict = OrderedDict({"R": {"A", "G"},
-                                                       "Y": {"C", "T"},
-                                                       "S": {"C", "G"},
-                                                       "W": {"A", "T"},
-                                                       "K": {"G", "T"},
-                                                       "M": {"A", "C"},
-                                                       "B": {"C", "G", "T"},
-                                                       "D": {"A", "G", "T"},
-                                                       "H": {"A", "C", "T"},
-                                                       "V": {"A", "C", "G"},
-                                                       "N": {"A", "C", "G", "T"}})
-
-        self.complement_dict = OrderedDict({"A": "T",
-                                            "C": "G",
-                                            "G": "C",
-                                            "T": "A",
-                                            "R": "Y",
-                                            "Y": "R",
-                                            "S": "S",
-                                            "W": "W",
-                                            "K": "M",
-                                            "M": "K",
-                                            "B": "V",
-                                            "D": "H",
-                                            "H": "D",
-                                            "V": "B",
-                                            "N": "N",
-                                            "a": "t",
-                                            "c": "g",
-                                            "g": "c",
-                                            "t": "a",
-                                            "r": "y",
-                                            "y": "r",
-                                            "s": "s",
-                                            "w": "w",
-                                            "k": "m",
-                                            "m": "k",
-                                            "b": "v",
-                                            "d": "h",
-                                            "h": "d",
-                                            "v": "b",
-                                            "n": "n"
-                                            })
-        if sys.version_info[0] == 2:
-            self.complement_table = maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-",
-                                              "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
-            self.ambiguous_nucleotides_replacenment_table = maketrans("RYSWKMBDHVryswkmbdhv",
-                                                                      "NNNNNNNNNNnnnnnnnnnn")
-
-        self.ambiguous_nucleotides_string_dict = OrderedDict({"R": "AG",
-                                                              "Y": "CT",
-                                                              "S": "CG",
-                                                              "W": "AT",
-                                                              "K": "GT",
-                                                              "M": "AC",
-                                                              "B": "CGT",
-                                                              "D": "AGT",
-                                                              "H": "ACT",
-                                                              "V": "ACG",
-                                                              "N": "ACGT"})
-
-        self.ambiguous_nucleotides_string_reverse_dict = OrderedDict({"AG": "R",
-                                                                      "CT": "Y",
-                                                                      "CG": "S",
-                                                                      "AT": "W",
-                                                                      "GT": "K",
-                                                                      "AC": "M",
-                                                                      "CGT": "B",
-                                                                      "AGT": "D",
-                                                                      "ACT": "H",
-                                                                      "ACG": "V",
-                                                                      "ACGT": "N"})
-
-    def reverse_complement(self, seq):
-        if sys.version_info[0] == 2:
-            return seq[::-1].translate(self.complement_table)
-        else:
-            return seq[::-1].maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-", "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
-
-    def replace_ambiguous_nucleotides(self, seq):
-        if sys.version_info[0] == 2:
-            return seq.translate(self.ambiguous_nucleotides_replacenment_table)
-        else:
-            return seq.maketrans("RYSWKMBDHVryswkmbdhv", "NNNNNNNNNNnnnnnnnnnn")
 
     def split_fasta(self, input_fasta, output_dir, num_of_recs_per_file=None, num_of_files=None, output_prefix=None,
                     parsing_mode="parse", index_file=None, sort_by_length=False):

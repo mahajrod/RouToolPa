@@ -3,14 +3,15 @@ import os
 from copy import deepcopy
 from collections import OrderedDict
 from Bio import SeqIO
-from RouToolPa.Routines.Sequence import SequenceRoutines
+from RouToolPa.Routines.File import FileRoutines
+from RouToolPa.Parsers.Sequence import CollectionSequence
 from RouToolPa.Collections.General import SynDict, IdSet, IdList
 
 
-class SequenceClusterRoutines(SequenceRoutines):
+class SequenceClusterRoutines(FileRoutines):
 
     def __init__(self):
-        SequenceRoutines.__init__(self)
+        FileRoutines.__init__(self)
 
     def read_cluster_files_from_dir(self, dir_with_cluster_files):
         cluster_files_list = sorted(os.listdir(dir_with_cluster_files))
@@ -167,6 +168,7 @@ class SequenceClusterRoutines(SequenceRoutines):
             clusters - extract sequences from clusters in separate files,
             species - extract sequences from species to separate files
         """
+        # TODO: TEST IT BEFORE USAGE.WAS SIGNIFICANTLY CHANGED WITHOUT TESTING
         white_list_ids = None
         if file_with_white_list_cluster_ids:
             white_list_ids = IdSet()
@@ -179,26 +181,29 @@ class SequenceClusterRoutines(SequenceRoutines):
         out_dir = self.check_path(output_dir)
 
         for species in clusters_dict:
-            idx_file = "%s_tmp.idx" % species
+            #idx_file = "%s_tmp.idx" % species
             sequence_file = "%s%s.%s" % (self.check_path(dir_with_sequence_files), species,
                                          sequence_file_extension)
-            sequence_super_dict[species] = SeqIO.index_db(idx_file, sequence_file, format=sequence_file_format)
+            sequence_super_dict[species] = CollectionSequence(in_file=sequence_file, format=sequence_file_format,
+                                                              parsing_mode="parse")
+            #sequence_super_dict[species] = SeqIO.index_db(idx_file, sequence_file, format=sequence_file_format)
 
         if mode == "species":
             seqeuence_names = self.get_sequence_names(clusters_dict, write_ids=False, out_prefix=None,
                                                       white_list_ids=white_list_ids)
             for species in seqeuence_names:
                 out_file = "%s%s.%s" % (out_dir, species, sequence_file_extension)
-                SeqIO.write(SequenceRoutines.record_by_id_generator(sequence_super_dict[species],
-                                                                    seqeuence_names[species]),
-                            out_file, format=sequence_file_format)
+                sequence_super_dict[species].write(out_file, whitelist=seqeuence_names[species])
+                #SeqIO.write(SequenceRoutines.record_by_id_generator(sequence_super_dict[species],
+                #                                                    seqeuence_names[species]),
+                #            out_file, format=sequence_file_format)
         elif mode == "families":
-
+            if species_label_first:
+                label_sequence = lambda label, name: "%s%s%s" % (label, separator_for_labeling, name)
+            else:
+                label_sequence = lambda label, name: "%s%s%s" % (name, separator_for_labeling, label)
+            """
             def per_family_record_generator(seq_super_dict, clust_dict, cluster_id):
-                if species_label_first:
-                    label_sequence = lambda label, name: "%s%s%s" % (label, separator_for_labeling, name)
-                else:
-                    label_sequence = lambda label, name: "%s%s%s" % (name, separator_for_labeling, label)
 
                 for species in seq_super_dict:
                     #print species, cluster_id
@@ -209,14 +214,20 @@ class SequenceClusterRoutines(SequenceRoutines):
                             yield record
                         else:
                             yield seq_super_dict[species][record_id]
-
+            """
             for cluster_name in cluster_names:
                 out_file = "%s%s.%s" % (out_dir, cluster_name, sequence_file_extension)
-                SeqIO.write(per_family_record_generator(sequence_super_dict, clusters_dict, cluster_name),
-                            out_file, format=sequence_file_format)
+                with self.metaopen(out_file) as out_fd:
+                    for species in sequence_super_dict:
+                        sequence_super_dict[species].write(out_fd, keep_file_open=True,
+                                                           whitelist=clusters_dict[species][cluster_name],
+                                                           out_id_expression=label_sequence if label_species else None)
 
-        for species in clusters_dict:
-            os.remove("%s_tmp.idx" % species)
+                #SeqIO.write(per_family_record_generator(sequence_super_dict, clusters_dict, cluster_name),
+                #            out_file, format=sequence_file_format)
+
+        #for species in clusters_dict:
+        #    os.remove("%s_tmp.idx" % species)
 
     @staticmethod
     def rename_elements_in_clusters(clusters_file, syn_file, output_clusters_file,
@@ -270,10 +281,11 @@ class SequenceClusterRoutines(SequenceRoutines):
         return absent_elements
 
     def extract_sequences_from_selected_clusters(self, clusters_id_file, cluster_file, seq_file,
-                                                 output_dir="./", seq_format="fasta",
+                                                 output_dir="./",
                                                  out_prefix=None, create_dir_for_each_cluster=False,
                                                  skip_cluster_if_no_sequence_for_element=True,
-                                                 parsing_mode="parse"):
+                                                 ):
+        # TODO: TEST IT BEFORE USAGE.WAS SIGNIFICANTLY CHANGED WITHOUT TESTING
         from RouToolPa.Routines import SequenceRoutines
         cluster_id_list = IdList()
         cluster_dict = SynDict()
@@ -287,13 +299,15 @@ class SequenceClusterRoutines(SequenceRoutines):
 
         protein_files = self.make_list_of_path_to_files(seq_file)
 
-        protein_dict = self.parse_seq_file(protein_files, "index_db", format=seq_format, index_file="tmp.idx") if len(protein_files) > 1 else self.parse_seq_file(protein_files[0], parsing_mode, format=seq_format, index_file="tmp.idx") #SeqIO.index_db("tmp.idx", self.make_list_of_path_to_files(seq_file), format=seq_format)
+        protein_collection = CollectionSequence(in_file=seq_file, parsing_mode="parse")
+
+        #protein_dict = self.parse_seq_file(protein_files, "index_db", format=seq_format, index_file="tmp.idx") if len(protein_files) > 1 else self.parse_seq_file(protein_files[0], parsing_mode, format=seq_format, index_file="tmp.idx") #SeqIO.index_db("tmp.idx", self.make_list_of_path_to_files(seq_file), format=seq_format)
 
         number_of_skipped_clusters = 0
         for fam_id in cluster_id_list if clusters_id_file else cluster_dict:
 
             if skip_cluster_if_no_sequence_for_element:
-                absent_elements = self.check_absence_of_cluster_elements(cluster_dict[fam_id], protein_dict)
+                absent_elements = self.check_absence_of_cluster_elements(cluster_dict[fam_id], protein_collection.records)
                 if absent_elements:
                     print("Skipping cluster %s due to absent element(%s)" % (fam_id, ",".join(absent_elements)))
                     number_of_skipped_clusters += 1
@@ -306,13 +320,13 @@ class SequenceClusterRoutines(SequenceRoutines):
                     out_file = "%s%s.fasta" % (fam_dir, out_prefix if out_prefix else fam_id)
                 else:
                     out_file = "%s/%s.fasta" % (out_dir, out_prefix if out_prefix else fam_id)
+                protein_collection.write(out_file, whitelist=cluster_dict[fam_id])
+                #SeqIO.write(SequenceRoutines.record_by_id_generator(protein_dict, cluster_dict[fam_id], verbose=True),
+                #            out_file, format=seq_format)
 
-                SeqIO.write(SequenceRoutines.record_by_id_generator(protein_dict, cluster_dict[fam_id], verbose=True),
-                            out_file, format=seq_format)
-
-        if (len(protein_files) > 1) or (parsing_mode == "index_db"):
-            os.remove("tmp.idx")
-        print ("%i of %i clusters were skipped due to absent elements" % (number_of_skipped_clusters, len(cluster_dict)))
+        #if (len(protein_files) > 1) or (parsing_mode == "index_db"):
+        #    os.remove("tmp.idx")
+        print("%i of %i clusters were skipped due to absent elements" % (number_of_skipped_clusters, len(cluster_dict)))
 
         return number_of_skipped_clusters
 

@@ -280,45 +280,49 @@ class CollectionSequence(FileRoutines):
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
 
-    def write(self, outfile, expression=None, max_symbols_per_line=60, whitelist=None):
+    def write(self, outfile, expression=None, out_id_expression=None, max_symbols_per_line=60, whitelist=None,
+              keep_file_open=False):
+        out_fd = self.metaopen(outfile, "w")
         if self.parsing_mode == "parse":
-            with self.metaopen(outfile, "w") as out_fd:
-                for seq_id in self.records:
-                    if whitelist:
-                        if seq_id not in whitelist:
-                            continue
-                    if expression:
-                        if not expression(seq_id, self.records[seq_id]):
-                            continue
-                    out_fd.write(">%s\n" % seq_id if seq_id not in self.description else ">%s %s\n" % (seq_id, self.description[seq_id]))
-                    length = self.seq_lengths[seq_id][0] if self.seq_lengths else len(self.records[seq_id])
-                    line_number = length // max_symbols_per_line
-                    index = 0
-                    while index < line_number:
-                        out_fd.write(self.records[seq_id][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
-                        index += 1
-                    if line_number * max_symbols_per_line < length:
-                        out_fd.write(self.records[seq_id][index*max_symbols_per_line:] + "\n")
-        if self.parsing_mode == "generator":
-            with self.metaopen(outfile, "w") as out_fd:
-                for seq_id, description, seq in self.records:
-                    if whitelist:
-                        if seq_id not in whitelist:
-                            continue
-                    if expression:
-                        if not expression(seq_id, seq):
-                            continue
-                    out_fd.write(">%s\n" % seq_id if not description else ">%s %s\n" % (seq_id, description))
-                    length = len(seq)
-                    line_number = length // max_symbols_per_line
-                    index = 0
-                    while index < line_number:
-                        out_fd.write(seq[index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
-                        index += 1
-                    if line_number * max_symbols_per_line < length:
-                        out_fd.write(seq[index*max_symbols_per_line:] + "\n")
+            for seq_id in whitelist if whitelist else self.records:
+                if expression:
+                    if not expression(seq_id, self.records[seq_id]):
+                        continue
+                out_seq_id = out_id_expression(seq_id) if out_id_expression else seq_id
+
+                out_fd.write(">%s\n" % out_seq_id if seq_id not in self.description else ">%s %s\n" % (out_seq_id, self.description[seq_id]))
+                length = self.seq_lengths[seq_id][0] if self.seq_lengths else len(self.records[seq_id])
+                line_number = length // max_symbols_per_line
+                index = 0
+                while index < line_number:
+                    out_fd.write(self.records[seq_id][index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
+                    index += 1
+                if line_number * max_symbols_per_line < length:
+                    out_fd.write(self.records[seq_id][index*max_symbols_per_line:] + "\n")
+
+        elif self.parsing_mode == "generator":
+            for seq_id, description, seq in self.records:
+                if whitelist:
+                    if seq_id not in whitelist:
+                        continue
+                if expression:
+                    if not expression(seq_id, seq):
+                        continue
+                out_seq_id = out_id_expression(seq_id) if out_id_expression else seq_id
+                out_fd.write(">%s\n" % out_seq_id if not description else ">%s %s\n" % (out_seq_id, description))
+                length = len(seq)
+                line_number = length // max_symbols_per_line
+                index = 0
+                while index < line_number:
+                    out_fd.write(seq[index*max_symbols_per_line:(index+1)*max_symbols_per_line] + "\n")
+                    index += 1
+                if line_number * max_symbols_per_line < length:
+                    out_fd.write(seq[index*max_symbols_per_line:] + "\n")
         else:
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
+
+        if not keep_file_open:
+            out_fd.close()
 
     def write_by_syn(self, outfile, syn_dict, max_symbols_per_line=60, absent_symbol="."):
         """

@@ -564,15 +564,10 @@ class CollectionVCF:
                                                               ])
             if self.parsing_mode == "coordinates_and_genotypes":
                 self.records = self.records[["POS"]]
-                #self.records.columns = pd.MultiIndex.from_arrays([["POS"], ["POS"], ["POS"]])
                 self.records = pd.concat([self.records] + sample_genotypes, axis=1)
             else:
                 self.records = self.records[["POS", "ID", "REF", "QUAL", "FILTER"]]
 
-                #self.records.columns = pd.MultiIndex.from_arrays([self.records.columns,
-                #                                                  self.records.columns,
-                #                                                  self.records.columns
-                #                                                  ])
                 alt.columns = pd.MultiIndex.from_arrays([["ALT"] * alt_colomn_number,
                                                          ["ALT"] * alt_colomn_number,
                                                          [i for i in range(0, alt_colomn_number)]])
