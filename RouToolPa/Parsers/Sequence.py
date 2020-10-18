@@ -4,7 +4,6 @@ Sequence Parser Module
 """
 __author__ = 'Sergei F. Kliver'
 
-
 import re
 from copy import deepcopy
 from collections import OrderedDict
@@ -12,11 +11,11 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from RouToolPa.Routines.Sequence import SequenceRoutines
+from RouToolPa.Routines.Sequence import FileRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 
-class CollectionSequence(SequenceRoutines):
+class CollectionSequence(FileRoutines):
 
     def __init__(self, in_file=None, records=None, description=None,
                  external_description=None,
@@ -91,8 +90,8 @@ class CollectionSequence(SequenceRoutines):
                                 print("Parsing %s" % seq_id)
                             yield seq_id, description, seq
 
-    def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta", black_list=(), white_list=(), verbose=False,
-                           ):
+    def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta",
+                                           black_list=(), white_list=(), verbose=False,):
         if format == "fasta":
             with self.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
@@ -121,7 +120,7 @@ class CollectionSequence(SequenceRoutines):
     def sequence_tuple_generator(self):
         if self.parsing_mode == "parse":
             for scaffold_id in self.scaffolds:
-                yield (scaffold_id, self.records[scaffold_id])
+                yield scaffold_id, self.records[scaffold_id]
 
     def reset_seq_generator(self):
         self.records = self.sequence_generator(self.seq_file, format=self.seq_file_format,
@@ -250,7 +249,7 @@ class CollectionSequence(SequenceRoutines):
     def get_merged_gaps_and_masking(self):
         if self.masking and self.gaps:
             merged = self.masking + self.gaps
-            merged.collapse_records(sort=False, verbose=True) # sorting is called during addition
+            merged.collapse_records(sort=False, verbose=True)  # sorting is called during addition
             return merged
         elif self.masking:
             return self.masking
@@ -305,6 +304,7 @@ class CollectionSequence(SequenceRoutines):
         :param syn_dict: dictionary with synonyms to be used for sequence ids.
                Note: sequence form collection will be written as many times as it appears in values of syn_dict
         :param max_symbols_per_line: Maximum symbols per line in output fasta
+        :param absent_symbol:
         :return:
         """
         if self.parsing_mode == "parse":
@@ -312,7 +312,6 @@ class CollectionSequence(SequenceRoutines):
                 for seq_id in syn_dict:
                     if syn_dict[seq_id] == absent_symbol:
                         continue
-                    #out_fd.write(">%s\n" % seq_id)
 
                     out_fd.write(">%s\n" % seq_id if syn_dict[seq_id] not in self.description else ">%s %s\n" % (seq_id, self.description[syn_dict[seq_id]]))
 
@@ -346,7 +345,7 @@ class CollectionSequence(SequenceRoutines):
         def count(scaffold_length):
             return self.count_window_number_in_scaffold(scaffold_length, window_size, window_step)
 
-        return self.length.apply(count)
+        return self.seq_lengths.apply(count)
 
     @staticmethod
     def expression_unmask(s):
@@ -377,6 +376,7 @@ class CollectionSequence(SequenceRoutines):
             return collection
 
     def calculate_p_distance(self):
+        from RouToolPa.Routines import SequenceRoutines
         if self.parsing_mode == "generator":
             raise ValueError("ERROR!!! P distance calculation was not implemented for generator mode!")
 
@@ -394,7 +394,7 @@ class CollectionSequence(SequenceRoutines):
                 if record_id_a == record_id_b:
                     continue
 
-                distance_df.loc[record_id_a, record_id_b] = distance_df.loc[record_id_b, record_id_a] = self.p_distance(self.records[record_id_a], self.records[record_id_b], seq_len)
+                distance_df.loc[record_id_a, record_id_b] = distance_df.loc[record_id_b, record_id_a] = SequenceRoutines.p_distance(self.records[record_id_a], self.records[record_id_b], seq_len)
 
         return distance_df
 
