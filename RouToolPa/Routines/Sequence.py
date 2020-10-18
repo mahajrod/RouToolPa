@@ -591,6 +591,9 @@ class SequenceRoutines(FileRoutines):
                     if entry in seq_id:
                         flag = True
                         break
+                else:
+                    flag = False
+
             return (not flag) if invert_match else flag
 
         if verbose:
