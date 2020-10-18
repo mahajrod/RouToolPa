@@ -133,7 +133,8 @@ class CollectionSequence(FileRoutines):
         if format not in self.formats:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         if parsing_mode == "generator":
-            print("Creating sequence generator...")
+            if verbose:
+                print("Creating sequence generator...")
             if seq_expression:
                 self.records = self.sequence_generator_with_expression(seq_file,
                                                                        seq_expression,
@@ -148,7 +149,8 @@ class CollectionSequence(FileRoutines):
                                                        white_list=white_list,
                                                        verbose=verbose)
         elif parsing_mode == "parse":
-            print("Parsing sequences...")
+            if verbose:
+                print("Parsing sequences...")
             self.records = OrderedDict()
             for seq_id, description, seq in self.sequence_generator(seq_file, format=format,
                                                                     black_list=black_list,
