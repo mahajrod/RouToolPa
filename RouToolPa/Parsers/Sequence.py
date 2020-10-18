@@ -66,7 +66,7 @@ class CollectionSequence(FileRoutines):
     def sequence_generator(self, sequence_file, format="fasta", black_list=(), white_list=(), verbose=False):
 
         if format == "fasta":
-            with self.metaopen(sequence_file, "r") as seq_fd:
+            with FileRoutines.metaopen(sequence_file, "r") as seq_fd:
                 seq_id = None
                 description = None
                 seq = ""
