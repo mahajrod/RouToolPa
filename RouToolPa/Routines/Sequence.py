@@ -23,6 +23,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Collections.General import TwoLvlDict, SynDict, IdList, IdSet
 from RouToolPa.Routines.File import FileRoutines
 
+from RouToolPa.Parsers.Sequence import CollectionSequence
 
 class SequenceRoutines(FileRoutines):
 
@@ -557,7 +558,7 @@ class SequenceRoutines(FileRoutines):
 
     def extract_sequence_by_ids(self, sequence_file, id_file, output_file, format="fasta", verbose=False,
                                 id_column_number=0, coincidence_mode="exact", allow_multiple_coincidence_report=False,
-                                syn_file=None, parsing_mode="parse", index_file="tmp.idx", invert_match=False):
+                                syn_file=None, parsing_mode="generator", invert_match=False):
 
         id_list = IdList()
 
@@ -582,9 +583,22 @@ class SequenceRoutines(FileRoutines):
                 converted_ids.append(syn_dict[entry])
             id_list = converted_ids
 
+        def extract(seq_id, seq):
+            if coincidence_mode == "exact":
+                flag = seq_id in id_list
+            else:
+                for entry in id_list:
+                    if entry in seq_id:
+                        flag = True
+                        break
+            return (not flag) if invert_match else flag
+
         if verbose:
             print("Parsing %s..." % (sequence_file if isinstance(id_file, str) else ",".join(id_file)))
 
+        coll_seq = CollectionSequence(in_file=sequence_file, parsing_mode=parsing_mode)
+        coll_seq.write(output_file, expression=extract, max_symbols_per_line=60)
+        """
         sequence_dict = self.parse_seq_file(sequence_file,parsing_mode, format=format, index_file=index_file) # SeqIO.index_db(tmp_index_file, sequence_file, format=format)
         SeqIO.write(self.record_by_id_generator(sequence_dict, id_list, verbose=verbose,
                                                 coincidence_mode=coincidence_mode,
@@ -593,7 +607,7 @@ class SequenceRoutines(FileRoutines):
                     output_file, format=format)
         if parsing_mode == "index_db":
             os.remove(index_file)
-
+        """
     def extract_sequences_by_length_from_file(self, input_file, output_file, min_len=1, max_len=None, format="fasta",
                                               tmp_index_file="tmp.idx", id_file=None, parsing_mode='parse'):
 
