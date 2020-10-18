@@ -30,7 +30,7 @@ class FileRoutines:
     @staticmethod
     def metaopen(filename, flags, buffering=None):
         if not isinstance(filename, str): # or isinstance(filename, gzip.GzipFile) or isinstance(filename, bz2.BZ2File):
-            if isinstance(file):
+            if isinstance(filename, file):
                 return filename
             else:
                 raise ValueError("ERROR!!! Not str of file object ")
@@ -882,9 +882,6 @@ class FileRoutines:
 
         if output_file:
             column_value_dict.write(output_file)
-
-        if verbose:
-            print("#Column %i (0-based) contains %i different values" % (column_number, len(column_value_set)))
 
         return column_value_dict
 
