@@ -11,7 +11,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from RouToolPa.Routines.Sequence import FileRoutines
+from RouToolPa.Routines.File import FileRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 
