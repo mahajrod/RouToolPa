@@ -205,7 +205,7 @@ class GenomeCov(Tool):
                                           np.min(window_coverage_list),
                                           np.max(window_coverage_list),
                                           uncovered,
-                                          float(uncovered) / float(scaffold_length)], )
+                                          float(uncovered) / float(window_size)], )
 
                     prev_scaffold = current_scaffold
                     coverage_list = [coverage]
@@ -225,7 +225,7 @@ class GenomeCov(Tool):
                                   np.min(window_coverage_list),
                                   np.max(window_coverage_list),
                                   uncovered,
-                                  float(uncovered)/float(scaffold_length)],)
+                                  float(uncovered)/float(window_size)],)
 
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
                                           columns=("scaffold", "scaffold_length", "window", "mean",
