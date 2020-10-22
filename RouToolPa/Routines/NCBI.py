@@ -713,12 +713,25 @@ temp_transcripts/                              Directory with downloaded transcr
         self.get_cds_for_proteins(pep_ids, output_prefix, download_chunk_size=download_chunk_size)
 
     @staticmethod
-    def get_taxonomy(taxa_list, output_file, email, input_type="latin"):
+    def safe_entrez_function(entrez_function, max_tries=10, *args, **kwargs):
+
+        for entry in range(0, max_tries):
+            try:
+                result = entrez_function(*args, **kwargs) #Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
+                if result:
+                    return result
+            except:
+                pass
+
+        return None
+
+    def get_taxonomy(self, taxa_list, output_file, email, input_type="latin", max_tries=10):
         Entrez.email = email
         out_file = open(output_file, "w")
         out_file.write("#species\trank\tlatin_name\tlineage\n")
 
         species_syn_dict = SynDict()
+
 
         if input_type == "latin":
             for taxon in taxa_list:
@@ -729,8 +742,15 @@ temp_transcripts/                              Directory with downloaded transcr
                     species_syn_dict[taxon] = []
                     for id in id_list:
                         print("\tHandling %s" % id)
-                        record = Entrez.read(Entrez.efetch(db="taxonomy", id=id, retmode="xml"))
+                        record = self.safe_entrez_function(Entrez.efetch, db="taxonomy", id=taxon, retmode="xml")
+                        if record:
+                            record = Entrez.read(record)
+                        else:
+                            continue
+                        #record = Entrez.read(Entrez.efetch(db="taxonomy", id=id, retmode="xml"))
                         #print record
+                        #if not record:
+                        #    continue
                         out_file.write("%s\t%s\t%s\t%s\n" % (taxon,
                                                              record[0]["Rank"],
                                                              record[0]['ScientificName'],
@@ -743,7 +763,12 @@ temp_transcripts/                              Directory with downloaded transcr
                 print("Handling %s" % taxon)
                 species_syn_dict[taxon] = []
                 #print taxon
-                record = Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
+
+                record = self.safe_entrez_function(Entrez.efetch, db="taxonomy", id=taxon, retmode="xml")
+                if record:
+                    record = Entrez.read(record)
+                else:
+                    continue
                 #print record
                 out_file.write("%s\t%s\t%s\t%s\n" % (taxon,
                                                      record[0]["Rank"],
