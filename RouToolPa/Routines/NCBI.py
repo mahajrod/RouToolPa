@@ -713,14 +713,18 @@ temp_transcripts/                              Directory with downloaded transcr
         self.get_cds_for_proteins(pep_ids, output_prefix, download_chunk_size=download_chunk_size)
 
     @staticmethod
-    def safe_entrez_function(entrez_function, max_tries=10, *args, **kwargs):
+    def safe_entrez_function(entrez_function, max_tries=10, **kwargs):
 
         for entry in range(0, max_tries):
             try:
-                result = entrez_function(*args, **kwargs) #Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
+                print(kwargs)
+                result = entrez_function(**kwargs) #Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
+                print("UUU")
+                print(result)
+                print(Entrez.read(result))
                 if result:
                     return result
-            except:
+            except ValueError:
                 pass
 
         return None
@@ -732,7 +736,6 @@ temp_transcripts/                              Directory with downloaded transcr
 
         species_syn_dict = SynDict()
 
-
         if input_type == "latin":
             for taxon in taxa_list:
                 print("Handling %s" % taxon)
@@ -742,7 +745,8 @@ temp_transcripts/                              Directory with downloaded transcr
                     species_syn_dict[taxon] = []
                     for id in id_list:
                         print("\tHandling %s" % id)
-                        record = self.safe_entrez_function(Entrez.efetch, db="taxonomy", id=taxon, retmode="xml")
+                        print("AAAAA")
+                        record = self.safe_entrez_function(Entrez.efetch, max_tries=max_tries, db="taxonomy", id=id, retmode="xml")
                         if record:
                             record = Entrez.read(record)
                         else:
