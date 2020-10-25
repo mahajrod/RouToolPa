@@ -44,7 +44,7 @@ class HaplotypeRoutines(SequenceClusterRoutines):
     @staticmethod
     def prepare_template_for_popart(alignment_file, haplotype_fam_file, output_file):
         from RouToolPa.Parsers.Sequence import CollectionSequence
-        haplotype_dict = SynDict(filename=haplotype_fam_file, split_values=True)
+
 
         sequence_collection = CollectionSequence(in_file=alignment_file, parsing_mode="parse")
         sequence_collection.get_stats_and_features(count_gaps=False, sort=False)
@@ -56,13 +56,17 @@ class HaplotypeRoutines(SequenceClusterRoutines):
 
         haplotype_selected_sequence_dict = SynDict()
         haplotypes_without_sequences_ids = IdList()
-        for haplotype_id in haplotype_dict:
-            for sequence_id in haplotype_dict[haplotype_id]:
-                if sequence_id in sequence_collection.records:
-                    haplotype_selected_sequence_dict[haplotype_id] = sequence_id
-                    break
-            else:
-                haplotypes_without_sequences_ids.append(haplotype_id)
+        if haplotype_fam_file:
+            haplotype_dict = SynDict(filename=haplotype_fam_file, split_values=True)
+            for haplotype_id in haplotype_dict:
+                for sequence_id in haplotype_dict[haplotype_id]:
+                    if sequence_id in sequence_collection.records:
+                        haplotype_selected_sequence_dict[haplotype_id] = sequence_id
+                        break
+                else:
+                    haplotypes_without_sequences_ids.append(haplotype_id)
+        else:
+            haplotype_dict = dict([(entry, entry) for entry in sequence_collection.scaffolds])
 
         with open(output_file, "w") as out_fd:
             #out_fd.write("#NEXUS\nBEGIN TAXA;\nDIMENSIONS\nNTAX = %i;\nTAXLABELS\n%s\n;\nEND;\n\n" % (len(haplotype_selected_sequence_dict),

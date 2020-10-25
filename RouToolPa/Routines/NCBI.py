@@ -717,11 +717,7 @@ temp_transcripts/                              Directory with downloaded transcr
 
         for entry in range(0, max_tries):
             try:
-                print(kwargs)
                 result = entrez_function(**kwargs) #Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
-                print("UUU")
-                print(result)
-                print(Entrez.read(result))
                 if result:
                     return result
             except ValueError:
@@ -745,16 +741,12 @@ temp_transcripts/                              Directory with downloaded transcr
                     species_syn_dict[taxon] = []
                     for id in id_list:
                         print("\tHandling %s" % id)
-                        print("AAAAA")
                         record = self.safe_entrez_function(Entrez.efetch, max_tries=max_tries, db="taxonomy", id=id, retmode="xml")
                         if record:
                             record = Entrez.read(record)
                         else:
                             continue
-                        #record = Entrez.read(Entrez.efetch(db="taxonomy", id=id, retmode="xml"))
-                        #print record
-                        #if not record:
-                        #    continue
+                        
                         out_file.write("%s\t%s\t%s\t%s\n" % (taxon,
                                                              record[0]["Rank"],
                                                              record[0]['ScientificName'],

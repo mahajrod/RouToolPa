@@ -13,7 +13,7 @@ from mpl_toolkits.axes_grid1.inset_locator import BboxPatch, BboxConnector, Bbox
 from matplotlib.lines import Line2D
 from matplotlib.colors import LogNorm
 
-from matplotlib_venn import venn2, venn3
+from venn import venn
 
 import numpy as np
 
@@ -1001,9 +1001,9 @@ class MatplotlibRoutines:
     def venn_diagram_from_sets(set1, set2, set3=None, set_labels=None, set_colors=None,
                                output_prefix=None, extensions=("png",), title=None):
         if set3 is None:
-            diagramm = venn2(subsets=(set1, set2), set_labels=set_labels, set_colors=set_colors)
+            diagramm = venn(subsets=(set1, set2), set_labels=set_labels, set_colors=set_colors)
         else:
-            diagramm = venn3(subsets=(set1, set2, set3), set_labels=set_labels, set_colors=set_colors)
+            diagramm = venn(subsets=(set1, set2, set3), set_labels=set_labels, set_colors=set_colors)
 
         if title:
             plt.title(title)
