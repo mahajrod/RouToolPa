@@ -1,5 +1,6 @@
 __author__ = 'mahajrod'
 import os
+import sys
 
 from itertools import cycle, islice
 from collections import Iterable
@@ -12,8 +13,11 @@ from matplotlib.transforms import Bbox, TransformedBbox, blended_transform_facto
 from mpl_toolkits.axes_grid1.inset_locator import BboxPatch, BboxConnector, BboxConnectorPatch
 from matplotlib.lines import Line2D
 from matplotlib.colors import LogNorm
+if sys.version_info[0] == 3:
+    from venn import venn
+elif sys.version_info[0] == 2:
+    import pyvenn as venn
 
-from venn import venn
 
 import numpy as np
 

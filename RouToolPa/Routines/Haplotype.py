@@ -4,6 +4,7 @@ import re
 import sys
 import math
 import pickle
+import pandas as pd
 
 if sys.version_info[0] == 2:
     from string import maketrans
@@ -42,13 +43,12 @@ class HaplotypeRoutines(SequenceClusterRoutines):
                                                                    out_file=indistinguishable_haplotypes_fam)
 
     @staticmethod
-    def prepare_template_for_popart(alignment_file, haplotype_fam_file, output_file):
+    def prepare_template_for_popart(alignment_file, output_file,  haplotype_fam_file=None, traits_file=None,
+                                    whitelist_file=None):
         from RouToolPa.Parsers.Sequence import CollectionSequence
-
-
         sequence_collection = CollectionSequence(in_file=alignment_file, parsing_mode="parse")
         sequence_collection.get_stats_and_features(count_gaps=False, sort=False)
-
+        whitelist = IdSet(filename=whitelist_file)
         alignment_len = sequence_collection.seq_lengths["length"].unique()
         if len(alignment_len) > 1:
             raise ValueError("ERROR!!! Sequences in alignment have different lengths!")
@@ -56,6 +56,9 @@ class HaplotypeRoutines(SequenceClusterRoutines):
 
         haplotype_selected_sequence_dict = SynDict()
         haplotypes_without_sequences_ids = IdList()
+
+        traits_df = pd.read_csv(traits_file, sep="\t", index_col=0) if traits_file else pd.DataFrame()
+
         if haplotype_fam_file:
             haplotype_dict = SynDict(filename=haplotype_fam_file, split_values=True)
             for haplotype_id in haplotype_dict:
@@ -66,23 +69,36 @@ class HaplotypeRoutines(SequenceClusterRoutines):
                 else:
                     haplotypes_without_sequences_ids.append(haplotype_id)
         else:
-            haplotype_dict = dict([(entry, entry) for entry in sequence_collection.scaffolds])
+            haplotype_dict = dict([(entry, [entry]) for entry in sequence_collection.scaffolds])
+            haplotype_selected_sequence_dict = dict([(entry, entry) for entry in sequence_collection.scaffolds])
+
+        final_haplotype_set = (set(haplotype_selected_sequence_dict.keys()) & whitelist) if whitelist else set(haplotype_selected_sequence_dict.keys())
 
         with open(output_file, "w") as out_fd:
             #out_fd.write("#NEXUS\nBEGIN TAXA;\nDIMENSIONS\nNTAX = %i;\nTAXLABELS\n%s\n;\nEND;\n\n" % (len(haplotype_selected_sequence_dict),
             #                                                                                          "\n".join(haplotype_selected_sequence_dict.keys())))
             out_fd.write("#NEXUS\n\n")
-            out_fd.write("BEGIN DATA;\n\tDIMENSIONS NTAX=%i NCHAR=%i;\n\tFORMAT DATATYPE=DNA MISSING=? GAP=- MATCHCHAR=. ;\n" % (len(haplotype_selected_sequence_dict),
-                                                                                                                             alignment_len))
+            out_fd.write("BEGIN DATA;\n\tDIMENSIONS NTAX=%i NCHAR=%i;\n\tFORMAT DATATYPE=DNA MISSING=? GAP=- MATCHCHAR=. ;\n" % (len(final_haplotype_set),
+                                                                                                                                 alignment_len))
             out_fd.write("\tMATRIX\n")
-            for haplotype_id in haplotype_selected_sequence_dict:
+
+            for haplotype_id in final_haplotype_set:
                 out_fd.write("\t\t%s %s\n" % (haplotype_id, sequence_collection.records[haplotype_selected_sequence_dict[haplotype_id]]))
             out_fd.write("\t;\nEND;\n\n")
 
-            out_fd.write("BEGIN TRAITS;\n\tDimensions NTRAITS=1;\n\tFormat labels=yes missing=? separator=Comma;\n")
-            out_fd.write("\tTraitLabels Area;\n")
-            out_fd.write("\tMATRIX\n")
-            for haplotype_id in haplotype_selected_sequence_dict:
-                out_fd.write("\t\t%s %i\n" % (haplotype_id, len(haplotype_dict[haplotype_id])))
+            if not traits_df.empty:
+                traits_number = len(traits_df.columns)
+                out_fd.write("BEGIN TRAITS;\n\tDimensions NTRAITS={0};\n\tFormat labels=yes missing=? separator=Comma;\n".format(traits_number))
+                out_fd.write("\tTraitLabels {0};\n".format(" ".join(traits_df.columns)))
+                out_fd.write("\tMATRIX\n")
+                for haplotype_id in final_haplotype_set:
+                    out_fd.write("\t\t%s %s\n" % (haplotype_id,
+                                                  ",".join(map(str, traits_df.loc[haplotype_id])) if haplotype_id in traits_df.index else ("0," * traits_number)[:-1]))
+            else:
+                out_fd.write("BEGIN TRAITS;\n\tDimensions NTRAITS=1;\n\tFormat labels=yes missing=? separator=Comma;\n")
+                out_fd.write("\tTraitLabels Area;\n")
+                out_fd.write("\tMATRIX\n")
+                for haplotype_id in final_haplotype_set:
+                    out_fd.write("\t\t%s %i\n" % (haplotype_id, len(haplotype_dict[haplotype_id])))
             out_fd.write("\t;\nEND;\n\n")
 

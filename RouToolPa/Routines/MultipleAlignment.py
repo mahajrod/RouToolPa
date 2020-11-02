@@ -1,6 +1,7 @@
 __author__ = 'mahajrod'
 import os
 from collections import OrderedDict
+from functools import partial
 import numpy as np
 import pandas as pd
 from Bio import SeqIO, AlignIO
@@ -1021,18 +1022,83 @@ class MultipleAlignmentRoutines(SequenceRoutines):
         for i in range(0, len(string_a)):
             if string_a[i] != string_b[i]:
                 hamming += 1
+        return hamming
+
+    @staticmethod
+    def hamming_multinucleotide_indels(string_a, string_b, gap_symbol="-"):
+        hamming = 0
+        indel_len = 0
+        indel_seq = 0
+
+        for i in range(0, len(string_a)):
+            if string_a[i] != string_b[i]:
+                if string_a[i] == gap_symbol:
+                    if indel_len == 0:
+                        indel_seq = 0
+                        indel_len = 1
+                    else:
+                        if indel_seq == 1:
+                            hamming += 1
+                            indel_len  = 1
+                            indel_seq = 0
+                        else:
+                            indel_len += 1
+                elif string_b[i] == gap_symbol:
+                    if indel_len == 0:
+                        indel_seq = 1
+                        indel_len = 1
+                    else:
+                        if indel_seq == 0:
+                            hamming += 1
+                            indel_len  = 1
+                            indel_seq = 1
+                        else:
+                            indel_len += 1
+                else:
+                    if indel_len == 0:
+                        hamming += 1
+                    else:
+                        hamming += 2
+                        indel_len = 0
+            else:
+                if (indel_len > 0) and (string_a[i] != gap_symbol):
+                    hamming += 1
+                    indel_len = 0
+            print(string_a[i], string_b[i], hamming, indel_len)
+        if indel_len > 0:
+            hamming += 1
+        print(hamming)
+        return hamming
+
+    @staticmethod
+    def hamming_no_indels(string_a, string_b, gap_symbol="-"):
+        hamming = 0
+        for i in range(0, len(string_a)):
+            if string_a[i] != string_b[i]:
+                if (string_a[i] != gap_symbol) and (string_b[i] != gap_symbol):
+                    hamming += 1
 
         return hamming
 
-    def get_pairwise_hamming(self, records_dict, output_prefix=None, min_distance=None):
+    def get_pairwise_hamming(self, records_dict, output_prefix=None, min_distance=None,
+                             count_indels=True, gap_symbol="-",
+                             multinucleotide_indels=False):
         records_id_list = list(records_dict.keys())
         record_number = len(records_id_list)
         distance_array = np.zeros((record_number, record_number))
         low_distance_list = []
 
+        if count_indels:
+            if multinucleotide_indels:
+                haming_func = partial(self.hamming_multinucleotide_indels, gap_symbol=gap_symbol)
+            else:
+                haming_func = self.hamming
+        else:
+            haming_func = partial(self.hamming_no_indels, gap_symbol=gap_symbol)
+
         for i in range(0, record_number):
             for j in range(i+1, record_number):
-                distance_array[j][i] = distance_array[i][j] = self.hamming(records_dict[records_id_list[i]], records_dict[records_id_list[j]])
+                distance_array[j][i] = distance_array[i][j] = haming_func(records_dict[records_id_list[i]], records_dict[records_id_list[j]])
                 if min_distance and (distance_array[i][j] <= min_distance):
                     low_distance_list.append([records_id_list[i], records_id_list[j], distance_array[i][j]])
 
