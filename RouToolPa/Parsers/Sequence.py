@@ -176,6 +176,7 @@ class CollectionSequence(FileRoutines):
                                count_gaps=True, sort=True, min_gap_length=1):
         length_list = []
         gaps_list = []
+
         if self.parsing_mode == "generator":
             for seq_id, description, seq in self.records:
                 length_list.append([seq_id, len(seq)])
@@ -209,21 +210,24 @@ class CollectionSequence(FileRoutines):
         for threshold in thresholds_list:
             stats[threshold] = OrderedDict()
             lengths_df = self.seq_lengths[self.seq_lengths["length"] >= threshold].copy()
-            lengths_df["cum_length"] = lengths_df["length"].cumsum()
-            half_length = float(lengths_df["cum_length"][-1]) / 2
-            lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
-            middle_element_index = lengths_df["cumlen_longer"].idxmax()
-            L50 = lengths_df.index.get_loc(middle_element_index) + 1
-            N50 = lengths_df["length"][middle_element_index]
+            not_empty = not lengths_df.empty
+            if not_empty:
+                lengths_df["cum_length"] = lengths_df["length"].cumsum()
+                half_length = float(lengths_df["cum_length"][-1]) / 2
+                lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
+                middle_element_index = lengths_df["cumlen_longer"].idxmax()
+                L50 = lengths_df.index.get_loc(middle_element_index) + 1
+                N50 = lengths_df["length"][middle_element_index]
 
-            stats[threshold]["Total length"] = lengths_df["length"].sum()
-            stats[threshold]["Total scaffolds"] = len(lengths_df["length"])
-            stats[threshold]["Longest scaffold"] = lengths_df["length"][0]
-            stats[threshold]["L50"] = L50
-            stats[threshold]["N50"] = N50
+
+            stats[threshold]["Total length"] = lengths_df["length"].sum() if not_empty else 0
+            stats[threshold]["Total scaffolds"] = len(lengths_df["length"]) if not_empty else 0
+            stats[threshold]["Longest scaffold"] = lengths_df["length"][0] if not_empty else 0
+            stats[threshold]["L50"] = L50 if not_empty else 0
+            stats[threshold]["N50"] = N50 if not_empty else 0
             if count_gaps:
                 gaps_df = self.gaps.records[self.gaps.records.index.isin(lengths_df.index)]
-                stats[threshold]["Ns"] = sum(gaps_df["end"] - gaps_df["start"])
+                stats[threshold]["Ns"] = sum(gaps_df["end"] - gaps_df["start"]) if not_empty else 0
 
         stats = pd.DataFrame.from_dict(stats)
         self.stats = stats

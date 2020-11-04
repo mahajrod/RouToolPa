@@ -175,7 +175,6 @@ class GenomeCov(Tool):
         if verbose:
             print(stats)
 
-
     def get_coverage_stats_in_windows(self, coverage_file, window_size, output, window_step=None,
                                       buffering=None):
         win_step = window_size if window_step is None else window_step
