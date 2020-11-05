@@ -35,9 +35,9 @@ class FileRoutines:
             else:
                 raise ValueError("ERROR!!! Not file object or str: {}".format(str(filename)))
         elif filename[-3:] == ".gz":
-            return gzip.open(filename, flags)
+            return gzip.open(filename, flags + ("t" if "b" not in flags else ""))
         elif filename[-4:] == ".bz2":
-            return bz2.open(filename, flags)
+            return bz2.open(filename, flags + ("t" if "b" not in flags else ""))
         else:
             if buffering is not None:
                 return open(filename, flags, buffering=buffering)
