@@ -181,6 +181,7 @@ class GenomeCov(Tool):
         stats = []
 
         with self.metaopen(coverage_file, "r", buffering=buffering) as in_fd:
+            print(prev_scaffold, position, coverage)
             prev_scaffold, position, coverage = in_fd.readline().strip().split("\t")
             coverage_list = [int(coverage)]
             for line in in_fd:
