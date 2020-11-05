@@ -33,7 +33,7 @@ class RecordCAFE():
         features = self.tree.features - set(["support", "name", "dist"])
         for node in self.tree.traverse():
             list_of_features = [eval("node.%s" % feature) for feature in features]
-            list_of_features = map(lambda x: str(x) if x is not None else ".", list_of_features)
+            list_of_features = list(map(lambda x: str(x) if x is not None else ".", list_of_features))
             node_string += "\t" + ",".join(list_of_features)
         return node_string
 
@@ -141,7 +141,7 @@ class ReportCAFE():
                 data_format2[0] = data_format2[0][1:-1]
                 for i in range(1, len(data_format2)):
                     data_format2[i] = data_format2[i][:-1]
-                data_format2 = map(lambda x: int(x), data_format2)
+                data_format2 = list(map(lambda x: int(x), data_format2))
                 for data_type in [float, int, int, int]:
                     name, data = report_fd.readline().strip().split(":")
                     data = self.split_format1(data, data_type=data_type)
@@ -193,7 +193,7 @@ class ReportCAFE():
         format1 = []
         #print tmp_format1
         for i in range(0, len(tmp_format1)):
-            format1 += map(lambda x: None if x == '-' else data_type(x), tmp_format1[i].split(","))
+            format1 += list(map(lambda x: None if x == '-' else data_type(x), tmp_format1[i].split(",")))
         return format1
 
     def convert(self, out_file, output_type="tree"):

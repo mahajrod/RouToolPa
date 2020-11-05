@@ -44,7 +44,7 @@ class TwoLvlDict(OrderedDict):
                             if split_values:
                                 value = value.split(value_sep)
                                 if value_expression:
-                                    value = map(value_expression, value)
+                                    value = list(map(value_expression, value))
                             else:
                                 if value_expression:
                                     value = value_expression(value)

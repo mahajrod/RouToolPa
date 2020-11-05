@@ -224,7 +224,7 @@ class MetadataVCF(OrderedDict):
         if key == "contig":
             if "contig" not in self:
                 self["contig"] = OrderedDict({})
-            value = map(self._split_by_equal_sign, self._split_by_comma_sign(value[1:-1]))
+            value = list(map(self._split_by_equal_sign, self._split_by_comma_sign(value[1:-1])))
             for entry_tuple in value:
                 if entry_tuple[0] == "length":
                     self["contig"][value[0][1]] = int(entry_tuple[1])

@@ -67,7 +67,7 @@ class HaploviewCollection(Collection):
                     current_chr = chr
                 second_snp = tmp[1].split(":")[1]
                 if parsing_mode == "full":
-                    tmp = [int(first_snp), int(second_snp)] + map(float, tmp[2:])
+                    tmp = [int(first_snp), int(second_snp)] + list(map(float, tmp[2:]))
                     self.parsing_mode = "full"
                 elif parsing_mode == "short":
                     tmp = [int(first_snp), int(second_snp), float(tmp[2]), float(tmp[4])]
