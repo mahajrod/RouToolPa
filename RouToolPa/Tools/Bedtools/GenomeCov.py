@@ -228,7 +228,7 @@ class GenomeCov(Tool):
 
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
                                           columns=("scaffold", "scaffold_length", "window", "mean",
-                                                   "median", "min", "max", "uncovered", "uncovered,%"))
+                                                   "median", "min", "max", "uncovered", "uncovered,fraction"))
         stats.to_csv(output, sep="\t", header=True, index=True)
 
     @staticmethod
