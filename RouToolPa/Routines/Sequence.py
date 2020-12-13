@@ -252,14 +252,14 @@ class SequenceRoutines(FileRoutines):
                     if (bunch_length >= max_length) or (len(bunch_list) == max_seq_number):
                         region_list.append(bunch_list)
                         for scaffold in bunch_list:
-                            scaffold_to_region_correspondence_dict[scaffold] = [region_index]
+                            scaffold_to_region_correspondence_dict[scaffold[0]] = [region_index]
                         region_index += 1
                         bunch_length = 0
                         bunch_list = []
             if bunch_list:
                 region_list.append(bunch_list)
                 for scaffold in bunch_list:
-                    scaffold_to_region_correspondence_dict[scaffold] = [region_index]
+                    scaffold_to_region_correspondence_dict[scaffold[0]] = [region_index]
                 region_index += 1
                 bunch_length = 0
                 bunch_list = []
