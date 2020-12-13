@@ -243,11 +243,11 @@ class SequenceRoutines(FileRoutines):
 
             for region in len_dict:
                 if len_dict[region] >= max_length:
-                    region_list.append([region])
+                    region_list.append([[region]])
                     scaffold_to_region_correspondence_dict[region] = [region_index]
                     region_index += 1
                 else:
-                    bunch_list.append(region)
+                    bunch_list.append([region])
                     bunch_length += len_dict[region]
                     if (bunch_length >= max_length) or (len(bunch_list) == max_seq_number):
                         region_list.append(bunch_list)
@@ -268,8 +268,6 @@ class SequenceRoutines(FileRoutines):
             for region in len_dict:
                 #print region
                 if len(remnant_seq_list) == max_seq_number:
-                    #print region_list
-                    #print remnant_seq_list
                     region_list.append(remnant_seq_list)
                     for remnant_entry in remnant_seq_list:
                         if remnant_entry[0] in scaffold_to_region_correspondence_dict:
@@ -361,7 +359,7 @@ class SequenceRoutines(FileRoutines):
                             if region_file_format == 'simple':
                                 if len(region) == 3:
                                     out_fd.write("%s\t%s\t%s\n" % (region[0], region[1], region[2]))
-                                elif len(region) == 1:
+                                elif len(region) == 1 :
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
                             elif region_file_format == 'GATK':
@@ -370,7 +368,6 @@ class SequenceRoutines(FileRoutines):
                                 elif len(region) == 1:
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
-
                 index += 1
             scaffold_to_region_correspondence_dict.write("%s/SCAFFOLD_TO_REGION.correspondence" % output_dir,
                                                          splited_values=True)
