@@ -231,7 +231,10 @@ class SequenceRoutines(FileRoutines):
             bins = bins if bins[-1] == number_of_scaffolds else np.append(bins, number_of_scaffolds)
 
             for i in range(0, len(bins)-1):
-                region_list.append(key_list[bins[i]:bins[i+1]])
+                bunch_list = []
+                for region in key_list[bins[i]:bins[i+1]]:
+                    bunch_list.append([region, 1, len(len_dict[region])])
+                region_list.append(bunch_list)
                 for scaffold in key_list[bins[i]:bins[i+1]]:
                     scaffold_to_region_correspondence_dict[scaffold] = [i]
 
