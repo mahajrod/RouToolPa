@@ -209,8 +209,6 @@ class SequenceRoutines(FileRoutines):
         
         number_of_scaffolds = len(len_dict)
 
-        print(len_dict)
-
         if white_list_scaffolds:
             tmp_dict = OrderedDict()
             for scaffold in len_dict:
@@ -238,6 +236,7 @@ class SequenceRoutines(FileRoutines):
                     scaffold_to_region_correspondence_dict[scaffold] = [i]
 
         elif not split_scaffolds:
+            print("BBBB")
             bunch_length = 0
             bunch_list = []
 
