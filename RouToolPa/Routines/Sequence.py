@@ -267,7 +267,6 @@ class SequenceRoutines(FileRoutines):
         else:
             remnant_seq_length = 0
             for region in len_dict:
-                #print region
                 if len(remnant_seq_list) == max_seq_number:
                     region_list.append(remnant_seq_list)
                     for remnant_entry in remnant_seq_list:
@@ -287,7 +286,6 @@ class SequenceRoutines(FileRoutines):
                         for i in range(0, len(points) - 1):
                             region_list.append([[region, points[i] + 1, points[i+1]]])
 
-                        #remnant = [region, points[-1] + 1, len_dict[region]]
                         remnant_length = len_dict[region] - points[-1]
                         if remnant_length + max_length <= max_length_soft_threshold:
                             region_list[-1][0][2] = len_dict[region]
@@ -297,42 +295,28 @@ class SequenceRoutines(FileRoutines):
                             scaffold_to_region_correspondence_dict[region].append(region_index)
                             region_index += 1
                     else:
-                        #remnant = [region, 1, len_dict[region]]
-                        #remnant_length = len_dict[region]
+
                         region_list.append([[region, 1, len_dict[region]]])
                         scaffold_to_region_correspondence_dict[region] = [region_index]
                         region_index += 1
                     continue
                 else:
-                    #print "BBBBB"
-
                     remnant = [region, 1, len_dict[region]]
                     remnant_length = len_dict[region]
-                    #print remnant, remnant_length
-                    #print "\n"
 
                 if remnant_seq_length + remnant_length <= max_length_soft_threshold:
-                    #print "AAAAA"
-                    #print remnant_seq_length, remnant_length, max_length_soft_threshold
                     remnant_seq_list.append(remnant)
                     remnant_seq_length += remnant_length
-                    #print remnant_seq_list
-                    #print "\n"
                 else:
                     region_list.append(remnant_seq_list)
                     for remnant_entry in remnant_seq_list:
-                        #print scaffold
                         if remnant_entry[0] in scaffold_to_region_correspondence_dict:
                             scaffold_to_region_correspondence_dict[remnant_entry[0]].append(region_index)
                         else:
                             scaffold_to_region_correspondence_dict[remnant_entry[0]] = [region_index]
                     region_index += 1
-                    #print "CCCCCCCCC"
                     remnant_seq_list = [remnant]
                     remnant_seq_length = remnant_length
-                    #print remnant_seq_list
-                    #print remnant_seq_length
-                    #print "\n"
             else:
                 if remnant_seq_list:
                     region_list.append(remnant_seq_list)
