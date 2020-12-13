@@ -209,6 +209,8 @@ class SequenceRoutines(FileRoutines):
         
         number_of_scaffolds = len(len_dict)
 
+        prin(len_dict)
+
         if white_list_scaffolds:
             tmp_dict = OrderedDict()
             for scaffold in len_dict:
