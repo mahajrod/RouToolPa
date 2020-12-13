@@ -159,17 +159,34 @@ class SequenceRoutines(FileRoutines):
     def prepare_region_list_by_length(self, max_length=500000, max_seq_number=10,
                                       length_dict=None, reference=None, parsing_mode="parse", output_dir=None,
                                       split_scaffolds=True, min_scaffold_length=None, black_list_scaffolds=None,
+                                      white_list_scaffolds=None,
                                       region_file_format='simple'):
 
         if reference[-4:] == ".fai":
+            #len_df = pd.read_csv(sep="\t", filename=reference, use_cols=(0, 1), index_col=0,
+            #                     col_names=("scaffold", "length"), header=None)
             raw_len_dict = SynDict(filename=reference, key_index=0, value_index=1, expression=int)
         else:
             raw_len_dict = length_dict if length_dict else self.get_lengths(record_dict=self.parse_seq_file(reference,
                                                                                                         mode=parsing_mode),
                                                                         out_file=None,
                                                                         close_after_if_file_object=False)
-        len_dict = OrderedDict()
 
+            #len_df = pd.DataFrame.from_dict(raw_len_dict, orient="index", columns=("scaffold", "length"))
+
+        len_dict = OrderedDict()
+        """
+        if black_list_scaffolds:
+            len_df = len_df[~len_df.index.isin(black_list_scaffolds)]
+
+        if white_list_scaffolds:
+            len_df = len_df[len_df.index.isin(white_list_scaffolds)]
+
+        if min_scaffold_length:
+            len_df = len_df[len_df["length"] >= min_scaffold_length]
+
+        number_of_scaffolds = len(len_df)
+        """ 
         if black_list_scaffolds and min_scaffold_length:
             for scaffold_id in raw_len_dict:
                 if (scaffold_id in black_list_scaffolds) or (raw_len_dict[scaffold_id] < min_scaffold_length):
@@ -187,11 +204,18 @@ class SequenceRoutines(FileRoutines):
                 if raw_len_dict[scaffold_id] < min_scaffold_length:
                     continue
                 len_dict[scaffold_id] = raw_len_dict[scaffold_id]
-
         else:
             len_dict = raw_len_dict
-
+        
         number_of_scaffolds = len(len_dict)
+
+        if white_list_scaffolds:
+            tmp_dict = OrderedDict()
+            for scaffold in len_dict:
+                if scaffold in white_list_scaffolds:
+                    tmp_dict[scaffold] = len_dict[scaffold]
+            len_dict = tmp_dict
+
         max_length_soft_threshold = None if max_length is None else int(1.5 * max_length)
         region_list = []
 
@@ -663,17 +687,32 @@ class SequenceRoutines(FileRoutines):
                                    scaffold_black_list=[],
                                    sort_scaffolds=False,
                                    scaffold_ordered_list=None,
-                                   scaffold_white_list=[]):
+                                   scaffold_white_list=[],
+                                   scaffold_length_dict=None,
+                                   length_column_index=0,
+                                   min_length=None):
         white_set = set(scaffold_white_list)
         black_set = set(scaffold_black_list)
+        length_set = None
 
         scaffold_set = set(raw_scaffold_list)
+
+        if scaffold_length_dict and min_length:
+            if isinstance(scaffold_length_dict, pd.DataFrame):
+               length_df = scaffold_length_dict
+            else:
+                length_df = pd.DataFrame.from_dict(scaffold_length_dict, orient="index")
+            length_set = set(length_df[length_df.iloc[:, length_column_index] >= min_length].index)
 
         if white_set:
             scaffold_set = scaffold_set & white_set
 
         if black_set:
             scaffold_set = scaffold_set - black_set
+
+        if length_set is not None:
+
+            scaffold_set = scaffold_set & length_set
 
         scaffold_list = list(scaffold_set)
 
