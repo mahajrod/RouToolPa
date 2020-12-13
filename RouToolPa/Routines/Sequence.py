@@ -233,7 +233,7 @@ class SequenceRoutines(FileRoutines):
             for i in range(0, len(bins)-1):
                 bunch_list = []
                 for region in key_list[bins[i]:bins[i+1]]:
-                    bunch_list.append([region, 1, len(len_dict[region])])
+                    bunch_list.append([region, 1, len_dict[region]])
                 region_list.append(bunch_list)
                 for scaffold in key_list[bins[i]:bins[i+1]]:
                     scaffold_to_region_correspondence_dict[scaffold] = [i]
