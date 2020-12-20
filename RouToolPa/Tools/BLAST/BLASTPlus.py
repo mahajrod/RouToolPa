@@ -82,7 +82,7 @@ class BLASTPlus(Tool):
         return hits
 
 
-class BLASTn(Tool, BLASTPlus):
+class BLASTn(BLASTPlus):
     """
     USAGE
       blastn [-h] [-help] [-import_search_strategy filename]
@@ -390,7 +390,7 @@ class BLASTn(Tool, BLASTPlus):
                             combine_output_to_single_file=combine_output_to_single_file)
 
 
-class BLASTp(Tool, BLASTPlus):
+class BLASTp(BLASTPlus):
     def __init__(self, path="", max_threads=4):
         Tool.__init__(self, "blastp", path=path, max_threads=max_threads)
 
