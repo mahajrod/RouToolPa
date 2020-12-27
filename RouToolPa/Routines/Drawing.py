@@ -1011,7 +1011,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                         data["y1"] = diff_strand_records_df[last_collection.query_end_syn] + query_length_df.loc[query_scaffold_id]["cum_start"] - 1
                         data["x2"] = diff_strand_records_df[last_collection.target_end_syn] + target_length_df.loc[target_scaffold_id]["cum_start"] - 1
                         data["y2"] = diff_strand_records_df[last_collection.query_start_syn] + query_length_df.loc[query_scaffold_id]["cum_start"] - 1
-                    print(data)
+                    #print(data)
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
 
