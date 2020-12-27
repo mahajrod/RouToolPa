@@ -937,7 +937,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                             & (collection.records[collection.query_strand_syn] == collection.records[collection.target_strand_syn])],
                         collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
                                             & collection.records[collection.query_id_syn].isin([query_scaffold_id])
-                                            & (collection.records[collection.query_strand_syn] != collection.records[collection.query_target_syn])])
+                                            & (collection.records[collection.query_strand_syn] != collection.records[collection.target_strand_syn])])
 
         elif isinstance(last_collection, CollectionPSL):
             def get_strand_specific_records(collection):
