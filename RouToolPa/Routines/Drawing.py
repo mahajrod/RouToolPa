@@ -32,6 +32,8 @@ from RouToolPa.Collections.General import SynDict
 from RouToolPa.Routines.Matplotlib import MatplotlibRoutines
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Parsers.DESeq2 import CollectionPWC
+from RouToolPa.Parsers.LAST import CollectionLast
+from RouToolPa.Parsers.PSL import CollectionPSL
 
 
 class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
@@ -928,45 +930,88 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\t\tAdding labels finished..." % str(datetime.datetime.now()))
         print("%s\t\tDrawing alignments..." % str(datetime.datetime.now()))
 
+        if isinstance(last_collection, CollectionLast):
+            def get_strand_specific_records(collection):
+                return (collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
+                                            & collection.records[collection.query_id_syn].isin([query_scaffold_id])
+                                            & (collection.records[collection.query_strand_syn] == collection.records[collection.target_strand_syn])],
+                        collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
+                                            & collection.records[collection.query_id_syn].isin([query_scaffold_id])
+                                            & (collection.records[collection.query_strand_syn] != collection.records[collection.query_target_syn])])
+
+        elif isinstance(last_collection, CollectionPSL):
+            def get_strand_specific_records(collection):
+                return (collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
+                                           & collection.records[collection.query_id_syn].isin([query_scaffold_id])
+                                           & (collection.records[collection.query_strand_syn] == "+")],
+                        collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
+                                           & collection.records[collection.query_id_syn].isin([query_scaffold_id])
+                                           & (collection.records[collection.query_strand_syn] == "-")])
+        else:
+            raise ValueError("ERROR!!! Unknown collection type (neither CollectionPSL nor CollectionLast)")
+
         def line_segments_generator(dataframe):
             for row_tuple in dataframe.itertuples(index=False):
                 yield (row_tuple[:2], row_tuple[2:])
+
         for query_scaffold_id in query_scaffold_list:
             for target_scaffold_id in target_scaffold_list:
-                same_strand_records = \
+
+                same_strand_records_df, diff_strand_records_df = get_strand_specific_records(last_collection)
+                """
+                same_strand_records_df = \
                     last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
                                             & last_collection.records["query_id"].isin([query_scaffold_id])
                                             & (last_collection.records["query_strand"] == last_collection.records["target_strand"])]
 
-                if not same_strand_records.empty:
-                    data = pd.DataFrame()
 
+                
+                diff_strand_records_df = \
+                    last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
+                                            & last_collection.records["query_id"].isin([query_scaffold_id])
+                                            & (last_collection.records["query_strand"] != last_collection.records["target_strand"])]
+                """
+                #print("AAAAAA")
+                #print (same_strand_records_df[last_collection.query_strand_syn])
+                #print("BBBBBB")
+                #print(diff_strand_records_df[last_collection.query_strand_syn])
+                if not same_strand_records_df.empty:
+                    data = pd.DataFrame()
+                    """
                     data["x1"] = same_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
                     data["y1"] = same_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
 
                     data["x2"] = data["x1"] + same_strand_records["target_hit_len"] - 1
                     data["y2"] = data["y1"] + same_strand_records["query_hit_len"] - 1
+                    """
+                    data["x1"] = same_strand_records_df[last_collection.target_start_syn] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                    data["y1"] = same_strand_records_df[last_collection.query_start_syn] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                    if isinstance(last_collection, CollectionLast):
+                        data["x2"] = data["x1"] + same_strand_records_df[last_collection.target_hit_len_syn] - 1
+                        data["y2"] = data["y1"] + same_strand_records_df[last_collection.query_hit_len_syn] - 1
+                    elif isinstance(last_collection, CollectionPSL):
+                        data["x2"] = same_strand_records_df[last_collection.target_end_syn] + target_length_df.loc[target_scaffold_id]["cum_start"] - 1
+                        data["y2"] = same_strand_records_df[last_collection.query_end_syn] + query_length_df.loc[query_scaffold_id]["cum_start"] - 1
 
                     lines = LineCollection(line_segments_generator(data), colors=same_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
 
                     ax.add_collection(lines)
-                
-                diff_strand_records = \
-                    last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
-                                            & last_collection.records["query_id"].isin([query_scaffold_id])
-                                            & (last_collection.records["query_strand"] != last_collection.records["target_strand"])]
-
-                if not diff_strand_records.empty:
-
+                if not diff_strand_records_df.empty:
                     data = pd.DataFrame()
-                    data["x1"] = diff_strand_records["target_start"] + target_length_df.loc[target_scaffold_id]["cum_start"]
-                    data["x2"] = data["x1"] + diff_strand_records["target_hit_len"] - 1
+                    data["x1"] = diff_strand_records_df[last_collection.target_start_syn] + target_length_df.loc[target_scaffold_id]["cum_start"]
+                    if isinstance(last_collection, CollectionLast):
+                        # in last tab format coordinates for minus strand start from the end of sequence
+                        data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records_df["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                        data["y2"] = data["y1"] - diff_strand_records_df[last_collection.query_hit_len_syn] + 1
+                        data["x2"] = data["x1"] + diff_strand_records_df[last_collection.target_hit_len_syn] - 1
 
-                    data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
-                    data["y2"] = data["y1"] - diff_strand_records["query_hit_len"] + 1
-                    data = data[["x1", "y1", "x2", "y2"]]
-
+                    elif isinstance(last_collection, CollectionPSL):
+                        # in PSL format coordinates for minus strand start from the start of sequence
+                        data["y1"] = diff_strand_records_df[last_collection.query_end_syn] + query_length_df.loc[query_scaffold_id]["cum_start"] - 1
+                        data["x2"] = diff_strand_records_df[last_collection.target_end_syn] + target_length_df.loc[target_scaffold_id]["cum_start"] - 1
+                        data["y2"] = diff_strand_records_df[last_collection.query_start_syn] + query_length_df.loc[query_scaffold_id]["cum_start"] - 1
+                    print(data)
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
 

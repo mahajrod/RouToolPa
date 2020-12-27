@@ -23,8 +23,9 @@ class CollectionLast:
                  min_target_len=None, min_query_len=None, keep_seq_length_in_df=False):
 
         self.formats = ["tab", "tab_mismap"]
-        self.TAB_COLS = AlignmentFormats.LAST_TAB_COLS
-        self.parsing_parameters = {"tab": {
+        self.TAB_COLS = AlignmentFormats.ALN_FMT_COLS["tab"]
+        self.parsing_parameters = {
+                                "tab": {
                                            "coordinates_only": {
                                                    "col_names": ["target_id", "target_start", "target_hit_len",
                                                                  "target_strand", "target_len", "query_id",
@@ -285,6 +286,24 @@ class CollectionLast:
         self.query_start_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_start"]
         self.query_hit_len_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_hit_len"]
         self.query_strand_index = self.parsing_parameters[self.format][self.parsing_mode]["col_name_indexes"]["query_strand"]
+
+        self.target_id_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_id"]
+        self.query_id_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_id"]
+
+        self.target_len_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_len"]
+        self.query_len_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_len"]
+
+        self.target_start_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_start"]
+        self.query_start_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_start"]
+
+        self.target_end_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_end"]
+        self.query_end_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_end"]
+
+        self.target_hit_len_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_hit_len"]
+        self.query_hit_len_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_hit_len"]
+
+        self.target_strand_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["target_strand"]
+        self.query_strand_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["tab"]["query_strand"]
 
         #
         self.target_scaffold_list = None
