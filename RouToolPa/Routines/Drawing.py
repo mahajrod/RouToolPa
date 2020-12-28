@@ -997,6 +997,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                            linewidths=linewidth, antialiased=antialiased_lines)
 
                     ax.add_collection(lines)
+
                 if not diff_strand_records_df.empty:
                     data = pd.DataFrame()
                     data["x1"] = diff_strand_records_df[last_collection.target_start_syn] + target_length_df.loc[target_scaffold_id]["cum_start"]
@@ -1015,7 +1016,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
 
-                    #ax.add_collection(lines)
+                    ax.add_collection(lines)
 
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))
