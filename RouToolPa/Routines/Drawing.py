@@ -971,10 +971,6 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                             & last_collection.records["query_id"].isin([query_scaffold_id])
                                             & (last_collection.records["query_strand"] != last_collection.records["target_strand"])]
                 """
-                #print("AAAAAA")
-                #print (same_strand_records_df[last_collection.query_strand_syn])
-                #print("BBBBBB")
-                #print(diff_strand_records_df[last_collection.query_strand_syn])
                 if not same_strand_records_df.empty:
                     data = pd.DataFrame()
                     """
@@ -1015,8 +1011,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     #print(data)
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
-                    print(data)
-                    print(diff_strand_records_df[["target_start", "target_hit_len", "query_start", "query_hit_len"]])
+                    #print(data)
+                    #print(diff_strand_records_df[["target_start", "target_hit_len", "query_start", "query_hit_len"]])
                     ax.add_collection(lines)
 
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
