@@ -1015,7 +1015,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
 
-                    ax.add_collection(lines)
+                    #ax.add_collection(lines)
 
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
         print("%s\tDrawing finished..." % str(datetime.datetime.now()))

@@ -8,75 +8,50 @@ from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Routines import MathRoutines
 
 
-
-
-class GenomeCov(Tool):
+class Mosdepth(Tool):
     def __init__(self, path="", max_threads=4):
-        Tool.__init__(self, "bedtools genomecov", path=path, max_threads=max_threads)
+        Tool.__init__(self, "mosdepth", path=path, max_threads=max_threads)
 
-    @staticmethod
-    def parse_options(input_bam=None, report_zero_coverage=None,
-                      one_based_coordinates=None, scale=None, bedgraph_output=False,
-                      genome_bed=None):
+    def parse_options(self, input_bam=None, output_prefix=None,
+                      no_per_base=False, bed=None, use_median=False, mapq_threshold=None):
+        """
+                Not implemented options:
+                -c --chrom <chrom>         chromosome to restrict depth calculation.
+          -f --fasta <fasta>         fasta file for use with CRAM files [default: ].
+          --d4                       output per-base depth in d4 format.
 
-        options = " -ibam %s" % input_bam
-        if bedgraph_output and report_zero_coverage:
-            options += " -bga"
-        elif bedgraph_output:
-            options += " -bg"
-        else:
-            options += " -d" if one_based_coordinates else " -dz"
-        options += " -scale %f" % scale if scale else ""
-        options += " -g %s" % genome_bed if genome_bed else ""
+        Other options:
+
+          -F --flag <FLAG>              exclude reads with any of the bits in FLAG set [default: 1796]
+          -i --include-flag <FLAG>      only include reads with any of the bits in FLAG set. default is unset. [default: 0]
+          -x --fast-mode                dont look at internal cigar operations or correct mate overlaps (recommended for most use-cases).
+          -q --quantize <segments>      write quantized output see docs for description.
+          -T --thresholds <thresholds>  for each interval in --by, write number of bases covered by at
+                                        least threshold bases. Specify multiple integer values separated
+                                        by ','.
+          -R --read-groups <string>     only calculate depth for these comma-separated read groups IDs.
+          -h --help                     show help
+
+                """
+        options = " -t %i" % self.theads
+
+        options += " -n" if no_per_base else ""
+        options += " -b %s" % str(bed) if bed is not None else ""
+        options += " -m" if use_median else ""
+        options += " -Q %i" % mapq_threshold if mapq_threshold else ""
+
+        options += " %s" % output_prefix if output_prefix is not None else ""
+        options += " %s" % input_bam if input_bam is not None else ""
 
         return options
 
-    def get_coverage(self, output, input_bam=None, report_zero_coverage=None,
-                     one_based_coordinates=None, scale=None, bedgraph_output=False,
-                     genome_bed=None):
+    def get_coverage(self, input_bam, output_prefix,
+                     no_per_base=False, bed=None, use_median=False, mapq_threshold=None):
 
-        options = self.parse_options(input_bam=input_bam, report_zero_coverage=report_zero_coverage,
-                                     one_based_coordinates=one_based_coordinates, scale=scale,
-                                     bedgraph_output=bedgraph_output, genome_bed=genome_bed)
-        options += " > %s" % output
+        options = self.parse_options(input_bam=input_bam, output_prefix=output_prefix,
+                                     no_per_base=no_per_base, bed=bed, use_median=use_median, mapq_threshold=mapq_threshold)
 
         self.execute(options)
-
-    def get_coverage_for_gff(self, input_file, genome_bed, output=None):
-
-        options = " -i %s" % input_file
-        options += " -g %s" % genome_bed
-        options += " > %s" % output if output else ""
-
-        self.execute(options=options)
-
-    def get_bam_coverage_stats(self, input_bam, output_prefix, genome_bed=None,
-                               max_coverage=None, min_coverage=None,
-                               verbose=True, calc_stats=True):
-        #options_list = []
-
-        each_position_coverage_file = "%s.tab" % output_prefix
-        coverage_stat_file = "%s.stat" % output_prefix
-
-        each_position_options = self.parse_options(input_bam=input_bam, report_zero_coverage=True,
-                                                   one_based_coordinates=True, genome_bed=genome_bed)
-        each_position_options += " | gzip > %s.gz " % each_position_coverage_file
-
-        region_options = self.parse_options(input_bam=input_bam, report_zero_coverage=True,
-                                            bedgraph_output=True, genome_bed=genome_bed)
-
-        region_options += "  | gzip > %s.bedgraph.gz " % output_prefix
-
-        options_list = [each_position_options, region_options]
-
-        self.parallel_execute(options_list, threads=2)
-
-        #~/Soft/MAVR/scripts/math/get_stats_from_numer_data.py -i A_ventralis_pe.nodup.q20.tab -o A_ventralis_pe.nodup.q20.stat -l 2
-        if calc_stats:
-            MathRoutines.get_stats_from_file(each_position_coverage_file, minimum=min_coverage, maximum=max_coverage,
-                                             dtype=float, comments="#", delimiter="\t", converters=None, skiprows=0,
-                                             usecols=2, unpack=False, ndmin=0, output_file=coverage_stat_file,
-                                             verbose=verbose)
 
     @staticmethod
     def mean_from_dict(coverage_dict):
@@ -113,6 +88,111 @@ class GenomeCov(Tool):
                 #print("11111")
                 return float(sorted_coverage[i] + sorted_coverage[i+1]) / 2
 
+    def get_coverage_stats_in_windows(self, coverage_file, window_size, output_prefix, window_step=None,
+                                      buffering=None):
+        win_step = window_size if window_step is None else window_step
+        stats = []
+        per_scaffold_stats = OrderedDict()
+        coverage_dict = OrderedDict()
+        summary_stats = OrderedDict()
+        total_length = 0
+
+        with self.metaopen(coverage_file, "r", buffering=buffering) as in_fd:
+            prev_scaffold, start, end, coverage = in_fd.readline().strip().split()
+            coverage_list = [int(coverage)] * (int(end) - int(start))
+            for line in in_fd:
+                current_scaffold, start, end, coverage = line.strip().split()
+                if current_scaffold == prev_scaffold:
+                    coverage_list += [int(coverage)] * (int(end) - int(start))
+                else:
+                    scaffold_length = len(coverage_list)
+                    if scaffold_length >= window_size:
+                        number_of_windows = int((scaffold_length - window_size) / win_step) + 1
+                        for i in range(0, number_of_windows):
+                            win_start = i * win_step
+                            window_coverage_list = coverage_list[win_start:win_start + window_size]
+                            uncovered = window_coverage_list.count(0)
+                            stats.append([prev_scaffold,
+                                          scaffold_length,
+                                          i,
+                                          np.mean(window_coverage_list),
+                                          np.median(window_coverage_list),
+                                          np.min(window_coverage_list),
+                                          np.max(window_coverage_list),
+                                          uncovered,
+                                          float(uncovered) / float(window_size)], )
+
+                    coverage_array, count_array = np.unique(coverage_list, return_counts=True)
+                    for i in range(0, len(coverage_array)):
+                        if coverage_array[i] in coverage_dict:
+                            coverage_dict[coverage_array[i]] += count_array[i]
+                        else:
+                            coverage_dict[coverage_array[i]] = count_array[i]
+
+                    per_scaffold_stats[prev_scaffold] = [scaffold_length,
+                                                             min(coverage_list),
+                                                             max(coverage_list),
+                                                             np.mean(coverage_list),
+                                                             np.median(coverage_list)]
+
+                    prev_scaffold = current_scaffold
+                    coverage_list = [int(coverage)] * (int(end) - int(start))
+
+                    total_length += scaffold_length
+
+            scaffold_length = len(coverage_list)
+            total_length += scaffold_length
+
+            if scaffold_length >= window_size:
+                number_of_windows = int((scaffold_length - window_size) / win_step) + 1
+                for i in range(0, number_of_windows):
+                    win_start = i * win_step
+                    window_coverage_list = coverage_list[win_start:win_start + window_size]
+                    uncovered = window_coverage_list.count(0)
+                    stats.append([prev_scaffold,
+                                  scaffold_length,
+                                  i,
+                                  np.mean(window_coverage_list),
+                                  np.median(window_coverage_list),
+                                  np.min(window_coverage_list),
+                                  np.max(window_coverage_list),
+                                  uncovered,
+                                  float(uncovered)/float(window_size)],)
+
+            per_scaffold_stats[prev_scaffold] = [scaffold_length,
+                                                    min(coverage_list),
+                                                    max(coverage_list),
+                                                    np.mean(coverage_list),
+                                                    np.median(coverage_list)]
+
+            coverage_array, count_array = np.unique(coverage_list, return_counts=True)
+            for i in range(0, len(coverage_array)):
+                if coverage_array[i] in coverage_dict:
+                    coverage_dict[coverage_array[i]] += count_array[i]
+                else:
+                    coverage_dict[coverage_array[i]] = count_array[i]
+
+        stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
+                                          columns=("scaffold", "scaffold_length", "window", "mean",
+                                                   "median", "min", "max", "uncovered", "uncovered,fraction"))
+
+        summary_stats["all"] = [total_length,
+                                min(list(coverage_dict.keys())),
+                                max(list(coverage_dict.keys())),
+                                self.mean_from_dict(coverage_dict),
+                                self.median_from_dict(coverage_dict)]
+
+        summary_stats = pd.DataFrame.from_dict(summary_stats, orient="index",
+                                               columns=["length", "min", "max", "mean", "median"])
+
+        per_scaffold_stats = pd.DataFrame.from_dict(per_scaffold_stats, orient="index", columns=["length", "min", "max", "mean", "median"])
+
+        stats.to_csv("{0}.win{1}.step{2}.stat".format(output_prefix, window_size, win_step),
+                     sep="\t", header=True, index=True)
+        summary_stats.to_csv("%s.all.stat" % output_prefix, sep="\t", index_label="#scaffold")
+        per_scaffold_stats.to_csv("%s.per_scaffold.stat" % output_prefix, sep="\t", index_label="#scaffold")
+
+    """
     def get_stats_from_coverage_file_stream_version(self, coverage_file, output_prefix, verbose=True,
                                                     scaffold_column=0, coverage_column=1,
                                                     separator="\t", buffering=None):
@@ -175,61 +255,7 @@ class GenomeCov(Tool):
         if verbose:
             print(stats)
 
-    def get_coverage_stats_in_windows(self, coverage_file, window_size, output, window_step=None,
-                                      buffering=None):
-        win_step = window_size if window_step is None else window_step
-        stats = []
 
-        with self.metaopen(coverage_file, "r", buffering=buffering) as in_fd:
-            prev_scaffold, position, coverage = in_fd.readline().strip().split("\t")
-            coverage_list = [int(coverage)]
-            for line in in_fd:
-                current_scaffold, position, coverage = line.strip().split("\t")
-                coverage = int(coverage)
-                if current_scaffold == prev_scaffold:
-                    coverage_list.append(coverage)
-                else:
-                    scaffold_length = len(coverage_list)
-                    if scaffold_length >= window_size:
-                        number_of_windows = int((scaffold_length - window_size) / win_step) + 1
-                        for i in range(0, number_of_windows):
-                            win_start = i * win_step
-                            window_coverage_list = coverage_list[win_start:win_start + window_size]
-                            uncovered = window_coverage_list.count(0)
-                            stats.append([prev_scaffold,
-                                          scaffold_length,
-                                          i,
-                                          np.mean(window_coverage_list),
-                                          np.median(window_coverage_list),
-                                          np.min(window_coverage_list),
-                                          np.max(window_coverage_list),
-                                          uncovered,
-                                          float(uncovered) / float(window_size)], )
-
-                    prev_scaffold = current_scaffold
-                    coverage_list = [coverage]
-
-            scaffold_length = len(coverage_list)
-            if scaffold_length >= window_size:
-                number_of_windows = int((scaffold_length - window_size) / win_step) + 1
-                for i in range(0, number_of_windows):
-                    win_start = i * win_step
-                    window_coverage_list = coverage_list[win_start:win_start + window_size]
-                    uncovered = window_coverage_list.count(0)
-                    stats.append([prev_scaffold,
-                                  scaffold_length,
-                                  i,
-                                  np.mean(window_coverage_list),
-                                  np.median(window_coverage_list),
-                                  np.min(window_coverage_list),
-                                  np.max(window_coverage_list),
-                                  uncovered,
-                                  float(uncovered)/float(window_size)],)
-
-        stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
-                                          columns=("scaffold", "scaffold_length", "window", "mean",
-                                                   "median", "min", "max", "uncovered", "uncovered,fraction"))
-        stats.to_csv(output, sep="\t", header=True, index=True)
 
     @staticmethod
     def get_coverage_stats(coverage_file, output, verbose=True):
@@ -251,23 +277,6 @@ class GenomeCov(Tool):
         awk_string = "awk -F'\\t' 'BEGIN {SCAF=\"\"; LEN=\"\"; COV=\"\"} {if (($1 != SCAF)) {if (NR > 1) {printf \"%%s\\t%%s\\t%%s\\n\",SCAF,LEN, COV}; SCAF=$1; LEN=$2; COV=$3} else {LEN=$2; COV=COV\",\"$3}} ; END {printf \"%%s\t%%s\t%%s\n\",SCAF,LEN, COV} %s > %s" % (coverage_file, output_file)
 
         self.execute(options="", cmd=awk_string)
-
-    def convert_per_base_coverage_file_to_vcf(self, coverage_file, output_vcf, sample_name, reference_file,
-                                              parsing_mode="parse", format="fasta"):
-        vcf_header = "##fileformat=VCFv4.2\n"
-        vcf_header += '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth">\n'
-        vcf_header += "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n" % sample_name
-
-        reference_dict = self.parse_seq_file(reference_file, parsing_mode, format=format)
-
-        with self.metaopen(output_vcf, "w") as out_fd:
-            out_fd.write(vcf_header)
-
-            for line_list in self.file_line_as_list_generator(coverage_file):
-                out_fd.write("%s\t%s\t.\t%s\t.\t.\t.\t.\tDP\t%s\n" % (line_list[0],
-                                                                      line_list[1],
-                                                                      str(reference_dict[line_list[0]].seq[int(line_list[1])-1]),
-                                                                      line_list[2]))
 
     @staticmethod
     def extract_data_for_cds_from_collapsed_coverage_file(collapsed_coverage_file, cds_bed_file, output_file,
@@ -412,8 +421,4 @@ class GenomeCov(Tool):
 
             out_fd.write("%s\t%i\t%i\n" % (prev_scaffold, prev_start, prev_end))
 
-
-
-
-
-
+    """
