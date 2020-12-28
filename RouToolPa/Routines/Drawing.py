@@ -1003,7 +1003,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     data["x1"] = diff_strand_records_df[last_collection.target_start_syn] + target_length_df.loc[target_scaffold_id]["cum_start"]
                     if isinstance(last_collection, CollectionLast):
                         # in last tab format coordinates for minus strand start from the end of sequence
-                        data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records_df["query_start"] + query_length_df.loc[query_scaffold_id]["cum_start"]
+                        data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records_df[last_collection.query_start_syn] + query_length_df.loc[query_scaffold_id]["cum_start"]
                         data["y2"] = data["y1"] - diff_strand_records_df[last_collection.query_hit_len_syn] + 1
                         data["x2"] = data["x1"] + diff_strand_records_df[last_collection.target_hit_len_syn] - 1
 
@@ -1015,7 +1015,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     #print(data)
                     lines = LineCollection(line_segments_generator(data), colors=diff_strand_color, linestyle='solid',
                                            linewidths=linewidth, antialiased=antialiased_lines)
-
+                    print(data)
+                    print(diff_strand_records_df[["target_start", "target_hit_len", "query_start", "query_hit_len"]])
                     ax.add_collection(lines)
 
         print("%s\t\tDrawng alignments finished..." % str(datetime.datetime.now()))
