@@ -931,7 +931,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\t\tDrawing alignments..." % str(datetime.datetime.now()))
 
         if isinstance(last_collection, CollectionLast):
-            def get_strand_specific_records(collection):
+            def get_strand_specific_records(collection, target_scaffold_id, query_scaffold_id):
                 return (collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
                                             & collection.records[collection.query_id_syn].isin([query_scaffold_id])
                                             & (collection.records[collection.query_strand_syn] == collection.records[collection.target_strand_syn])],
@@ -940,7 +940,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                             & (collection.records[collection.query_strand_syn] != collection.records[collection.target_strand_syn])])
 
         elif isinstance(last_collection, CollectionPSL):
-            def get_strand_specific_records(collection):
+            def get_strand_specific_records(collection, target_scaffold_id, query_scaffold_id):
                 return (collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
                                            & collection.records[collection.query_id_syn].isin([query_scaffold_id])
                                            & (collection.records[collection.query_strand_syn] == "+")],
@@ -957,7 +957,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         for query_scaffold_id in query_scaffold_list:
             for target_scaffold_id in target_scaffold_list:
 
-                same_strand_records_df, diff_strand_records_df = get_strand_specific_records(last_collection)
+                same_strand_records_df, diff_strand_records_df = get_strand_specific_records(last_collection, target_scaffold_id, query_scaffold_id)
                 """
                 same_strand_records_df = \
                     last_collection.records[last_collection.records["target_id"].isin([target_scaffold_id])
