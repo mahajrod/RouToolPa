@@ -1004,8 +1004,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     if isinstance(last_collection, CollectionLast):
                         # in last tab format coordinates for minus strand start from the end of sequence
                         data["y1"] = query_length_df.loc[query_scaffold_id]["length"] - diff_strand_records_df[last_collection.query_start_syn] + query_length_df.loc[query_scaffold_id]["cum_start"]
-                        data["y2"] = data["y1"] - diff_strand_records_df[last_collection.query_hit_len_syn] + 1
                         data["x2"] = data["x1"] + diff_strand_records_df[last_collection.target_hit_len_syn] - 1
+                        data["y2"] = data["y1"] - diff_strand_records_df[last_collection.query_hit_len_syn] + 1
 
                     elif isinstance(last_collection, CollectionPSL):
                         # in PSL format coordinates for minus strand start from the start of sequence
