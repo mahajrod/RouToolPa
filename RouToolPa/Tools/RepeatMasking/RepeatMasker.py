@@ -68,7 +68,7 @@ class RepeatMasker(Tool):
         else:
             class_list =  self.repeat_classes_used_for_gene_annotation
 
-        with self.metaopen(input_gff, "r") as in_fd, self(output_gff, "w") as out_fd:
+        with self.metaopen(input_gff, "r") as in_fd, self.metaopen(output_gff, "w") as out_fd:
             for line in in_fd:
                 if line[0] == "#":
                     continue
