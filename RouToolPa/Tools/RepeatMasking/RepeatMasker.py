@@ -60,17 +60,24 @@ class RepeatMasker(Tool):
     def extract_repeats_used_for_gene_annotation(self, input_gff, output_gff,
                                                  use_expanded_set=False,
                                                  retain_unknown_repeats=False):
-        if use_expanded_set:
-            grep_pattern = "|".join(self.repeat_classes_used_for_gene_annotation_expanded_set)
-        elif retain_unknown_repeats:
-            grep_pattern = "|".join(self.repeat_classes_used_for_gene_annotation + ["Unknown", ])
-        else:
-            grep_pattern = "|".join(self.repeat_classes_used_for_gene_annotation)
 
-        grep_string = "grep -P '%s'" % grep_pattern
-        grep_string += " %s" % input_gff
-        grep_string += " > %s" % output_gff
-        self.execute(cmd=grep_string)
+        if use_expanded_set:
+            class_list = self.repeat_classes_used_for_gene_annotation_expanded_set
+        elif retain_unknown_repeats:
+            class_list =  self.repeat_classes_used_for_gene_annotation + ["Unknown", ]
+        else:
+            class_list =  self.repeat_classes_used_for_gene_annotation
+
+        with self.metaopen(input_gff, "r") as in_fd, self(output_gff, "w") as out_fd:
+            for line in in_fd:
+                if line[0] == "#":
+                    continue
+                description_list = line.strip().split("\t")[-1].split(";")
+                for element in description_list:
+                    if element[:6] == "Class=":
+                        if element[6:] in class_list:
+                            out_fd.write(line)
+                            break
 
     def extract_repeats_from_database(self, output_file, species=None, clade=None, stat_mode=None):
 

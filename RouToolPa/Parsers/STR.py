@@ -25,7 +25,7 @@ class CollectionSTR:
                                    "str": {
                                            "coordinates_only": {
                                                    "col_names": ["scaffold_id", "start", "end"],
-                                                   "cols":      [1, 18,19],
+                                                   "cols":      [1, 18, 19],
                                                    "index_cols": None,
                                                    "converters": {
                                                                   "scaffold_id":      str,
@@ -93,7 +93,7 @@ class CollectionSTR:
                                                                   "start":                        np.int64,
                                                                   "end":                          np.int64,
                                                                   "full_hit_id":                  str,
-                                                                  "scaffold_len":          np.int64,
+                                                                  "scaffold_len":                 np.int64,
                                                                   "amplicon_seq":                 str,
                                                                   "primary_tag":                  str,
                                                                   "gene":                         str,
@@ -170,7 +170,8 @@ class CollectionSTR:
                                                                   "len_in_expected_interval",
                                                                   "color",
                                                                   ],
-                                                    "cols": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16,17],
+                                                    "cols": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                                                             11, 12, 13, 14, 15, 16, 17],
                                                     "index_cols": None,
                                                     "converters": {
                                                                    "primer_pair":                 str,
@@ -185,8 +186,8 @@ class CollectionSTR:
                                                                    "amplicon_seq":                str,
                                                                    "max_mismatches":              np.int32,
                                                                    "total_mismatches":            np.int32,
-                                                                   "max_mis_min_dist":            np.int32,
-                                                                   "tot_mis_min_dist":            np.int32,
+                                                                   "max_mis_min_dist":            str,
+                                                                   "tot_mis_min_dist":            str,
                                                                    "min_len":                     np.int32,
                                                                    "max_len":                     np.int32,
                                                                    "len_in_expected_interval":    np.str,
@@ -267,14 +268,15 @@ class CollectionSTR:
 
     def read(self, in_file,
              format="str", parsing_mode="all",
-             black_list=(), white_list=()):
+             black_list=(), white_list=(),
+             keep_seq_length_in_df=False):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
         print("%s\tReading input..." % str(datetime.datetime.now()))
-        self.records = pd.read_csv(in_file, sep='\t', header=None, na_values=".",
+        self.records = pd.read_csv(in_file, sep='\t', header=0, na_values=".",
                                    comment="#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
@@ -310,15 +312,19 @@ class CollectionSTR:
         elif min_query_hit_len:
             self.records = self.records[self.records["query_hit_len"] >= min_query_hit_len]
         """
-        self.scaffold_lengths = self.records[["scaffold_id", "scaffold_len"]].drop_duplicates()
-        self.scaffold_lengths.columns = ["id", "length"]
-        self.scaffold_lengths.set_index("id", inplace=True)
-        self.scaffold_list = self.scaffold_lengths.index.tolist()
+        if "scaffold_len" in self.records.columns:
+            self.scaffold_lengths = self.records[["scaffold_id", "scaffold_len"]].drop_duplicates()
+            self.scaffold_lengths.columns = ["id", "length"]
+            self.scaffold_lengths.set_index("id", inplace=True)
+            self.scaffold_list = self.scaffold_lengths.index.tolist()
+        else:
+            self.scaffold_list = list(self.records["scaffold_id"].unique())
 
         retained_columns = deepcopy(self.parsing_parameters[self.format][self.parsing_mode]["col_names"])
-        if not keep_seq_length_in_df:
-            for entry in ("scaffold_len",):
-                retained_columns.remove(entry)
+        if "scaffold_len" in self.records.columns:
+            if not keep_seq_length_in_df:
+                for entry in ("scaffold_len",):
+                    retained_columns.remove(entry)
 
         self.records = self.records[retained_columns]
 
