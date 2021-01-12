@@ -174,7 +174,7 @@ class AUGUSTUS(Tool):
                             protein = protein.split("]")[0]
                         else:
                             while True:
-                                part = in_fd.next().split()[-1]
+                                part = in_fd.readline().split()[-1]
                                 if "]" in part:
                                     protein += part.split("]")[0]
                                     break
@@ -198,7 +198,7 @@ class AUGUSTUS(Tool):
                         if line[:17] == "# % of transcript":
                             supported_fraction = line.strip().split()[-1]
                             while True:
-                                tmp_line = in_fd.next()
+                                tmp_line = in_fd.readline()
                                 if tmp_line[:12] == "# CDS exons:":
                                     cds_support = tmp_line.strip().split()[-1]
                                 elif tmp_line[:14] == "# CDS introns:":
@@ -403,7 +403,7 @@ class AUGUSTUS(Tool):
                     augustus_transcript_id = ""
                     augustus_transcript_parent = ""
                     out_fd.write("# start gene %s\n" % gene_syn_id)
-                    tmp = in_fd.next().strip()
+                    tmp = in_fd.readline().strip()
                     while True:
                         while tmp[0] != "#":
                             tmp_list = tmp.split("\t")
@@ -443,12 +443,12 @@ class AUGUSTUS(Tool):
                                 edited_str = tmp
 
                             out_fd.write(edited_str)
-                            tmp = in_fd.next().strip()
+                            tmp = in_fd.readline().strip()
                         while tmp[0] == "#":
                             if "# end gene" in tmp:
                                 break
                             out_fd.write(tmp + "\n")
-                            tmp = in_fd.next().strip()
+                            tmp = in_fd.readline().strip()
                         if "# end gene" in tmp:
                                 break
                     out_fd.write("# end gene %s\n" % gene_syn_id)
@@ -487,7 +487,7 @@ class AUGUSTUS(Tool):
                     augustus_transcript_id = ""
                     augustus_transcript_parent = ""
                     out_fd.write("# start gene %s\n" % gene_syn_id)
-                    tmp = in_fd.next().strip()
+                    tmp = in_fd.readline().strip()
                     while True:
                         while tmp[0] != "#":
                             tmp_list = tmp.split("\t")
@@ -533,12 +533,12 @@ class AUGUSTUS(Tool):
                                 edited_str = tmp + "\n"
 
                             out_fd.write(edited_str)
-                            tmp = in_fd.next().strip()
+                            tmp = in_fd.readline().strip()
                         while tmp[0] == "#":
                             if "# end gene" in tmp:
                                 break
                             out_fd.write(tmp + "\n")
-                            tmp = in_fd.next().strip()
+                            tmp = in_fd.readline().strip()
                         if "# end gene" in tmp:
                                 break
                     out_fd.write("# end gene %s\n" % gene_syn_id)
@@ -615,7 +615,7 @@ class AUGUSTUS(Tool):
 
                     out_fd.write(line)
 
-                    line = in_fd.next()
+                    line = in_fd.readline()
 
                     while ("\tstop_codon\t" in line) or ("\tstart_codon\t" in line) or ("\tCDS\t" in line):
 
@@ -626,7 +626,7 @@ class AUGUSTUS(Tool):
                         else:
                             transcript_cds_list.append(line)
                         try:
-                            line = in_fd.next()
+                            line = in_fd.readline()
                         except StopIteration:
                             line = None
                             break
