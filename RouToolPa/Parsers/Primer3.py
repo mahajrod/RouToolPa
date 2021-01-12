@@ -401,7 +401,7 @@ class CollectionPrimer3(Collection):
                     while lineeee[0] != "=":
                         line_list = lineeee.strip().split("=")
                         entry_dict[line_list[0]] = line_list[1]
-                        lineeee = in_fd.next()
+                        lineeee = in_fd.readline()
 
                     self._add_record(entry_dict, id_based_location_dict=id_based_dict)
 

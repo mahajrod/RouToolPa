@@ -401,7 +401,7 @@ class Mosdepth(Tool):
         with self.metaopen(output_file, "w") as out_fd:
             line_list_generator = self.file_line_as_list_generator(input_file, separator="\t")
 
-            prev_scaffold, prev_start, prev_end = line_list_generator.next()[:3]
+            prev_scaffold, prev_start, prev_end = line_list_generator.readline()[:3]
             prev_start = int(prev_start)
             prev_end = int(prev_end)
 

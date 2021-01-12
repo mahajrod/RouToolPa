@@ -522,7 +522,7 @@ class CollectionLast:
         coords = self.extract_and_convert_coordinates()
         row_iterator = coords.itertuples(index=False)
 
-        prev_row = list(row_iterator.next())
+        prev_row = list(row_iterator.readline())
         collapsed_row_list = []
 
         for row in row_iterator:

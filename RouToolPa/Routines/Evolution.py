@@ -27,8 +27,8 @@ class EvolutionRoutines(PhylogeneticsRoutines):
                 with open(output_file, "w") as out_fd:
                     out_fd.write(line)
                     for i in range(0, seq_number):
-                        out_fd.write(bootstrap_fd.next())
-                bootstrap_fd.next()  # read empty line between samples
+                        out_fd.write(bootstrap_fd.readline())
+                bootstrap_fd.readline()  # read empty line between samples
                 counter += 1
 
     def combine_ds_dn_w_from_bootstrap_data(self, input_dir, output_dir, use_node_names_if_possible=True):

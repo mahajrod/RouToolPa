@@ -17,10 +17,10 @@ class FastQRoutines(FileRoutines):
             with self.metaopen(out_file, "w") as out_fd:
                 for line in in_fd:
                     out_fd.write(line)
-                    out_fd.write(str(Seq(in_fd.next().strip()).reverse_complement()))
+                    out_fd.write(str(Seq(in_fd.readline().strip()).reverse_complement()))
                     out_fd.write("\n")
-                    out_fd.write(in_fd.next())
-                    out_fd.write(in_fd.next().strip()[::-1])
+                    out_fd.write(in_fd.readline())
+                    out_fd.write(in_fd.readline().strip()[::-1])
                     out_fd.write("\n")
 
     @staticmethod
@@ -61,30 +61,30 @@ class FastQRoutines(FileRoutines):
             if (tile_id in black_list_forward_tiles_list) and (tile_id in black_list_reverse_tiles_list):
                 filtered_out_forward_se_fd.write(line)
                 for i in range(0, 3):
-                    filtered_out_forward_se_fd.write(forward_input_fd.next())
+                    filtered_out_forward_se_fd.write(forward_input_fd.readline())
                 for i in range(0, 4):
-                    filtered_out_reverse_se_fd.write(reverse_input_fd.next())
+                    filtered_out_reverse_se_fd.write(reverse_input_fd.readline())
 
             elif (tile_id in black_list_forward_tiles_list) and (not(tile_id in black_list_reverse_tiles_list)):
                 filtered_out_forward_se_fd.write(line)
                 for i in range(0, 3):
-                    filtered_out_forward_se_fd.write(forward_input_fd.next())
+                    filtered_out_forward_se_fd.write(forward_input_fd.readline())
                 for i in range(0, 4):
-                    filtered_reverse_se_fd.write(reverse_input_fd.next())
+                    filtered_reverse_se_fd.write(reverse_input_fd.readline())
 
             elif (not (tile_id in black_list_forward_tiles_list)) and (tile_id in black_list_reverse_tiles_list):
                 filtered_forward_se_fd.write(line)
                 for i in range(0, 3):
-                    filtered_forward_se_fd.write(forward_input_fd.next())
+                    filtered_forward_se_fd.write(forward_input_fd.readline())
                 for i in range(0, 4):
-                    filtered_out_reverse_se_fd.write(reverse_input_fd.next())
+                    filtered_out_reverse_se_fd.write(reverse_input_fd.readline())
 
             else:
                 filtered_paired_forward_pe_fd.write(line)
                 for i in range(0, 3):
-                    filtered_paired_forward_pe_fd.write(forward_input_fd.next())
+                    filtered_paired_forward_pe_fd.write(forward_input_fd.readline())
                 for i in range(0, 4):
-                    filtered_paired_reverse_pe_fd.write(reverse_input_fd.next())
+                    filtered_paired_reverse_pe_fd.write(reverse_input_fd.readline())
 
         filtered_paired_forward_pe_fd.close()
         filtered_forward_se_fd.close()
@@ -170,19 +170,19 @@ class FastQRoutines(FileRoutines):
             with open(filtered_file, "w") as filtered_fd:
                 with open(filtered_out_file, "w") as filtered_out_fd:
                     for read_name in in_fd:
-                        read = in_fd.next()
+                        read = in_fd.readline()
                         #print len(read.strip())
                         #print expression(read.strip())
                         if expression(read.strip()):
                             filtered_fd.write(read_name)
                             filtered_fd.write(read)
-                            filtered_fd.write(in_fd.next())
-                            filtered_fd.write(in_fd.next())
+                            filtered_fd.write(in_fd.readline())
+                            filtered_fd.write(in_fd.readline())
                         else:
                             filtered_out_fd.write(read_name)
                             filtered_out_fd.write(read)
-                            filtered_out_fd.write(in_fd.next())
-                            filtered_out_fd.write(in_fd.next())
+                            filtered_out_fd.write(in_fd.readline())
+                            filtered_out_fd.write(in_fd.readline())
 
     def split_illumina_fastq_by_lanes(self, input_fastq, output_dir, output_prefix=None, output_suffix=".fastq"):
         out_fd_dict = OrderedDict()
@@ -200,7 +200,7 @@ class FastQRoutines(FileRoutines):
                 out_fd_dict[lane_id].write(line)
 
                 for i in range(0, 3):
-                    out_fd_dict[lane_id].write(in_fd.next())
+                    out_fd_dict[lane_id].write(in_fd.readline())
 
         for fd in out_fd_dict:
             out_fd_dict[fd].close()
@@ -214,7 +214,7 @@ class FastQRoutines(FileRoutines):
                 read_name_tuple = self.parse_illumina_name(line)[:5]
                 tile_set.add(read_name_tuple)
                 for i in 0, 1, 2:
-                    fastq_fd.next()
+                    fastq_fd.readline()
 
             tile_list = list(tile_set)
             tile_list.sort()
@@ -236,7 +236,7 @@ class FastQRoutines(FileRoutines):
                     tile_dict[tile_name] = 1
 
                 for i in 0, 1, 2:
-                    fastq_fd.next()
+                    fastq_fd.readline()
 
             for tile_name in sorted(tile_dict.keys()):
                 out_fd.write(tile_name)
@@ -258,10 +258,10 @@ class FastQRoutines(FileRoutines):
         for fastq_file in fastq_list:
             with self.metaopen(fastq_file, "r") as fastq_fd:
                 for line in fastq_fd:
-                    counts[fastq_file]["Bases"] += len(fastq_fd.next())
+                    counts[fastq_file]["Bases"] += len(fastq_fd.readline())
                     counts[fastq_file]["Reads"] += 1
-                    fastq_fd.next()
-                    fastq_fd.next()
+                    fastq_fd.readline()
+                    fastq_fd.readline()
 
                 # to take into account "\n" at the end of each line
                 counts[fastq_file]["Bases"] = counts[fastq_file]["Bases"] - counts[fastq_file]["Reads"]

@@ -368,7 +368,7 @@ class Exonerate(Tool):
                         alignment_buffer = tmp
 
                         while True:
-                            tmp = in_fd.next()
+                            tmp = in_fd.readline()
                             alignment_buffer += tmp
 
                             if "Query: " in tmp:

@@ -19,13 +19,13 @@ class CodeMLReport():
         with open(reportfile, "r") as in_fd:
             for line in in_fd:
                 if line[:8] == "dS tree:":
-                    self.dStree = Tree(in_fd.next())
+                    self.dStree = Tree(in_fd.readline())
                     continue
                 elif line[:8] == "dN tree:":
-                    self.dNtree = Tree(in_fd.next())
+                    self.dNtree = Tree(in_fd.readline())
                     continue
                 elif line.strip() == "w ratios as labels for TreeView:":
-                    self.Wtree = Tree(in_fd.next().replace(" #", ": "))  # convert omega tree to readable by ete2 format
+                    self.Wtree = Tree(in_fd.readline().replace(" #", ": "))  # convert omega tree to readable by ete2 format
                     continue
                 elif line[:10] == "lnL(ntime:":
                     self.LnL = float(line.strip().split(":")[-1].split()[0])

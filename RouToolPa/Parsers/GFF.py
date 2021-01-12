@@ -368,7 +368,7 @@ class CollectionGFF(Parser):
 
                 row_iterator = no_nested_records_df.itertuples(index=True)
 
-                prev_row = list(row_iterator.next())
+                prev_row = list(row_iterator.readline())
 
                 for row in row_iterator:
                     row_l = list(row)

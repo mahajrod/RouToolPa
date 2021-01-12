@@ -253,7 +253,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         domen_colors = []
         for feature in features:
             if (feature.type == "domen") or (feature.type == "domain"):
-                domen_colors.append(subplot._get_lines.color_cycle.next())
+                domen_colors.append(subplot._get_lines.color_cycle.readline())
 
         for record in alignment:
 

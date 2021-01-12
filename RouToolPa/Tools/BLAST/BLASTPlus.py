@@ -650,7 +650,7 @@ class Windowmasker(Tool):
     def convert_interval_format_to_gff(input, output_gff, source="windowmasker", feature_type="gff"):
         with open(input, "r") as in_fd:
             with open(output_gff, "w") as out_fd:
-                #line = in_fd.next()
+                #line = in_fd.readline()
                 #seq_id = line.strip().split()[0][1:]
                 for line in in_fd:
                     if line[0] == ">":
