@@ -643,7 +643,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                             left_offset=0.1,
                                                             right_offset=0.9,
                                                             x_axis_visible=False,
-                                                            y_axis_visible=False):
+                                                            y_axis_visible=False,
+                                                            x_labelpad=None,
+                                                            y_labelpad=None
+                                                            ):
 
         for scaffold in scaffold_white_list:
             self.draw_dot_plot_from_last_alignment(last_collection,
@@ -679,7 +682,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                               left_offset=left_offset,
                                               right_offset=right_offset,
                                               x_axis_visible=x_axis_visible,
-                                              y_axis_visible=y_axis_visible)
+                                              y_axis_visible=y_axis_visible,
+                                              x_labelpad=x_labelpad,
+                                              y_labelpad=y_labelpad
+                                                   )
 
     def draw_dot_plot_per_scaffold_vs_all_from_last_self_alignment(self, last_collection,
                                                             output_prefix=None,
@@ -711,7 +717,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                             left_offset=0.1,
                                                             right_offset=0.9,
                                                             x_axis_visible=False,
-                                                            y_axis_visible=False):
+                                                            y_axis_visible=False,
+                                                            x_labelpad=None,
+                                                            y_labelpad=None
+                                                           ):
 
         for scaffold in scaffold_white_list:
             self.draw_dot_plot_from_last_alignment(last_collection,
@@ -747,7 +756,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                    left_offset=left_offset,
                                                    right_offset=right_offset,
                                                    x_axis_visible=x_axis_visible,
-                                                   y_axis_visible=y_axis_visible)
+                                                   y_axis_visible=y_axis_visible,
+                                                   x_labelpad=x_labelpad,
+                                                   y_labelpad=y_labelpad
+                                                   )
 
     def draw_dot_plot_from_last_alignment(self, last_collection,
                                           output_prefix=None,
@@ -782,7 +794,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           left_offset=0.1,
                                           right_offset=0.9,
                                           x_axis_visible=False,
-                                          y_axis_visible=False):
+                                          y_axis_visible=False,
+                                          x_labelpad=None,
+                                          y_labelpad=None):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,

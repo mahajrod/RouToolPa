@@ -157,6 +157,14 @@ class VCFRoutines(SequenceRoutines):
             het_counter = 0
             homo_counter =0
 
+            def test_heterozygosity(s):
+                if len(s) == 1:
+                    return False
+                if s[0] != s[1]:
+                    return True
+                else:
+                    False
+
             for line in in_fd:
                 if line[0] == "#":
                     het_fd.write(line)
@@ -169,7 +177,7 @@ class VCFRoutines(SequenceRoutines):
                         if info_list[index] == "GT":
                             genotype_index = index
                             break
-                    heterozygous_sample_number = sum(map(lambda s: True if s[0] != s[1] else False,
+                    heterozygous_sample_number = sum(map(test_heterozygosity,
                                                      map(lambda s: s[genotype_index].split("/"), samples)))
 
                     if mode == "one":
