@@ -163,7 +163,7 @@ class VCFRoutines(SequenceRoutines):
                 if s[0] != s[1]:
                     return True
                 else:
-                    False
+                    return False
 
             for line in in_fd:
                 if line[0] == "#":
