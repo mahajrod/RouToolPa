@@ -160,7 +160,7 @@ class VCFRoutines(SequenceRoutines):
             def test_heterozygosity(s):
                 if len(s) == 1:
                     return False
-                if s[0] != s[1]:
+                if (s[0] != s[1]) and (s[0] != ".") and (s[1] != "."):
                     return True
                 else:
                     return False
