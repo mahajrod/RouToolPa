@@ -4,7 +4,7 @@ import os
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio.Alphabet import IUPAC
+
 from RouToolPa.Routines.Sequence import SequenceRoutines
 
 
@@ -285,7 +285,7 @@ class MtDNARoutines(SequenceRoutines):
                             continue
                             #print(feature)
 
-                        new_protein_record = SeqRecord(seq=Seq(feature.qualifiers["translation"][0], alphabet=IUPAC.protein),
+                        new_protein_record = SeqRecord(seq=Seq(feature.qualifiers["translation"][0],),
                                                     id=record_id,
                                                     name=name,
                                                     description="")
