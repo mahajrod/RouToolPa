@@ -10,7 +10,7 @@ dependencies = ['scipy', 'numpy', 'pandas', 'matplotlib', 'matplotlib-venn',
 #  scipy numpy pandas matplotlib matplotlib-venn biopython xmltodict bcbio-gff statsmodels pyparsing ete3
 
 if sys.version_info[0] == 3: # major version
-    dependencies += ["ete3", 'venn',]
+    dependencies += ["ete3", 'venn', ]
     if sys.version_info[1] < 7: # check minor version of python3
         dependencies += ["importlib_resources"]
 
