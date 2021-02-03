@@ -831,7 +831,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         total_query_len = query_length_df["length"].sum()
 
-        bar_width_fraction = 0.02
+        bar_width_fraction = 0.03
         bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
 
         print("%s\tDrawing..." % str(datetime.datetime.now()))
