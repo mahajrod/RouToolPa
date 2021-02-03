@@ -916,19 +916,24 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                 tick_labels = np.arange(0, target_length_df.loc[target_scaffold, "length"], tick_step)
                 tick_list = list(tick_labels + target_length_df.loc[target_scaffold, "cum_start"])
                 tick_labels = list(map(str, tick_labels // tick_unit))
-
+                tick_number = len (tick_list)
                 if len(tick_list) > 1:
                     for tick in tick_list[1:]:
                         ax.add_line(Line2D((tick, tick), (-bar_width/4, 0),
                                            color="black", linewidth=gridwidth / 4))
                     if len(tick_list) >= 5:
+                        counter = 0
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
+                            counter += 1
+                            
                             ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
                                                color="red", linewidth=gridwidth / 2))
-                            ax.text(tick, -bar_width * 0.6, tick_label,
-                                    fontsize=5, #scaffold_label_fontsize/3,
-                                    horizontalalignment='center',
-                                    verticalalignment='top', )
+                            if tick_number - counter * 5 >= 2:
+                                ax.text(tick, -bar_width * 0.6, tick_label,
+                                        fontsize=5, #scaffold_label_fontsize/3,
+                                        horizontalalignment='center',
+                                        verticalalignment='top', )
+
             for query_scaffold in query_length_df.index:
                 tick_labels = np.arange(0, query_length_df.loc[query_scaffold, "length"], tick_step)
                 tick_list = list(tick_labels + query_length_df.loc[query_scaffold, "cum_start"])
