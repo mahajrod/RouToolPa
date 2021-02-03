@@ -944,7 +944,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                color="red", linewidth=gridwidth / 2))
                             ax.text(-bar_width * 0.6, tick, tick_label,
                                     fontsize=5, #scaffold_label_fontsize/3,
-                                    horizontalalignment='left',
+                                    horizontalalignment='right',
                                     verticalalignment='center', )
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
