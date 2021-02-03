@@ -219,6 +219,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         for extension in ext_list:
             plt.savefig("%s.%s" % (output_prefix, extension), dpi=dpi)
 
+
+
     def draw_alignment(self, alignment, features, output_prefix, record_style=None, ext_list=["svg", "png"],
                        label_fontsize=13, left_offset=0.2, figure_width=8, id_synonym_dict=None,
                        id_replacement_mode="partial", domain_style="vlines"):
@@ -798,7 +800,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           x_axis_visible=False,
                                           y_axis_visible=False,
                                           x_labelpad=None,
-                                          y_labelpad=None):
+                                          y_labelpad=None,
+                                          show_length_ticks=False,
+                                          tick_step=10000000,
+                                          tick_unit=1000000):
 
         target_scaffold_list = self.get_filtered_scaffold_list(last_collection.target_scaffold_list,
                                                                scaffold_black_list=target_black_list,
@@ -843,6 +848,33 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         ax.add_patch(Rectangle((-bar_width, 0), bar_width, total_query_len, color=bar_color))        # left bar
         ax.add_patch(Rectangle((total_target_len, 0), bar_width, total_query_len, color=bar_color))  # right bar
 
+        """
+        @staticmethod
+        def create_tick_formatter_function(max_value, tick_type="nucleotide"):
+            max_val = max_value * 1.1
+            if tick_type == "nucleotide":
+                if max_val // (10 ** 9) > 2:
+                    def tick_formater(x, pos):
+                        return '%1.1f Gbp' % (x * 1e-9)
+                elif max_val // (10 ** 6) > 200:
+                    def tick_formater(x, pos):
+                        return '%.0f Mbp' % (x * 1e-6)
+                elif max_val // (10 ** 6) > 2:
+                    def tick_formater(x, pos):
+                        return '%.1f Mbp' % (x * 1e-6)
+                elif max_val // (10 ** 3) > 2:
+                    def tick_formater(x, pos):
+                        return '%.1f kbp' % (x * 1e-3)
+                else:
+                    def tick_formater(x, pos):
+                        return '%i bp' % (int(x))
+
+                return FuncFormatter(tick_formater)
+
+            else:
+                raise ValueError("ERROR!!! Tick formter for %s is not implemented yet!" % tick_type)
+        """
+
         if show_grid:
             for query_cum_start in query_length_df["cum_start"]:
                 ax.add_line(Line2D((-bar_width, total_target_len+bar_width), (query_cum_start, query_cum_start),
@@ -878,6 +910,28 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                color=grid_color, linewidth=gridwidth))
             ax.add_line(Line2D((total_target_len, total_target_len), (total_query_len, total_query_len + bar_width),
                                color=grid_color, linewidth=gridwidth))
+
+        if show_length_ticks:
+            target_tick_list = []
+            target_tick_label_list = []
+            query_tick_list = []
+            query_tick_label_list = []
+            print(target_length_df)
+
+            for target_scaffold in target_length_df.index:
+                tick_labels = np.arange(0, target_length_df.loc[target_scaffold, "length"], tick_step)
+                tick_list = list(tick_labels + target_length_df.loc[target_scaffold, "cum_start"])
+                tick_labels = list(map(str, tick_labels / tick_unit))
+
+                if len(tick_list) > 1:
+                    target_tick_list += tick_list
+                    target_tick_label_list += tick_labels
+
+            ax.set_xticks(target_tick_list)
+            ax.set_xticklabels(target_tick_label_list)
+
+            ax.set_yticks(query_tick_list)
+            ax.set_yticklabels(query_tick_label_list)
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
         print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
