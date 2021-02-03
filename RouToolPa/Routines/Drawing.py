@@ -848,9 +848,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             if mbp_per_inch is not None:
                 figsi = (int(total_target_len / mbp_per_inch / 1000000), int(total_query_len / mbp_per_inch/1000000))
             elif figure_width is not None:
-                figsi = (int(query_to_target_ratio * figure_width), figure_width)
+                figsi = (figure_width, int(query_to_target_ratio * figure_width))
             elif figure_height is not None:
-                figsi = (figure_height, int(figure_height / query_to_target_ratio))
+                figsi = (int(figure_height / query_to_target_ratio), figure_height)
         else:
             figsi = figsize
 
