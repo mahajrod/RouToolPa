@@ -929,6 +929,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
             ax.set_xticks(target_tick_list)
             ax.set_xticklabels(target_tick_label_list)
+            ax.spines["bottom"].set_color('red')
 
             ax.set_yticks(query_tick_list)
             ax.set_yticklabels(query_tick_label_list)
