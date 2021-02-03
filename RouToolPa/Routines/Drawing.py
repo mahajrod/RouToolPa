@@ -931,7 +931,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                             ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
                                                color="red", linewidth=gridwidth / 2))
                             ax.text(tick, -bar_width * 0.75, tick_label,
-                                    fontsize=scaffold_label_fontsize/2,
+                                    fontsize=scaffold_label_fontsize/3,
                                     horizontalalignment='center',
                                     verticalalignment='top', )
 
