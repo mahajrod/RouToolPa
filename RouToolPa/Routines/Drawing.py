@@ -925,7 +925,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                         counter = 0
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
                             counter += 1
-                            
+
                             ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
                                                color="red", linewidth=gridwidth / 2))
                             if tick_number - counter * 5 >= 2:
