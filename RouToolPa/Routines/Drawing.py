@@ -925,12 +925,13 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                 if len(tick_list) > 1:
                     target_tick_list += tick_list
                     target_tick_label_list += tick_labels
-                    for tick in tick_list:
+                    for tick in tick_list[1:]:
                         ax.add_line(Line2D((tick, tick), (-bar_width/4, 0),
-                                           color="red", linewidth=gridwidth / 4))
-                    for tick in tick_list[::5]:
-                        ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
-                                           color="red", linewidth=gridwidth / 2))
+                                           color="black", linewidth=gridwidth / 4))
+                    if len(tick_list) >= 5:
+                        for tick in tick_list[::5][1:]:
+                            ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
+                                               color="red", linewidth=gridwidth / 2))
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
         print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
