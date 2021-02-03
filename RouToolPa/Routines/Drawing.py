@@ -921,18 +921,26 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     for tick in tick_list[1:]:
                         ax.add_line(Line2D((tick, tick), (-bar_width/4, 0),
                                            color="black", linewidth=gridwidth / 4))
+                        ax.add_line(Line2D((tick, tick), (total_query_len + bar_width / 4, total_query_len),
+                                           color="black", linewidth=gridwidth / 4))
                     if len(tick_list) >= 5:
                         counter = 0
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
                             counter += 1
 
-                            ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
+                            ax.add_line(Line2D((tick, tick), (-bar_width * 0.4, 0),
+                                               color="darkred", linewidth=gridwidth / 2))
+                            ax.add_line(Line2D((tick, tick), (total_query_len + bar_width * 0.4, total_query_len),
                                                color="darkred", linewidth=gridwidth / 2))
                             if tick_number - counter * 5 >= 2:
-                                ax.text(tick, -bar_width * 0.6, tick_label,
+                                ax.text(tick, -bar_width * 0.5, tick_label,
                                         fontsize=5, #scaffold_label_fontsize/3,
                                         horizontalalignment='center',
                                         verticalalignment='top', )
+                                ax.text(tick, total_query_len + bar_width * 0.5, tick_label,
+                                        fontsize=5,  # scaffold_label_fontsize/3,
+                                        horizontalalignment='center',
+                                        verticalalignment='bottom', )
 
             for query_scaffold in query_length_df.index:
                 tick_labels = np.arange(0, query_length_df.loc[query_scaffold, "length"], tick_step)
@@ -943,13 +951,21 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     for tick in tick_list[1:]:
                         ax.add_line(Line2D((-bar_width/4, 0), (tick, tick),
                                            color="black", linewidth=gridwidth / 4))
+                        ax.add_line(Line2D((total_target_len + bar_width / 4, total_target_len), (tick, tick),
+                                           color="black", linewidth=gridwidth / 4))
                     if len(tick_list) >= 5:
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
-                            ax.add_line(Line2D((-bar_width/2, 0), (tick, tick),
+                            ax.add_line(Line2D((-bar_width * 0.4, 0), (tick, tick),
                                                color="darkred", linewidth=gridwidth / 2))
-                            ax.text(-bar_width * 0.6, tick, tick_label,
+                            ax.add_line(Line2D((total_target_len + bar_width * 0.4, total_target_len), (tick, tick),
+                                               color="darkred", linewidth=gridwidth / 2))
+                            ax.text(-bar_width * 0.5, tick, tick_label,
                                     fontsize=5, #scaffold_label_fontsize/3,
                                     horizontalalignment='right',
+                                    verticalalignment='center', )
+                            ax.text(total_target_len +bar_width * 0.5, tick, tick_label,
+                                    fontsize=5,  # scaffold_label_fontsize/3,
+                                    horizontalalignment='left',
                                     verticalalignment='center', )
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
