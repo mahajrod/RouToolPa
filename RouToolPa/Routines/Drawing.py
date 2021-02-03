@@ -831,7 +831,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
 
         total_query_len = query_length_df["length"].sum()
 
-        bar_width_fraction = 0.03
+        bar_width_fraction = 0.04
         bar_width = int(max(total_query_len, total_target_len) * bar_width_fraction)
 
         print("%s\tDrawing..." % str(datetime.datetime.now()))
@@ -927,7 +927,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                             counter += 1
 
                             ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
-                                               color="orange", linewidth=gridwidth / 2))
+                                               color="darkred", linewidth=gridwidth / 2))
                             if tick_number - counter * 5 >= 2:
                                 ax.text(tick, -bar_width * 0.6, tick_label,
                                         fontsize=5, #scaffold_label_fontsize/3,
@@ -946,7 +946,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     if len(tick_list) >= 5:
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
                             ax.add_line(Line2D((-bar_width/2, 0), (tick, tick),
-                                               color="red", linewidth=gridwidth / 2))
+                                               color="darkred", linewidth=gridwidth / 2))
                             ax.text(-bar_width * 0.6, tick, tick_label,
                                     fontsize=5, #scaffold_label_fontsize/3,
                                     horizontalalignment='right',
