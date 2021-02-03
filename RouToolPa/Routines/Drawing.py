@@ -774,7 +774,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           remove_scaffolds_absent_in_query_ordered_list=False,
                                           figsize=(16, 16), dpi=300,
                                           auto_scale_figure=False,
-                                          mbp_per_inch=150,
+                                          mbp_per_inch=None,
+                                          figure_height=None,
+                                          figure_width=None,
                                           grid_color='black',
                                           bar_color='grey',
                                           same_strand_color='red',
@@ -840,8 +842,15 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\tDrawing..." % str(datetime.datetime.now()))
         print("%s\t\tInitializing figure..." % str(datetime.datetime.now()))
 
+        query_to_target_ratio = float(total_query_len) / float(total_target_len)
+
         if auto_scale_figure:
-            figsi = (int(total_target_len / mbp_per_inch / 1000000), int(total_query_len / mbp_per_inch/1000000))
+            if mbp_per_inch is not None:
+                figsi = (int(total_target_len / mbp_per_inch / 1000000), int(total_query_len / mbp_per_inch/1000000))
+            elif figure_width is not None:
+                figsi = (int(query_to_target_ratio * figure_width), figure_width)
+            elif figure_height is not None:
+                figsi = (figure_height, int(figure_height / query_to_target_ratio))
         else:
             figsi = figsize
 
