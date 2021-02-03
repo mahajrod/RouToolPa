@@ -920,7 +920,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             for target_scaffold in target_length_df.index:
                 tick_labels = np.arange(0, target_length_df.loc[target_scaffold, "length"], tick_step)
                 tick_list = list(tick_labels + target_length_df.loc[target_scaffold, "cum_start"])
-                tick_labels = list(map(str, tick_labels / tick_unit))
+                tick_labels = list(map(str, tick_labels // tick_unit))
 
                 if len(tick_list) > 1:
                     for tick in tick_list[1:]:
@@ -930,7 +930,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
                             ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
                                                color="red", linewidth=gridwidth / 2))
-                            ax.text(tick, 0, tick_label,
+                            ax.text(tick, -bar_width * 0.75, tick_label,
                                     fontsize=scaffold_label_fontsize/2,
                                     horizontalalignment='center',
                                     verticalalignment='top', )
