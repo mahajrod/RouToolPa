@@ -841,7 +841,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         print("%s\t\tInitializing figure..." % str(datetime.datetime.now()))
 
         if auto_scale_figure:
-            figsi = (int(total_target_len / mbp_per_inch), int(total_query_len / mbp_per_inch))
+            figsi = (int(total_target_len / mbp_per_inch / 1000000), int(total_query_len / mbp_per_inch/1000000))
         else:
             figsi = figsize
 
