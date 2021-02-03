@@ -926,6 +926,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                 if len(tick_list) > 1:
                     target_tick_list += tick_list
                     target_tick_label_list += tick_labels
+                    for tick in tick_list:
+                        ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
+                                            color=grid_color, linewidth=gridwidth))
 
             ax.set_xticks(target_tick_list)
             ax.set_xticklabels(target_tick_label_list)
