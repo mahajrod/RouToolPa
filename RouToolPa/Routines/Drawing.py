@@ -768,6 +768,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                           target_ordered_list=(), target_reverse_list=(),
                                           query_black_list=(), query_white_list=(),
                                           query_ordered_list=(), query_reverse_list=(),
+                                          remove_scaffolds_absent_in_target_ordered_list=False,
+                                          remove_scaffolds_absent_in_query_ordered_list=False,
                                           figsize=(16, 16), dpi=300,
                                           grid_color='black',
                                           bar_color='grey',
@@ -802,13 +804,15 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                                scaffold_black_list=target_black_list,
                                                                sort_scaffolds=False,
                                                                scaffold_ordered_list=target_ordered_list,
-                                                               scaffold_white_list=target_white_list)
+                                                               scaffold_white_list=target_white_list,
+                                                               remove_scaffolds_absent_in_ordered_list=remove_scaffolds_absent_in_target_ordered_list)
 
         query_scaffold_list = self.get_filtered_scaffold_list(last_collection.query_scaffold_list,
                                                               scaffold_black_list=query_black_list,
                                                               sort_scaffolds=False,
                                                               scaffold_ordered_list=query_ordered_list,
-                                                              scaffold_white_list=query_white_list)
+                                                              scaffold_white_list=query_white_list,
+                                                              remove_scaffolds_absent_in_ordered_list=remove_scaffolds_absent_in_query_ordered_list)
 
         target_length_df = last_collection.target_scaffold_lengths.loc[target_scaffold_list]
         target_length_df["cum_end"] = target_length_df["length"].cumsum()
