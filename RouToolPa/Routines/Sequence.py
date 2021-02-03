@@ -674,7 +674,9 @@ class SequenceRoutines(FileRoutines):
                                    scaffold_white_list=[],
                                    scaffold_length_dict=None,
                                    length_column_index=0,
-                                   min_length=None):
+                                   min_length=None,
+                                   remove_scaffolds_absent_in_ordered_list=False):
+
         white_set = set(scaffold_white_list)
         black_set = set(scaffold_black_list)
         length_set = None
@@ -712,7 +714,8 @@ class SequenceRoutines(FileRoutines):
                     scaffold_list.remove(entry)
                 else:
                     print("WARNING!!!Entry(%s) from order list is absent in list of scaffolds!" % entry)
-            final_scaffold_list = final_scaffold_list + scaffold_list
+            if not remove_scaffolds_absent_in_ordered_list:
+                final_scaffold_list = final_scaffold_list + scaffold_list
         else:
             final_scaffold_list = scaffold_list
 
