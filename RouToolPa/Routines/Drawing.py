@@ -916,7 +916,6 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             target_tick_label_list = []
             query_tick_list = []
             query_tick_label_list = []
-            print(target_length_df)
 
             for target_scaffold in target_length_df.index:
                 tick_labels = np.arange(0, target_length_df.loc[target_scaffold, "length"], tick_step)
@@ -927,15 +926,11 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     target_tick_list += tick_list
                     target_tick_label_list += tick_labels
                     for tick in tick_list:
+                        ax.add_line(Line2D((tick, tick), (-bar_width/4, 0),
+                                           color="red", linewidth=gridwidth / 4))
+                    for tick in tick_list[::5]:
                         ax.add_line(Line2D((tick, tick), (-bar_width/2, 0),
-                                            color=grid_color, linewidth=gridwidth))
-
-            ax.set_xticks(target_tick_list)
-            ax.set_xticklabels(target_tick_label_list)
-            ax.spines["bottom"].set_color('red')
-
-            ax.set_yticks(query_tick_list)
-            ax.set_yticklabels(query_tick_label_list)
+                                           color="red", linewidth=gridwidth / 2))
 
         print("%s\t\tDrawing grid finished..." % str(datetime.datetime.now()))
         print("%s\t\tAdding labels..." % str(datetime.datetime.now()))
