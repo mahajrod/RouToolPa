@@ -926,7 +926,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                            color="black", linewidth=gridwidth / 4))
                         if show_tick_grid:
                             ax.add_line(Line2D((tick, tick), (0, total_query_len),
-                                               color="black", linewidth=gridwidth / 4))
+                                               color="black", linewidth=gridwidth / 8))
                     if len(tick_list) >= 5:
                         counter = 0
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
@@ -938,7 +938,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                color="darkred", linewidth=gridwidth / 2))
                             if show_tick_grid:
                                 ax.add_line(Line2D((tick, tick), (0, total_query_len),
-                                                   color="darkred", linewidth=gridwidth / 4))
+                                                   color="darkred", linewidth=gridwidth / 8))
                             if tick_number - counter * 5 >= 2:
                                 ax.text(tick, -bar_width * 0.5, tick_label,
                                         fontsize=5, #scaffold_label_fontsize/3,
@@ -962,7 +962,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                            color="black", linewidth=gridwidth / 4))
                         if show_tick_grid:
                             ax.add_line(Line2D((0, total_target_len), (tick, tick),
-                                               color="black", linewidth=gridwidth / 4))
+                                               color="black", linewidth=gridwidth / 8))
                     if len(tick_list) >= 5:
                         for tick, tick_label in zip(tick_list[::5][1:], tick_labels[::5][1:]):
                             ax.add_line(Line2D((-bar_width * 0.4, 0), (tick, tick),
@@ -971,7 +971,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                                color="darkred", linewidth=gridwidth / 2))
                             if show_tick_grid:
                                 ax.add_line(Line2D((0, total_target_len), (tick, tick),
-                                                   color="darkred", linewidth=gridwidth / 4))
+                                                   color="darkred", linewidth=gridwidth / 8))
                             ax.text(-bar_width * 0.5, tick, tick_label,
                                     fontsize=5,  # scaffold_label_fontsize/3,
                                     horizontalalignment='right',
