@@ -520,6 +520,7 @@ class CollectionVCF:
                                    converters=self.parsing_parameters[self.parsing_mode]["converters"],
                                    names=self.parsing_parameters[self.parsing_mode]["col_names"],
                                    index_col=self.VCF_COLS["CHROM"])
+        self.records.index = pd.Index(list(map(str, self.records.index)))
         fd.close()
         print("%s\tReading file finished..." % str(datetime.datetime.now()))
 
