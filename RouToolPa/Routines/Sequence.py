@@ -355,7 +355,7 @@ class SequenceRoutines(FileRoutines):
                                     out_fd.write("\n")
                             elif region_file_format == 'samtools':
                                 if len(region) == 3:
-                                    out_fd.write("\t".join(region))
+                                    out_fd.write("\t".join(list(map(str, region))))
                                 elif len(region) == 1:
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
