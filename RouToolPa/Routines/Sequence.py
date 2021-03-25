@@ -347,12 +347,13 @@ class SequenceRoutines(FileRoutines):
                                 elif len(region) == 1 :
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
-                            elif region_file_format == 'GATK':
+                            elif (region_file_format == 'GATK') or (region_file_format == 'samtools'):
                                 if len(region) == 3:
                                     out_fd.write("%s:%s-%s\n" % (region[0], region[1], region[2]))
                                 elif len(region) == 1:
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
+
                 index += 1
             scaffold_to_region_correspondence_dict.write("%s/SCAFFOLD_TO_REGION.correspondence" % output_dir,
                                                          splited_values=True)
