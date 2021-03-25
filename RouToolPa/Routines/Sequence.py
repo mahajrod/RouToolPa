@@ -174,7 +174,7 @@ class SequenceRoutines(FileRoutines):
 
             #len_df = pd.DataFrame.from_dict(raw_len_dict, orient="index", columns=("scaffold", "length"))
 
-        len_dict = OrderedDict()
+        len_dict = SynDict()
         """
         if black_list_scaffolds:
             len_df = len_df[~len_df.index.isin(black_list_scaffolds)]
