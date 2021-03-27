@@ -344,7 +344,7 @@ class SequenceRoutines(FileRoutines):
                             if region_file_format == 'simple':
                                 if len(region) == 3:
                                     out_fd.write("%s\t%s\t%s\n" % (region[0], region[1], region[2]))
-                                elif len(region) == 1 :
+                                elif len(region) == 1:
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
                             elif region_file_format == 'GATK':
@@ -356,6 +356,7 @@ class SequenceRoutines(FileRoutines):
                             elif region_file_format == 'samtools':
                                 if len(region) == 3:
                                     out_fd.write("\t".join(list(map(str, region))))
+                                    out_fd.write("\n")
                                 elif len(region) == 1:
                                     out_fd.write(region[0])
                                     out_fd.write("\n")
