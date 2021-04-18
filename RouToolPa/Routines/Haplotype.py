@@ -102,3 +102,18 @@ class HaplotypeRoutines(SequenceClusterRoutines):
                     out_fd.write("\t\t%s %i\n" % (haplotype_id, len(haplotype_dict[haplotype_id])))
             out_fd.write("\t;\nEND;\n\n")
 
+    @staticmethod
+    def count_haplotype_traits(haplotype_traits, output_file):
+        traits_df = pd.read_csv(haplotype_traits, sep="\t", index_col=0, header=0)
+        count_series = traits_df.groupby(by=["haplotype", "location"]).size()
+        haplotypes = count_series.index.get_level_values(level=0).unique()
+        locations = count_series.index.get_level_values(level=1).unique()
+        count_table_df = pd.DataFrame(0, index=haplotypes,
+                                      columns=locations)
+        for hap in haplotypes:
+            for loc in locations:
+                if (hap, loc) in count_series.index:
+                    count_table_df.loc[hap, loc] = count_series.loc[(hap,loc)]
+        #print(count_table_df)
+        count_table_df.to_csv(output_file, sep="\t", header=True, index=True)
+

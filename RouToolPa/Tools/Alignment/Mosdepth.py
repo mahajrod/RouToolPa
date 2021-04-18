@@ -47,7 +47,23 @@ class Mosdepth(Tool):
 
     def get_coverage(self, input_bam, output_prefix,
                      no_per_base=False, bed=None, use_median=False, mapq_threshold=None):
+        """
+        Output files
+        ${PREFIX}.mosdepth.global.dist.txt
+        ${PREFIX}.mosdepth.summary.txt
+        ${PREFIX}.per-base.bed.gz
+        ${PREFIX}.cov.per-base.bed.gz.csi
 
+        :param input_bam:
+        :param output_prefix:
+        :param no_per_base:
+        :param bed:
+        :param use_median:
+        :param mapq_threshold:
+        :return:
+
+
+        """
         options = self.parse_options(input_bam=input_bam, output_prefix=output_prefix,
                                      no_per_base=no_per_base, bed=bed, use_median=use_median, mapq_threshold=mapq_threshold)
 

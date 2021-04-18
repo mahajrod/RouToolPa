@@ -297,7 +297,7 @@ class AlignmentRoutines(SequenceRoutines):
 
             for line_list in izip(*[self.file_line_as_list_generator(filename, buffering=buffering) for filename in coverage_file_list]):
 
-                coverage_list = [int(line_list[i][coverage_column]) for i in index_list]
+                coverage_list = [int(float(line_list[i][coverage_column])) for i in index_list]
                 if check_pos(coverage_list):
                     out_fd.write("%s\t%s\t%s\n" % (line_list[0][scaffold_column],
                                                    line_list[0][position_column],
