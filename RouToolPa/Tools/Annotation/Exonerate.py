@@ -399,7 +399,7 @@ class Exonerate(Tool):
                             elif "Query range:" in tmp:
                                 #print tmp
                                 #print tmp.strip("Query range: ").split()[-1].split(" -> ")
-                                current_query_start, current_query_end = map(int, tmp.strip().split("Query range: ")[-1].split(" -> "))
+                                current_query_start, current_query_end = list(map(int, tmp.strip().split("Query range: ")[-1].split(" -> ")))
                                 current_hit_length = current_query_end - current_query_start
                                 
                                 full_length_flag = True if current_hit_length == current_query_len else False
@@ -468,12 +468,12 @@ class Exonerate(Tool):
                                 fd_dict["stats_" + output_type].write(hit_stat_str)
 
                                 line_list = tmp.strip().split("\t")
-                                attr_list = map(lambda s: s.split(), line_list[-1].split(";"))
+                                attr_list = list(map(lambda s: s.split(), line_list[-1].split(";")))
                                 for i in range(0, len(attr_list)):
                                     if attr_list[i][0] == "gene_id":
                                         attr_list[i][1] = current_gene_id
 
-                                line_list[-1] = ";".join(map(lambda s: " ".join(s), attr_list))
+                                line_list[-1] = ";".join(list(map(lambda s: " ".join(s), attr_list)))
                                 tmp = "\t".join(line_list) + "\n"
 
                                 line_list[-1] = ("transcript_id %s ; " % current_transcript_id) + line_list[-1]
