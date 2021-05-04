@@ -580,10 +580,10 @@ class AUGUSTUS(Tool):
                 line_list = line.strip().split("\t")
                 total_support_list.append(float(line_list[2]))
 
-                cds_support_tmp = map(float, line_list[3].split("/"))
+                cds_support_tmp = list(map(float, line_list[3].split("/")))
                 cds_support_list.append(cds_support_tmp[0] / cds_support_tmp[1] * 100)
 
-                intron_support_tmp = map(float, line_list[4].split("/"))
+                intron_support_tmp = list(map(float, line_list[4].split("/")))
                 if intron_support_tmp[1] == 0:
                     intron_support_list.append(-1)
                 else:
@@ -635,8 +635,8 @@ class AUGUSTUS(Tool):
                     for CDS_line in transcript_cds_list:
                         CDS_line_list = CDS_line.strip().split("\t")
                         #print CDS_line
-                        CDS_description_list = map(lambda string: string.split("="),
-                                                   CDS_line_list[8].split(";"))
+                        CDS_description_list = list(map(lambda string: string.split("="),
+                                                   CDS_line_list[8].split(";")))
                         CDS_id = None
 
                         exon_description_list = deepcopy(CDS_description_list)
@@ -658,7 +658,7 @@ class AUGUSTUS(Tool):
                         exon_line = "%s\t%s\texon\t" % (CDS_line_list[0], CDS_line_list[1])
                         exon_line += "\t".join(CDS_line_list[3:8])
 
-                        exon_description = ";".join(map(lambda s: "=".join(s), exon_description_list))
+                        exon_description = ";".join(list(map(lambda s: "=".join(s), exon_description_list)))
                         exon_line += "\t%s\n" % exon_description
                         out_fd.write(exon_line)
                     if not(start_codon_line is None):
