@@ -163,10 +163,10 @@ class TRF(Tool):
         """
 
         """
-        print "period:", min_period, max_period
-        print "copy:", min_copy_number, max_copy_number
-        print "pattern", pattern
-        print gff_description_dict
+        print("period:", min_period, max_period)
+        print("copy:", min_copy_number, max_copy_number)
+        print("pattern", pattern)
+        print(gff_description_dict)
         """
         if not (min_period is None):
             if int(gff_description_dict["Period"]) < min_period:

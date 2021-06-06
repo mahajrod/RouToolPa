@@ -242,7 +242,7 @@ class AlignmentRoutines(SequenceRoutines):
                                               sample_labels=None,
                                               max_threshold=2.5, min_threshold=None,min_sample_number=1,
                                               scaffold_column=0, position_column=1, coverage_column=2,
-                                              buffering=10000000):
+                                              buffering=100000000):
         """
 
         :param coverage_file_list:

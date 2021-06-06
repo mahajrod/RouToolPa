@@ -124,10 +124,10 @@ class AnnotationsRoutines(SequenceRoutines):
                     if len(tmp_entry) != 2:
                         continue
                     if tmp_entry[0] == "transcript_id":
-                        #print "tttt"
+                        #print ("tttt")
                         transcript_id = tmp_entry[1][1:-1]  # remove quotes
                     elif tmp_entry[0] == "protein_id":
-                        #print "ppppp"
+                        #print ("ppppp")
                         protein_id = tmp_entry[1][1:-1]
 
                 if (transcript_id is not None) and (protein_id is not None):
@@ -454,7 +454,7 @@ class AnnotationsRoutines(SequenceRoutines):
                     found = False
                     for field_id in field_id_list:
                         if field_id in description_dict:
-                            #print "aaaaa"
+                            #print ("aaaaa")
                             for value in description_dict[field_id]:
                                 if value in value_list:
                                     out_fd.write(line)

@@ -24,7 +24,7 @@ else:
 
 import scipy.stats as stats
 
-from BCBio import GFF
+from RouToolPa.Parsers.GFF import CollectionGFF
 
 from Bio import AlignIO
 
@@ -219,9 +219,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         for extension in ext_list:
             plt.savefig("%s.%s" % (output_prefix, extension), dpi=dpi)
 
-
-
-    def draw_alignment(self, alignment, features, output_prefix, record_style=None, ext_list=["svg", "png"],
+    def draw_alignment(self, alignment, collection_gff, output_prefix, record_style=None, ext_list=["svg", "png"],
                        label_fontsize=13, left_offset=0.2, figure_width=8, id_synonym_dict=None,
                        id_replacement_mode="partial", domain_style="vlines"):
         """
@@ -253,9 +251,8 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
         gap_line_y_jump = int(protein_height/2)
 
         domen_colors = []
-        for feature in features:
-            if (feature.type == "domen") or (feature.type == "domain"):
-                domen_colors.append(subplot._get_lines.color_cycle.readline())
+        for i in range(0, len(collection_gff.records[(collection_gff.records["featuretype"] == "domen") | (collection_gff.records["featuretype"] == "domain")])):
+            domen_colors.append(subplot._get_lines.color_cycle.readline())
 
         for record in alignment:
 
@@ -330,19 +327,19 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                     #print prev_x, alignment_length - prev_x
                     subplot.add_patch(fragment)
             i = 0
-            for feature in features:
-                if (feature.type == "domen") or (feature.type == "domain"):
-                    #print feature.id, feature.location
-                    if domain_style == "rectangle":
-                        fragment = Rectangle((feature.location.start, start_y), len(feature)-1, protein_height, fill=False,
+            for feature in collection_gff.records[(collection_gff.records["featuretype"] == "domen") | (collection_gff.records["featuretype"] == "domain")]:
+                #TODO: rewrite code below for collection_gff
+                if domain_style == "rectangle":
+                    fragment = Rectangle((feature.location.start, start_y), len(feature)-1, protein_height, fill=False,
                                              facecolor="grey", edgecolor=domen_colors[i]) #edgecolor="green",
-                        subplot.add_patch(fragment)
-                    elif domain_style == "vlines":
-                        plt.vlines(feature.location.start, protein_height, start_y + protein_height, colors=domen_colors[i])
-                        plt.vlines(feature.location.end - 1, protein_height, start_y + protein_height, colors=domen_colors[i])
-                    i += 1
+                    subplot.add_patch(fragment)
+                elif domain_style == "vlines":
+                    plt.vlines(feature.location.start, protein_height, start_y + protein_height, colors=domen_colors[i])
+                    plt.vlines(feature.location.end - 1, protein_height, start_y + protein_height, colors=domen_colors[i])
+                i += 1
 
-        for feature in features:
+        for feature in collection_gff.records[collection_gff.records["featuretype"] == "domen"]:
+            # TODO: rewrite code below for collection_gff
             if feature.type == "domen":
                 #print feature.id, feature.location
                 subplot.annotate(feature.id, xy=(feature.location.start + len(feature)/2, gap_y_start + protein_height),
@@ -362,17 +359,9 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                                  id_replacement_mode="partial"):
 
         alignment = AlignIO.read(alignment_file, format=alignment_format)
-        if feature_gff:
-            with open(feature_gff, "r") as gff_fd:
-                record = list(GFF.parse(gff_fd))[0]
-                features = record.features
-                record_id = record.id
-                gap_coords_list, gap_len_list = self.find_homopolymers(record.seq, "-", min_size=1,
-                                                                       search_type="perfect")
-        else:
-            features = []
+        collection_gff = CollectionGFF(in_file=feature_gff) if feature_gff else None
 
-        self.draw_alignment(alignment, features, output_prefix, ext_list=ext_list, label_fontsize=label_fontsize,
+        self.draw_alignment(alignment, collection_gff, output_prefix, ext_list=ext_list, label_fontsize=label_fontsize,
                             left_offset=left_offset, figure_width=figure_width, id_synonym_dict=id_synonym_dict,
                             id_replacement_mode=id_replacement_mode)
 

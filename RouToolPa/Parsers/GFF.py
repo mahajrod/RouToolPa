@@ -335,6 +335,10 @@ class CollectionGFF(Parser):
     def total_length(self):
         return np.sum(self.records['end'] - self.records['start'])
 
+    #def get_feature_length(self, output=None, featuretype_list=None):
+    #
+    #    feature_records = self.records[self.records["featuretype"].isin(featuretype_list)] if featuretype_list else self.records
+
     def collapse_records(self, sort=True, verbose=True):
         """
         strand-independent collapse

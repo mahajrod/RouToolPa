@@ -86,15 +86,15 @@ class FaCutReport:
         """
         print len((self.tile_table[:, 0:self.table_ids["tile"]]))
         print list(np.where(np.diff(self.tile_table[:, 0:self.table_ids["tile"]], axis=0)))
-        print "CCCCCCCCCCCCCCCCCCCCCC"
+        print ("CCCCCCCCCCCCCCCCCCCCCC")
 
-        print list(np.diff(self.tile_table[:, 0:self.table_ids["tile"]], axis=0))
-        print "BBBBBBBBBBBBBBB"
+        print (list(np.diff(self.tile_table[:, 0:self.table_ids["tile"]], axis=0)))
+        print ("BBBBBBBBBBBBBBB")
 
 
-        print lane_tile_list
-        print "AAAAAAAAAAAAAAAAAAAAAAAAAAa"
-        print "\n"
+        print (lane_tile_list)
+        print ("AAAAAAAAAAAAAAAAAAAAAAAAAAa")
+        print ("\n")
         """
         #print lane_tile_list
         lane_table = []

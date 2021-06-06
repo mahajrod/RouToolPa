@@ -192,7 +192,7 @@ class CollectionLinks:
         hic_scaffold_df = hic_scaffold_df[(hic_scaffold_df["hic_scaffold_start"] <= start) & (hic_scaffold_df["hic_scaffold_end"] >= end)]
 
         if len(hic_scaffold_df["raw_scaffold_id"]) > 1:
-            print "Ambigious coordinates"
+            print("Ambigious coordinates")
             return None
         elif hic_scaffold_df.empty:
             return None

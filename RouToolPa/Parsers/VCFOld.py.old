@@ -1003,7 +1003,7 @@ class CollectionVCF(Collection):
 
         normalized_ylabel = "%s per %i %s" % (ylabel, mb if mb >= 1 else kb if kb >=1 else multiplier, "Mbp" if mb >= 1 else "Kbp" if kb >= 1 else "bp")
 
-        print "Parsing reference and..."
+        print("Parsing reference and...")
         reference = ReferenceGenome(reference_genome,
                                     masked_regions=None,
                                     index_file="refgen.idx",
