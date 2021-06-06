@@ -1,0 +1,39 @@
+package:
+  name: "routoolpa"
+  version: "0.92"
+about:
+  summary: "Routines, Tools and Parsers"
+source:
+  path: ../
+requirements:
+  build:
+    - python {{ python }}
+    - pip
+    - setuptools
+    - ete3
+    - scipy
+    - numpy
+    - pandas
+    - matplotlib
+    - statsmodels
+    - biopython
+    - pyparsing
+    - xmltodict
+    - venn
+    - bcbio-gff
+  run:
+    - python
+    - scipy
+    - numpy
+    - pandas
+    - matplotlib
+    - ete3
+    - statsmodels
+    - pyparsing
+    - xmltodict
+    - biopython
+    - venn
+    - bcbio-gff
+
+build:
+  script: python setup.py install
