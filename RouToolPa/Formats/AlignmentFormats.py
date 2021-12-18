@@ -43,7 +43,7 @@ ALN_FMT_COLS = OrderedDict({
                         "blockSizes": 18,
                         "qStarts": 19,
                         "tStarts": 20,
-                         })
+                         }),
 
     })
 

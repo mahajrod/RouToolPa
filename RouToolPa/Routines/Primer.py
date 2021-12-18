@@ -1,6 +1,6 @@
 __author__ = 'mahajrod'
 
-from Data.Nucleotides import degenerated_nucleotides
+from RouToolPa.Data.Nucleotides import degenerated_nucleotides
 
 
 class PrimerRoutines:
