@@ -466,10 +466,11 @@ class MatplotlibRoutines:
                                         subplot=subplot_list[dataset_index],
                                         suptitle=None)
             #print histo
-            if output_prefix and list_of_data_arrays[dataset_index].size:
+            if output_prefix and (list_of_data_arrays[dataset_index].size > 0):
                 output_histo_file = "%s.%s.%shisto" % (output_prefix,
                                                        dataset_index if parameters[8] is None else parameters[9],
                                                        ("log%i." % parameters[7]) if parameters[7] else "")
+                print(histo)
                 np.savetxt(output_histo_file, histo, fmt="%i\t%i")
 
         if output_prefix:
