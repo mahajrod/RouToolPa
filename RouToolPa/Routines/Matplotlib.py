@@ -315,8 +315,8 @@ class MatplotlibRoutines:
                 raise ValueError("Maximum threshold (%s) is lower than minimum threshold(%s)" % (str(max_threshold),
                                                                                                  str(min_threshold)))
 
-        max_lenn = max(data_array) if data_array else 0
-        min_lenn = min(data_array) if data_array else 0
+        max_lenn = max(data_array) if (data_array.size > 0) else 0
+        min_lenn = min(data_array) if (data_array.size > 0)  else 0
 
         max_len = max_threshold if (max_threshold is not None) else max_lenn
         min_len = min_threshold if (min_threshold is not None) else min_lenn
