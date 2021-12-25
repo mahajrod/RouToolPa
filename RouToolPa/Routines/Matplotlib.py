@@ -470,8 +470,8 @@ class MatplotlibRoutines:
                 output_histo_file = "%s.%s.%shisto" % (output_prefix,
                                                        dataset_index if parameters[8] is None else parameters[9],
                                                        ("log%i." % parameters[7]) if parameters[7] else "")
-                print(histo)
-                np.savetxt(output_histo_file, histo, fmt="%i\t%i")
+                #print(histo)
+                np.savetxt(output_histo_file, histo)
 
         if output_prefix:
             for ext in extensions:
