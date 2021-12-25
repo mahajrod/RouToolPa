@@ -668,7 +668,7 @@ class MatplotlibRoutines:
                                                            comments="#"):
 
         list_of_data_arrays = []
-        for filename, column_idx in zip(list_of_files, column_idx_list):
+        for filename, column_idx in zip(list_of_files, column_idx_list if column_idx_list is not None else [0] * len(list_of_files)):
             list_of_data_arrays.append(np.loadtxt(filename, usecols=(column_idx,),
                                                   delimiter=separator, comments=comments))
 
