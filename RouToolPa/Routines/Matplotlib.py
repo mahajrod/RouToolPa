@@ -395,7 +395,7 @@ class MatplotlibRoutines:
                     plt.savefig("%s.%s" % (output_prefix, ext))
 
             # save histo values
-            np.savetxt("%s.histo" % output_prefix, zip(bins[:-1], n), fmt="%i\t%i")
+            np.savetxt("%s.histo" % output_prefix, np.column_stack(bins[:-1], n), fmt="%i\t%i")
             np.savetxt("%s.bins" % output_prefix, bins, fmt="%i")
         if close_figure:
             plt.close(figure)
@@ -471,7 +471,7 @@ class MatplotlibRoutines:
                                                        dataset_index if parameters[8] is None else parameters[9],
                                                        ("log%i." % parameters[7]) if parameters[7] else "")
                 print(histo)
-                np.savetxt(output_histo_file, histo, fmt="%f\t%f")
+                np.savetxt(output_histo_file, np.column_stack(histo), fmt="%f\t%f")
 
         if output_prefix:
             for ext in extensions:
