@@ -471,7 +471,7 @@ class MatplotlibRoutines:
                                                        dataset_index if parameters[8] is None else parameters[9],
                                                        ("log%i." % parameters[7]) if parameters[7] else "")
                 print(histo)
-                np.savetxt(output_histo_file, np.column_stack(histo), fmt="%f\t%f")
+                np.savetxt(output_histo_file, np.column_stack((histo[1][:-1], histo[0])), fmt="%f\t%f")
 
         if output_prefix:
             for ext in extensions:
