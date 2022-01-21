@@ -19,6 +19,7 @@ from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Haplotype import HaplotypeRoutines
 from RouToolPa.Routines.Evolution import EvolutionRoutines
 from RouToolPa.Routines.Alignment import AlignmentRoutines
+from RouToolPa.Routines.Filtering import FilteringRoutines
 from RouToolPa.Routines.Expression import ExpressionRoutines
 from RouToolPa.Routines.Matplotlib import MatplotlibRoutines
 from RouToolPa.Routines.Annotations import AnnotationsRoutines
@@ -31,7 +32,6 @@ GORoutines = GORoutines()
 WGARoutines = WGARoutines()
 VCFRoutines = VCFRoutines()
 MathRoutines = MathRoutines()
-
 TreeRoutines = TreeRoutines()
 NCBIRoutines = NCBIRoutines()
 MtDNARoutines = MtDNARoutines()
@@ -47,6 +47,7 @@ SequenceRoutines = SequenceRoutines()
 HaplotypeRoutines = HaplotypeRoutines()
 EvolutionRoutines = EvolutionRoutines()
 AlignmentRoutines = AlignmentRoutines()
+FilteringRoutines = FilteringRoutines()
 ExpressionRoutines = ExpressionRoutines()
 MatplotlibRoutines = MatplotlibRoutines()
 AnnotationsRoutines = AnnotationsRoutines()

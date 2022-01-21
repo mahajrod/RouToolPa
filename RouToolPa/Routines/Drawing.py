@@ -1068,10 +1068,10 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
             def get_strand_specific_records(collection, target_scaffold_id, query_scaffold_id):
                 return (collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
                                            & collection.records[collection.query_id_syn].isin([query_scaffold_id])
-                                           & (collection.records[collection.query_strand_syn] == "+")],
+                                           & (collection.records[collection.query_strand_syn] == "++")],
                         collection.records[collection.records[collection.target_id_syn].isin([target_scaffold_id])
                                            & collection.records[collection.query_id_syn].isin([query_scaffold_id])
-                                           & (collection.records[collection.query_strand_syn] == "-")])
+                                           & (collection.records[collection.query_strand_syn] == "+-")])
         else:
             raise ValueError("ERROR!!! Unknown collection type (neither CollectionPSL nor CollectionLast)")
 
