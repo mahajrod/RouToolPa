@@ -25,8 +25,9 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
              self.metaopen(kraken_output, "r") as kraken_input_fd:
             print(taxon_id_list)
             for kraken_line in kraken_input_fd:
+                print(kraken_line.split()[2])
                 if kraken_line.split()[2] in taxon_id_list:
-                    print(kraken_line.split()[2])
+
                     if check_read_id:
                         forward_first_line = forward_input_fd.readline()
                         forward_id = forward_first_line.split()[0][1]
