@@ -26,12 +26,13 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
             print(taxon_id_list)
             for kraken_line in kraken_input_fd:
                 print(kraken_line.split()[2])
-                if kraken_line.split()[2] in taxon_id_list:
+                kraken_line_list = kraken_line.split()
+                if kraken_line_list[2] in taxon_id_list:
 
                     if check_read_id:
                         forward_first_line = forward_input_fd.readline()
                         forward_id = forward_first_line.split()[0][1:]
-                        if forward_id != kraken_line[1]:
+                        if forward_id != kraken_line_list[1]:
                             print(kraken_line)
                             print(forward_first_line)
                             raise ValueError("ERROR!!! Read ids in KRAKEN output and read files doesn't match! ")
