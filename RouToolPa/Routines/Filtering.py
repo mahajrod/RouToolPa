@@ -14,15 +14,15 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
                                        reverse_fastq=None, gzip=True, check_read_id=False):
 
         if reverse_fastq is not None:
-            forward_output_fd = self.metaopen(output_prefix + "_1.fastq" + (".gz" if gzip else ""), "w")
-            reverse_output_fd = self.metaopen(output_prefix + "_2.fastq" + (".gz" if gzip else ""), "w")
+            forward_output_fd = self.metaopen(output_prefix + "_1.fastq" + (".gz" if gzip else ""), "w", buffering=100000000)
+            reverse_output_fd = self.metaopen(output_prefix + "_2.fastq" + (".gz" if gzip else ""), "w", buffering=100000000)
 
         else:
-            forward_output_fd = self.metaopen(output_prefix + ".fastq" + (".gz" if gzip else ""), "w")
+            forward_output_fd = self.metaopen(output_prefix + ".fastq" + (".gz" if gzip else ""), "w", buffering=100000000)
 
-        with self.metaopen(forward_fastq, "r") as forward_input_fd, \
-             (self.metaopen(reverse_fastq, "r") if reverse_fastq else None) as reverse_input_fd, \
-             self.metaopen(kraken_output, "r") as kraken_input_fd:
+        with self.metaopen(forward_fastq, "r", buffering=100000000) as forward_input_fd, \
+             (self.metaopen(reverse_fastq, "r", buffering=100000000) if reverse_fastq else None) as reverse_input_fd, \
+             self.metaopen(kraken_output, "r", buffering=100000000) as kraken_input_fd:
             counter = 0
             for kraken_line in kraken_input_fd:
                 kraken_line_list = kraken_line.split()
