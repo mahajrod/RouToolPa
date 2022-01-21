@@ -44,6 +44,12 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
                         if reverse_fastq is not None:
                             for i in 0, 1, 2, 3:
                                 reverse_output_fd.write(reverse_input_fd.readline())
+                else:
+                    for i in 0, 1, 2, 3:
+                        forward_input_fd.readline()
+                    if reverse_fastq is not None:
+                        for i in 0, 1, 2, 3:
+                            reverse_input_fd.readline()
 
         if reverse_fastq is not None:
             forward_output_fd.close()
