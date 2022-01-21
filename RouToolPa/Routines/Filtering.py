@@ -30,8 +30,10 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
 
                     if check_read_id:
                         forward_first_line = forward_input_fd.readline()
-                        forward_id = forward_first_line.split()[0][1]
+                        forward_id = forward_first_line.split()[0][1:]
                         if forward_id != kraken_line[1]:
+                            print(kraken_line)
+                            print(forward_first_line)
                             raise ValueError("ERROR!!! Read ids in KRAKEN output and read files doesn't match! ")
                         else:
                             print("AAAA")
