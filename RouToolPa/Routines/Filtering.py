@@ -23,15 +23,17 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
         with self.metaopen(forward_fastq, "r") as forward_input_fd, \
              (self.metaopen(reverse_fastq, "r") if reverse_fastq else None) as reverse_input_fd, \
              self.metaopen(kraken_output, "r") as kraken_input_fd:
-
+            print(taxon_id_list)
             for kraken_line in kraken_input_fd:
                 if kraken_line.split()[2] in taxon_id_list:
+                    print(kraken_line.split()[2])
                     if check_read_id:
                         forward_first_line = forward_input_fd.readline()
                         forward_id = forward_first_line.split()[0][1]
                         if forward_id != kraken_line[1]:
                             raise ValueError("ERROR!!! Read ids in KRAKEN output and read files doesn't match! ")
                         else:
+                            print("AAAA")
                             forward_output_fd.write(forward_first_line)
                             for i in 0, 1, 2:
                                 forward_output_fd.write(forward_input_fd.readline())
@@ -45,6 +47,7 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
                             for i in 0, 1, 2, 3:
                                 reverse_output_fd.write(reverse_input_fd.readline())
                 else:
+                    print("BBBB")
                     for i in 0, 1, 2, 3:
                         forward_input_fd.readline()
                     if reverse_fastq is not None:
