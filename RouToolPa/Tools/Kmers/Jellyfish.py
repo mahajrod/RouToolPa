@@ -8,7 +8,6 @@ import matplotlib
 
 
 matplotlib.use('Agg')
-os.environ['MPLCONFIGDIR'] = '/tmp/'
 import matplotlib.pyplot as plt
 plt.ioff()
 from RouToolPa.Tools.Abstract import Tool

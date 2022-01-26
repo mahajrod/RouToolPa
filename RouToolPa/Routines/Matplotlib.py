@@ -6,7 +6,6 @@ from itertools import cycle, islice
 from collections import Iterable
 #import matplotlib
 #matplotlib.use('Agg')
-os.environ['MPLCONFIGDIR'] = '/tmp/'
 import matplotlib.pyplot as plt
 plt.ioff()
 from matplotlib.transforms import Bbox, TransformedBbox, blended_transform_factory
