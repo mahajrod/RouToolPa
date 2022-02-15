@@ -3,7 +3,7 @@
 import sys
 from collections import OrderedDict
 
-from ete2 import Tree #, TreeStyle, AttrFace, faces, NodeStyle
+from ete3 import Tree #, TreeStyle, AttrFace, faces, NodeStyle
 from RouToolPa.Collections.General import IdList, TwoLvlDict, SynDict
 
 

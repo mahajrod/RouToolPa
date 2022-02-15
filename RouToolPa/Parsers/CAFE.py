@@ -2,7 +2,7 @@
 __author__ = 'mahajrod'
 
 import numpy as np
-from ete2 import Tree, TreeStyle, AttrFace, faces
+from ete3 import Tree, TreeStyle, AttrFace, faces
 
 
 class HeaderCAFE(list):
