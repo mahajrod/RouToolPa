@@ -23,7 +23,7 @@ else:
     raise ValueError("ERROR!!! Unsupported python version: %s" % str(sys.version_info[0]))
 """
 setup(name='RouToolPa',
-      version='0.92',
+      version='0.93',
       packages=find_packages(),
       author='Sergei F. Kliver',
       author_email='mahajrod@gmail.com',
