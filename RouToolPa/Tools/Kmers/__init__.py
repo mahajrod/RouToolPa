@@ -7,3 +7,4 @@ from RouToolPa.Tools.Kmers.GenomeScope2 import GenomeScope2
 Jellyfish = Jellyfish()
 Glistmaker = Glistmaker()
 GenomeScope2 = GenomeScope2()
+
