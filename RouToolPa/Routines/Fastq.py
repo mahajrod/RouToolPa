@@ -377,28 +377,29 @@ class FastQRoutines(FileRoutines):
 
     def add_read_name_prefix(self, forward_readfile, reverse_readfile, readname_prefix, output_prefix, interleaved=False):
         with self.metaopen(forward_readfile, "r") as forward_fd, self.metaopen(reverse_readfile, "r") as reverse_fd:
-            forward_name = forward_fd.readline()
-            forward_seq = forward_fd.readline()
-            forward_sep = forward_fd.readline()
-            forward_qual = forward_fd.readline()
+            for line in forward_fd:
+                forward_name = line
+                forward_seq = forward_fd.readline()
+                forward_sep = forward_fd.readline()
+                forward_qual = forward_fd.readline()
 
-            reverse_name = reverse_fd.readline()
-            reverse_seq = reverse_fd.readline()
-            reverse_sep = reverse_fd.readline()
-            reverse_qual = reverse_fd.readline()
+                reverse_name = reverse_fd.readline()
+                reverse_seq = reverse_fd.readline()
+                reverse_sep = reverse_fd.readline()
+                reverse_qual = reverse_fd.readline()
 
-            forward_name = forward_name[0] + readname_prefix + forward_name[1]
-            reverse_name = reverse_name[0] + readname_prefix + reverse_name[1]
+                forward_name = forward_name[0] + readname_prefix + forward_name[1]
+                reverse_name = reverse_name[0] + readname_prefix + reverse_name[1]
 
-            if interleaved:
-                with self.metaopen(output_prefix + ".fastq", "w") as out_fd:
-                    for row in forward_name, forward_seq, forward_sep, forward_qual, \
-                               reverse_name, reverse_seq, reverse_sep, reverse_qual:
-                        out_fd.write(row)
-            else:
-                with self.metaopen(output_prefix + "_1.fastq", "w") as forward_out_fd, \
-                     self.metaopen(output_prefix + "_2.fastq", "w") as reverse_out_fd:
-                    for row in forward_name, forward_seq, forward_sep, forward_qual:
-                        forward_out_fd.write(row)
-                    for row in reverse_name, reverse_seq, reverse_sep, reverse_qual:
-                        reverse_out_fd.write(row)
+                if interleaved:
+                    with self.metaopen(output_prefix + ".fastq", "w") as out_fd:
+                        for row in forward_name, forward_seq, forward_sep, forward_qual, \
+                                   reverse_name, reverse_seq, reverse_sep, reverse_qual:
+                            out_fd.write(row)
+                else:
+                    with self.metaopen(output_prefix + "_1.fastq", "w") as forward_out_fd, \
+                         self.metaopen(output_prefix + "_2.fastq", "w") as reverse_out_fd:
+                        for row in forward_name, forward_seq, forward_sep, forward_qual:
+                            forward_out_fd.write(row)
+                        for row in reverse_name, reverse_seq, reverse_sep, reverse_qual:
+                            reverse_out_fd.write(row)
