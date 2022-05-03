@@ -376,6 +376,12 @@ class FastQRoutines(FileRoutines):
             print("%s read pairs: %i" % (key, counter_dict[key]))
 
     def add_read_name_prefix(self, forward_readfile, reverse_readfile, readname_prefix, output_prefix, interleaved=False):
+        if interleaved:
+            out_fd = self.metaopen(output_prefix + ".fastq", "w")
+        else:
+            forward_out_fd = self.metaopen(output_prefix + "_1.fastq", "w")
+            reverse_out_fd = self.metaopen(output_prefix + "_2.fastq", "w")
+
         with self.metaopen(forward_readfile, "r") as forward_fd, self.metaopen(reverse_readfile, "r") as reverse_fd:
             for line in forward_fd:
                 forward_name = line
@@ -392,14 +398,16 @@ class FastQRoutines(FileRoutines):
                 reverse_name = reverse_name[0] + readname_prefix + reverse_name[1:]
 
                 if interleaved:
-                    with self.metaopen(output_prefix + ".fastq", "w") as out_fd:
-                        for row in forward_name, forward_seq, forward_sep, forward_qual, \
-                                   reverse_name, reverse_seq, reverse_sep, reverse_qual:
-                            out_fd.write(row)
+                    out_fd.write(row)
                 else:
-                    with self.metaopen(output_prefix + "_1.fastq", "w") as forward_out_fd, \
-                         self.metaopen(output_prefix + "_2.fastq", "w") as reverse_out_fd:
-                        for row in forward_name, forward_seq, forward_sep, forward_qual:
-                            forward_out_fd.write(row)
-                        for row in reverse_name, reverse_seq, reverse_sep, reverse_qual:
-                            reverse_out_fd.write(row)
+                    for row in forward_name, forward_seq, forward_sep, forward_qual:
+                        forward_out_fd.write(row)
+                    for row in reverse_name, reverse_seq, reverse_sep, reverse_qual:
+                        reverse_out_fd.write(row)
+
+        if interleaved:
+            out_fd.close()
+        else:
+            forward_out_fd.close()
+            reverse_out_fd.close()
+
