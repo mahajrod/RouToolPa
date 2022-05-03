@@ -388,8 +388,8 @@ class FastQRoutines(FileRoutines):
                 reverse_sep = reverse_fd.readline()
                 reverse_qual = reverse_fd.readline()
 
-                forward_name = forward_name[0] + readname_prefix + forward_name[1]
-                reverse_name = reverse_name[0] + readname_prefix + reverse_name[1]
+                forward_name = forward_name[0] + readname_prefix + forward_name[1:]
+                reverse_name = reverse_name[0] + readname_prefix + reverse_name[1:]
 
                 if interleaved:
                     with self.metaopen(output_prefix + ".fastq", "w") as out_fd:
