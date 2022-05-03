@@ -398,7 +398,9 @@ class FastQRoutines(FileRoutines):
                 reverse_name = reverse_name[0] + readname_prefix + reverse_name[1:]
 
                 if interleaved:
-                    out_fd.write(row)
+                    for row in forward_name, forward_seq, forward_sep, forward_qual, \
+                               reverse_name, reverse_seq, reverse_sep, reverse_qual:
+                        out_fd.write(row)
                 else:
                     for row in forward_name, forward_seq, forward_sep, forward_qual:
                         forward_out_fd.write(row)
