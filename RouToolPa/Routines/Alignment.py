@@ -308,6 +308,49 @@ class AlignmentRoutines(SequenceRoutines):
 
                 line_index += 1
 
+    def calculate_masking_from_coverage_bed(self, coverage_bed, mean_coverage, output_file,
+                                            max_threshold=2.5, min_threshold=None, coverage_column=3,
+                                            buffering=100000000):
+
+        if max_threshold and min_threshold:
+            max_coverage = mean_coverage * max_threshold
+            min_coverage = mean_coverage * min_threshold
+
+            def check_pos(entry):
+                if min_coverage <= entry <= max_coverage:
+                    return True
+                return False
+
+        elif max_threshold:
+            max_coverage = mean_coverage * max_threshol
+
+            def check_pos(entry):
+                if entry <= max_coverage:
+                    return True
+                return False
+
+        elif min_threshold:
+            min_coverage = mean_coverage * min_threshold
+
+            def check_pos(entry):
+                if min_coverage <= entry:
+                    return True
+                return False
+        else:
+            raise ValueError("ERROR!!! Neither minimum nor maximum threshold was set!")
+
+        line_index = 1
+        with self.metaopen(output_file, "w", buffering=buffering) as out_fd:
+            #out_fd.write("#scaffold\tstart\tend\t%coverage\n")
+            for line_list in self.file_line_as_list_generator(coverage_bed, buffering=buffering):
+                if check_pos(float(line_list[coverage_column])):
+                    out_fd.write("\t".join(line_list) + "\n")
+
+                if line_index % 100000000 == 0:
+                    print("Handled %i million positions..." % (line_index/1000000))
+
+                line_index += 1
+
     def collapse_per_base_coverage_mask(self, mask_file, output_prefix,
                                         scaffold_column=0,
                                         position_column=1,
