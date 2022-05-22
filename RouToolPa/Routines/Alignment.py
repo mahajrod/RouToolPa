@@ -317,7 +317,7 @@ class AlignmentRoutines(SequenceRoutines):
             min_coverage = mean_coverage * min_threshold
 
             def check_pos(entry):
-                if min_coverage <= entry <= max_coverage:
+                if (min_coverage > entry) or (max_coverage < entry):
                     return True
                 return False
 
@@ -325,7 +325,7 @@ class AlignmentRoutines(SequenceRoutines):
             max_coverage = mean_coverage * max_threshol
 
             def check_pos(entry):
-                if entry <= max_coverage:
+                if entry > max_coverage:
                     return True
                 return False
 
@@ -333,7 +333,7 @@ class AlignmentRoutines(SequenceRoutines):
             min_coverage = mean_coverage * min_threshold
 
             def check_pos(entry):
-                if min_coverage <= entry:
+                if min_coverage > entry:
                     return True
                 return False
         else:
