@@ -25,7 +25,7 @@ class GenomeScope2(Tool):
 
         options = " -i %s " % input_histo
         options += " -p %i " % ploidy
-        options += " -l %f " % initial_haploid_coverage if initial_haploid_coverage else ""
+        options += " -l %i " % int(initial_haploid_coverage) if initial_haploid_coverage else ""
         options += " -k %i " % kmer_length
         options += " -n %s " % output_prefix
         options += " -m %i " % max_kmer_coverage
