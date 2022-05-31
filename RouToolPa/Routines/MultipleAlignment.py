@@ -1017,20 +1017,26 @@ class MultipleAlignmentRoutines(SequenceRoutines):
                                                    absent_symbol=absent_symbol)
 
     @staticmethod
-    def hamming(string_a, string_b):
+    def hamming(string_a, string_b, any_symbol=None):
         hamming = 0
         for i in range(0, len(string_a)):
+            if any_symbol is not None:
+                if (string_a[i] == any_symbol) or (string_b[i] == any_symbol):
+                    continue
             if string_a[i] != string_b[i]:
                 hamming += 1
         return hamming
 
     @staticmethod
-    def hamming_multinucleotide_indels(string_a, string_b, gap_symbol="-"):
+    def hamming_multinucleotide_indels(string_a, string_b, gap_symbol="-", any_symbol=None):
         hamming = 0
         indel_len = 0
         indel_seq = 0
 
         for i in range(0, len(string_a)):
+            if any_symbol is not None:
+                if (string_a[i] == any_symbol) or (string_b[i] == any_symbol):
+                    continue
             if string_a[i] != string_b[i]:
                 if string_a[i] == gap_symbol:
                     if indel_len == 0:
@@ -1071,9 +1077,12 @@ class MultipleAlignmentRoutines(SequenceRoutines):
         return hamming
 
     @staticmethod
-    def hamming_no_indels(string_a, string_b, gap_symbol="-"):
+    def hamming_no_indels(string_a, string_b, gap_symbol="-", any_symbol=None):
         hamming = 0
         for i in range(0, len(string_a)):
+            if any_symbol is not None:
+                if (string_a[i] == any_symbol) or (string_b[i] == any_symbol):
+                    continue
             if string_a[i] != string_b[i]:
                 if (string_a[i] != gap_symbol) and (string_b[i] != gap_symbol):
                     hamming += 1
@@ -1082,7 +1091,7 @@ class MultipleAlignmentRoutines(SequenceRoutines):
 
     def get_pairwise_hamming(self, records_dict, output_prefix=None, min_distance=None,
                              count_indels=True, gap_symbol="-",
-                             multinucleotide_indels=False):
+                             multinucleotide_indels=False, any_symbol=None):
         records_id_list = list(records_dict.keys())
         record_number = len(records_id_list)
         distance_array = np.zeros((record_number, record_number))
@@ -1090,11 +1099,11 @@ class MultipleAlignmentRoutines(SequenceRoutines):
 
         if count_indels:
             if multinucleotide_indels:
-                haming_func = partial(self.hamming_multinucleotide_indels, gap_symbol=gap_symbol)
+                haming_func = partial(self.hamming_multinucleotide_indels, gap_symbol=gap_symbol, any_symbol=any_symbol)
             else:
-                haming_func = self.hamming
+                haming_func = partial(self.hamming, any_symbol=any_symbol)
         else:
-            haming_func = partial(self.hamming_no_indels, gap_symbol=gap_symbol)
+            haming_func = partial(self.hamming_no_indels, gap_symbol=gap_symbol, any_symbol=any_symbol)
 
         for i in range(0, record_number):
             for j in range(i+1, record_number):
