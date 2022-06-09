@@ -155,7 +155,7 @@ class VCFRoutines(SequenceRoutines):
              self.metaopen("%s.homo.vcf" % output_prefix, "w") as homo_fd:
 
             het_counter = 0
-            homo_counter =0
+            homo_counter = 0
 
             def test_heterozygosity(s):
                 if len(s) == 1:
@@ -178,7 +178,7 @@ class VCFRoutines(SequenceRoutines):
                             genotype_index = index
                             break
                     heterozygous_sample_number = sum(map(test_heterozygosity,
-                                                     map(lambda s: s[genotype_index].split("/"), samples)))
+                                                     map(lambda s: s[genotype_index].split("/") if "/" in s[genotype_index] else s[genotype_index].split("|") if "|" in s[genotype_index] else s[genotype_index], samples)))
 
                     if mode == "one":
                         if heterozygous_sample_number > 0:
