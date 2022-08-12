@@ -34,7 +34,7 @@ class PurgeDups(Tool):
                 #print(line)
                 value_list = list(map(int, line.strip().split()))
                 value_list[0] -= 1  # convert to zero-based and  half open coordinates
-                out_fd.write(scaffold + "\t" + "\t".join(map(str, value_list)))
+                out_fd.write("{0}\t{1}\n".format(scaffold, "\t".join(map(str, value_list))))
                 #print(value_list)
                 if value_list[-1] not in coverage_dict[scaffold]:
                     coverage_dict[scaffold][value_list[-1]] = value_list[1] - value_list[0]
