@@ -1,3 +1,3 @@
-from RouToolPa.Tools.AsseblyQC import PurgeDups
+from RouToolPa.Tools.AsseblyQC.PurgeDups import PurgeDups
 
 PurgeDups = PurgeDups()
