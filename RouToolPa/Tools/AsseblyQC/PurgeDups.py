@@ -24,17 +24,19 @@ class PurgeDups(Tool):
 
             for line in in_fd:
                 if line[0] == ">":
-                    scaffold = in_fd.readline()[1:].split()[0]
-                    length_dict[scaffold] = length
+                    scaffold, length = in_fd.readline()[1:].split()
+                    length_dict[scaffold] = int(length)
+                    coverage_dict[scaffold] = {}
                     mean_coverage_dict[scaffold] = 0
                     continue
                 out_fd.write(scaffold + "\t" + line)
+                print(line)
                 value_list = list(map(int, line.strip().split()))
-
+                print(value_list)
                 if value_list[-1] not in coverage_dict[scaffold]:
-                    coverage_dict[scaffold] = value_list[1] - value_list[0]
+                    coverage_dict[scaffold][value_list[-1]] = value_list[1] - value_list[0]
                 else:
-                    coverage_dict[scaffold] += value_list[1] - value_list[0]
+                    coverage_dict[scaffold][value_list[-1]] += value_list[1] - value_list[0]
                 mean_coverage_dict[scaffold] += int(value_list[-1])
 
         for scaffold in mean_coverage_dict:
