@@ -30,10 +30,11 @@ class PurgeDups(Tool):
                     coverage_dict[scaffold] = {}
                     mean_coverage_dict[scaffold] = 0
                     continue
-                out_fd.write(scaffold + "\t" + line)
+
                 #print(line)
                 value_list = list(map(int, line.strip().split()))
                 value_list[0] -= 1  # convert to zero-based and  half open coordinates
+                out_fd.write(scaffold + "\t" + "\t".join(map(str, value_list)) + line)
                 #print(value_list)
                 if value_list[-1] not in coverage_dict[scaffold]:
                     coverage_dict[scaffold][value_list[-1]] = value_list[1] - value_list[0]
