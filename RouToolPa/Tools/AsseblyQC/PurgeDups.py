@@ -16,7 +16,8 @@ class PurgeDups(Tool):
         mean_coverage_dict = {}
         median_coverage_dict = {}
 
-        with self.metaopen(input_file, "r") as in_fd, self.metaopen(output_prefix + ".bed", "w") as out_fd:
+        with self.metaopen(input_file, "r", buffering=100000000) as in_fd, \
+                self.metaopen(output_prefix + ".bed", "w", buffering=100000000) as out_fd:
             scaffold, length = in_fd.readline()[1:].split()
             length_dict[scaffold] = int(length)
             coverage_dict[scaffold] = {}
@@ -30,9 +31,9 @@ class PurgeDups(Tool):
                     mean_coverage_dict[scaffold] = 0
                     continue
                 out_fd.write(scaffold + "\t" + line)
-                print(line)
+                #print(line)
                 value_list = list(map(int, line.strip().split()))
-                print(value_list)
+                #print(value_list)
                 if value_list[-1] not in coverage_dict[scaffold]:
                     coverage_dict[scaffold][value_list[-1]] = value_list[1] - value_list[0]
                 else:
