@@ -22,14 +22,13 @@ class PurgeDups(Tool):
             scaffold, length = in_fd.readline()[1:].split()
             length_dict[scaffold] = int(length)
             coverage_dict[scaffold] = {}
-            mean_coverage_dict[scaffold] = 0
 
             for line in in_fd:
                 if line[0] == ">":
                     scaffold, length = line[1:].split()
                     length_dict[scaffold] = int(length)
                     coverage_dict[scaffold] = {}
-                    mean_coverage_dict[scaffold] = 0
+
                     continue
 
                 #print(line)
@@ -41,14 +40,10 @@ class PurgeDups(Tool):
                     coverage_dict[scaffold][value_list[-1]] = value_list[1] - value_list[0]
                 else:
                     coverage_dict[scaffold][value_list[-1]] += value_list[1] - value_list[0]
-                mean_coverage_dict[scaffold] += int(value_list[-1])
 
-        for scaffold in mean_coverage_dict:
-            #print(scaffold, length_dict[scaffold])
-            mean_coverage_dict[scaffold] = float(mean_coverage_dict[scaffold]) / float(length_dict[scaffold])
         for scaffold in coverage_dict:
             median_coverage_dict[scaffold] = MathRoutines.median_from_dict(coverage_dict[scaffold])
-
+            mean_coverage_dict[scaffold] = MathRoutines.mean_from_dict(coverage_dict[scaffold])
         stat_df = pd.DataFrame(length_dict, columns=["scaffold", "length"]).sort_values(by=["length"])
         stat_df["mean_cov"] = pd.Series(mean_coverage_dict)
         stat_df["median_cov"] = pd.Series(median_coverage_dict)
