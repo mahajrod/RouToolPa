@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
+import numpy as np
 from RouToolPa.Routines import MathRoutines
 from RouToolPa.Tools.Abstract import Tool
 
@@ -25,7 +26,7 @@ class PurgeDups(Tool):
 
             for line in in_fd:
                 if line[0] == ">":
-                    scaffold, length = in_fd.readline()[1:].split()
+                    scaffold, length = line[1:].split()
                     length_dict[scaffold] = int(length)
                     coverage_dict[scaffold] = {}
                     mean_coverage_dict[scaffold] = 0
@@ -43,7 +44,7 @@ class PurgeDups(Tool):
                 mean_coverage_dict[scaffold] += int(value_list[-1])
 
         for scaffold in mean_coverage_dict:
-            print(scaffold, length_dict[scaffold])
+            #print(scaffold, length_dict[scaffold])
             mean_coverage_dict[scaffold] = float(mean_coverage_dict[scaffold]) / float(length_dict[scaffold])
         for scaffold in coverage_dict:
             median_coverage_dict[scaffold] = MathRoutines.median_from_dict(coverage_dict[scaffold])
