@@ -43,6 +43,7 @@ class PurgeDups(Tool):
                 mean_coverage_dict[scaffold] += int(value_list[-1])
 
         for scaffold in mean_coverage_dict:
+            print(scaffold, length_dict[scaffold])
             mean_coverage_dict[scaffold] = float(mean_coverage_dict[scaffold]) / float(length_dict[scaffold])
         for scaffold in coverage_dict:
             median_coverage_dict[scaffold] = MathRoutines.median_from_dict(coverage_dict[scaffold])
