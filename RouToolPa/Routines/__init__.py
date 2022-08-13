@@ -1,6 +1,7 @@
 __author__ = 'mahajrod'
 
 from RouToolPa.Routines.GO import GORoutines
+from RouToolPa.Routines.MGI import MGIRoutines
 from RouToolPa.Routines.WGA import WGARoutines
 from RouToolPa.Routines.VCF import VCFRoutines
 from RouToolPa.Routines.Math import MathRoutines
@@ -29,6 +30,7 @@ from RouToolPa.Routines.MultipleAlignment import MultipleAlignmentRoutines
 
 
 GORoutines = GORoutines()
+MGIRoutines = MGIRoutines()
 WGARoutines = WGARoutines()
 VCFRoutines = VCFRoutines()
 MathRoutines = MathRoutines()
