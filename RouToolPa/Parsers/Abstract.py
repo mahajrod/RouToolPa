@@ -472,6 +472,3 @@ class Parser:
             return final_entry_list + filtered_entry_list
         else:
             return filtered_entry_list
-
-if __name__ == "__main__":
-    fg = Collection()

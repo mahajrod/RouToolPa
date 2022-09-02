@@ -697,12 +697,12 @@ class FileRoutines:
 
     @staticmethod
     def get_filtered_entry_list(entry_list,
-                                entry_black_list=[],
+                                entry_black_list=None,
                                 sort_entries=False,
                                 entry_ordered_list=None,
-                                entry_white_list=[]):
-        white_set = set(entry_white_list)
-        black_set = set(entry_black_list)
+                                entry_white_list=None):
+        white_set = set(entry_white_list) if entry_white_list is not None else set()
+        black_set = set(entry_black_list) if entry_black_list is not None else set()
         entry_set = set(entry_list)
 
         if white_set:

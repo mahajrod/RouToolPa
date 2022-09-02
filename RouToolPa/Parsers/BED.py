@@ -17,7 +17,7 @@ class CollectionBED:
 
     def __init__(self, in_file=None, records=None,  records_columns=None, format="bed", parsing_mode="all",
                  scaffold_black_list=None, scaffold_white_list=None, scaffold_syn_dict=None, header_in_file=False,
-                 rename_dict=None
+                 rename_dict=None, white_list_dict={}, black_list_dict={}
                  ):
 
         self.formats = ["bed"]
@@ -191,7 +191,9 @@ class CollectionBED:
                       scaffold_syn_dict=scaffold_syn_dict,
                       header_in_file=header_in_file,
                       records_columns=records_columns,
-                      rename_dict=rename_dict
+                      rename_dict=rename_dict,
+                      white_list_dict=white_list_dict,
+                      black_list_dict=black_list_dict
                       )
 
         else:
@@ -206,7 +208,9 @@ class CollectionBED:
              scaffold_syn_dict=None,
              header_in_file=False,
              records_columns=None,
-             rename_dict=None):
+             rename_dict=None,
+             white_list_dict={},
+             black_list_dict={}):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         elif parsing_mode not in self.parsing_parameters[format]:
@@ -229,6 +233,16 @@ class CollectionBED:
                                                              entry_white_list=scaffold_white_list)
             # print target_scaffolds_to_keep
             self.records = self.records[self.records[self.scaffold_syn].isin(scaffolds_to_keep)]
+
+        columns_to_filter_set = set(white_list_dict.keys()) + set(black_list_dict.keys())
+        for column in columns_to_filter_set:
+            black_list = black_list_dict[column] if column in black_list_dict else None
+
+            values_to_keep = self.get_filtered_entry_list(self.records[column].tolist(),
+                                                          entry_black_list=black_list_dict[column] if column in black_list_dict else None,
+                                                          entry_white_list=white_list_dict[column] if column in white_list_dict else None)
+
+            self.records = self.records[self.records[column].isin(values_to_keep)]
 
         if self.scaffold_syn_dict is not None:
             self.records.rename(index=scaffold_syn_dict, inplace=True)

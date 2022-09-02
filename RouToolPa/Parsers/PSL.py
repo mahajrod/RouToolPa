@@ -16,14 +16,16 @@ import RouToolPa.Formats.AlignmentFormats as AlignmentFormats
 class CollectionPSL:
 
     def __init__(self, in_file=None, records=None, format="psl", parsing_mode="all",
-                 target_black_list=(), target_white_list=(),
-                 query_black_list=(), query_white_list=(),
+                 target_black_list=None, target_white_list=None,
+                 query_black_list=None, query_white_list=None,
                  target_syn_dict=None, query_syn_dict=None,
                  min_target_hit_len=None, min_query_hit_len=None,
-                 min_target_len=None, min_query_len=None, keep_seq_length_in_df=False):
+                 min_target_len=None, min_query_len=None, keep_seq_length_in_df=False,
+                 invert_coordinates_for_target_negative_strand=False):
 
         self.formats = ["psl"]
         self.PSL_COLS = AlignmentFormats.ALN_FMT_COLS["psl"]
+        self.invert_coordinates_for_target_negative_strand = invert_coordinates_for_target_negative_strand
         self.parsing_parameters = {
             "psl": {
                 "coordinates_only": {
@@ -147,7 +149,6 @@ class CollectionPSL:
         self.target_strand_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["psl"]["target_strand"]
         self.query_strand_syn = AlignmentFormats.ALN_FMT_COLUMN_NAMES_SYN["psl"]["query_strand"]
 
-
         self.target_hit_len_index = None
         self.target_strand_index = None
         self.query_hit_len_index = None
@@ -176,8 +177,8 @@ class CollectionPSL:
 
     def read(self, in_file,
              format="psl", parsing_mode="only_coordinates",
-             target_black_list=(), target_white_list=(),
-             query_black_list=(), query_white_list=(),
+             target_black_list=None, target_white_list=None,
+             query_black_list=None, query_white_list=None,
              min_target_hit_len=None, min_query_hit_len=None,
              min_target_len=None, min_query_len=None,
              keep_seq_length_in_df=False):
@@ -197,27 +198,33 @@ class CollectionPSL:
         self.records.index.name = "row"
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))
-        if target_white_list or target_black_list:
+        if (target_white_list is not None) or (target_black_list is not None):
             target_scaffolds_to_keep = self.get_filtered_entry_list(self.records[self.target_id_syn].tolist(),
                                                                     entry_black_list=target_black_list,
                                                                     entry_white_list=target_white_list)
             # print target_scaffolds_to_keep
             self.records = self.records[self.records[self.target_id_syn].isin(target_scaffolds_to_keep)]
 
-        if query_white_list or query_black_list:
+        if (query_white_list is not None) or (query_black_list is not None):
             query_scaffolds_to_keep = self.get_filtered_entry_list(self.records[self.query_id_syn].tolist(),
                                                                    entry_black_list=query_black_list,
                                                                    entry_white_list=query_white_list)
             # print query_scaffolds_to_keep
             self.records = self.records[self.records[self.query_id_syn].isin(query_scaffolds_to_keep)]
-        if self.target_syn_dict:
+        if self.target_syn_dict is not None:
             self.records[self.target_id_syn].replace(self.target_syn_dict, inplace=True)
-        if self.query_syn_dict:
+        if self.query_syn_dict is not None:
             self.records[self.query_id_syn].replace(self.query_syn_dict, inplace=True)
         # retain only automatically generated index by row number
         # self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
         #                                               names=("scaffold", "row"))
         print("%s\tFiltering finished..." % str(datetime.datetime.now()))
+        self.records["strand"].replace({"++": "+", "+-": "-"}, inplace=True)
+        # convert target coordinates to forward strand, where necessary
+        if self.invert_coordinates_for_target_negative_strand:
+            self.records.loc[self.records["strand"] == "-", "tStart"], \
+             self.records.loc[self.records["strand"] == "-", "tEnd"] = self.records.loc[self.records["strand"] == "-", "tSize"] - self.records.loc[self.records["strand"] == "-", "tEnd"], \
+                                                                       self.records.loc[self.records["strand"] == "-", "tSize"] - self.records.loc[self.records["strand"] == "-", "tStart"]
 
         if min_target_len and min_query_len:
             self.records = self.records[
@@ -267,12 +274,12 @@ class CollectionPSL:
 
     @staticmethod
     def get_filtered_entry_list(entry_list,
-                                entry_black_list=[],
+                                entry_black_list=None,
                                 sort_entries=False,
                                 entry_ordered_list=None,
-                                entry_white_list=[]):
-        white_set = set(entry_white_list)
-        black_set = set(entry_black_list)
+                                entry_white_list=None):
+        white_set = set(entry_white_list) if entry_white_list is not None else set()
+        black_set = set(entry_black_list) if entry_black_list is not None else set()
         entry_set = set(entry_list)
 
         if white_set:
@@ -286,7 +293,7 @@ class CollectionPSL:
 
         final_entry_list = []
 
-        if entry_ordered_list:
+        if entry_ordered_list is not None:
             for entry in entry_ordered_list:
                 if entry in filtered_entry_list:
                     final_entry_list.append(entry)
