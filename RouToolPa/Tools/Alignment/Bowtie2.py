@@ -47,7 +47,8 @@ class Bowtie2(Tool):
         options += " -1 %s -2 %s" % (forward_reads_list if isinstance(forward_reads_list, str) else ",".join(forward_reads_list),
                                      reverse_reads_list if isinstance(reverse_reads_list, str) else",".join(reverse_reads_list)) \
             if forward_reads_list and reverse_reads_list else ""
-        options += " -U %s" % ",".join(unpaired_reads_list) if unpaired_reads_list else ""
+
+        options += " -U %s" % ( unpaired_reads_list if isinstance(unpaired_reads_list, str) else ",".join(unpaired_reads_list)) if unpaired_reads_list else ""
         options += " 2>%s.stats" % output_prefix
         if sort_by_coordinate or sort_by_name:
             if sort_by_coordinate and sort_by_name:
