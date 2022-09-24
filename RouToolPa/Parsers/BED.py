@@ -234,7 +234,7 @@ class CollectionBED:
             # print target_scaffolds_to_keep
             self.records = self.records[self.records[self.scaffold_syn].isin(scaffolds_to_keep)]
 
-        columns_to_filter_set = set(white_list_dict.keys()) + set(black_list_dict.keys())
+        columns_to_filter_set = set(white_list_dict.keys()) | set(black_list_dict.keys())
         for column in columns_to_filter_set:
             black_list = black_list_dict[column] if column in black_list_dict else None
 
