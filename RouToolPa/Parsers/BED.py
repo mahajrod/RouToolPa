@@ -218,7 +218,7 @@ class CollectionBED:
 
         print("%s\tReading input..." % str(datetime.datetime.now()))
         self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is None else 0, na_values=".",
-                                   comment=None if self.format =="bed_track" else "#",
+                                   comment=None if (self.format =="bed_track") or (self.format =="bed_synteny_track") else "#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
