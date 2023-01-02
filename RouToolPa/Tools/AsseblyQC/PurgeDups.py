@@ -81,6 +81,7 @@ class PurgeDups(Tool):
             fraction_df = list(sorted_df.iloc[0])
             print(sorted_df)
             for row in sorted_df.itertuples(index=False):
+                print(row)
                 if row[0] <= fraction_df[-1][1]:
                     if row[1] > fraction_df[-1][1]:
                         fraction_df[-1][1] = row[1]
