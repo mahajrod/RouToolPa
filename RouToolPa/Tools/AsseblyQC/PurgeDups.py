@@ -73,5 +73,38 @@ class PurgeDups(Tool):
                                                     "overlap_faction,%", "overlap_faction_overlapping_scaffold,%"])))
             dups_bed_df.to_csv(out_fd, sep="\t", header=False, index=True, na_rep=".")
 
+        def count_fraction(df):
+            scaffold_len = df["scaffold_len"].iloc[0]
 
+            sorted_df = df[["start", "end"]].sort_values(by=["start", "end"])
+
+            fraction_df = list(sorted_df.iloc[0])
+            for row in sorted_df.itertuples(index=False):
+                if row[0] <= fraction_df[-1][1]:
+                    if row[1] > fraction_df[-1][1]:
+                        fraction_df[-1][1] = row[1]
+                else:
+                    fraction_df.append(list(row))
+
+            fraction_df = pd.DataFrame(fraction_df, columns=["start", "end"])
+            fraction_df["fraction"] = (fraction_df["end"] - fraction_df["start"]) / scaffold_len
+
+            return sum(fraction_df["fraction"])
+
+        haplo_fraction_df = dups_bed_df[["scaffold", "start", "end", "scaffold_len"]].groupby(by='scaffold').apply(count_fraction)
+        print(haplo_fraction_df)
+
+        return dups_bed_df
+    """
+    def count_contig_fraction_in_haplotype(self, input_file_with_len, output_file):
+        if isinstance(input_file_with_len, (str, Path)):
+            haplo_df = pd.read_csv(input_file_with_len, sep="\t", header=None, index_col=0,
+                                   names=["scaffold", "start", "end", "type", "overlapping_scaffold",
+                                          "overlap_len", "scaffold_len", "overlapping_scaffold_len",
+                                          "overlap_faction,%", "overlap_faction_overlapping_scaffold,%"])
+        else:
+            haplo_df = input_file_with_len
+
+        print(haplo_df)
+    """
 
