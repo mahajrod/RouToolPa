@@ -65,13 +65,8 @@ class PurgeDups(Tool):
         dups_bed_df["scaffold_len"] = length_df["length"]
         dups_bed_df["overlapping_scaffold_len"] = dups_bed_df["overlapping_scaffold"].apply(lambda s: length_df.loc[s, "length"])
 
-        dups_bed_df["overlap_faction,%"] = dups_bed_df["overlap_len"] / dups_bed_df["scaffold_len"]
-        dups_bed_df["overlap_faction_overlapping_scaffold,%"] = dups_bed_df["overlap_len"] / dups_bed_df["overlapping_scaffold_len"]
-        with open(output_file, "w") as out_fd:
-            out_fd.write("#{0}\n".format("\t".join(["scaffold", "start", "end", "type", "overlapping_scaffold",
-                                                    "overlap_len", "scaffold_len", "overlapping_scaffold_len",
-                                                    "overlap_faction,%", "overlap_faction_overlapping_scaffold,%"])))
-            dups_bed_df.to_csv(out_fd, sep="\t", header=False, index=True, na_rep=".")
+        dups_bed_df["overlap_faction"] = dups_bed_df["overlap_len"] / dups_bed_df["scaffold_len"]
+        dups_bed_df["overlap_faction_overlapping_scaffold"] = dups_bed_df["overlap_len"] / dups_bed_df["overlapping_scaffold_len"]
 
         def count_fraction(df):
             scaffold_len = df["scaffold_len"].iloc[0]
@@ -93,9 +88,20 @@ class PurgeDups(Tool):
             return sum(fraction_df["fraction"])
 
         haplo_fraction_df = dups_bed_df[["start", "end", "scaffold_len"]].groupby(by='scaffold').apply(count_fraction)
-        print(haplo_fraction_df)
+
+        dups_bed_df["cumulative_overlap_fraction"] = haplo_fraction_df
+
+        with open(output_file, "w") as out_fd:
+            out_fd.write("#{0}\n".format("\t".join(["scaffold", "start", "end", "type", "overlapping_scaffold",
+                                                    "overlap_len", "scaffold_len", "overlapping_scaffold_len",
+                                                    "overlap_faction", "overlap_faction_overlapping_scaffold",
+                                                    "cumulative_overlap_fraction"])))
+            dups_bed_df.to_csv(out_fd, sep="\t", header=False, index=True, na_rep=".")
+
+        #print(haplo_fraction_df)
 
         return dups_bed_df
+
     """
     def count_contig_fraction_in_haplotype(self, input_file_with_len, output_file):
         if isinstance(input_file_with_len, (str, Path)):
