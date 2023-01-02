@@ -26,7 +26,6 @@ class PurgeDups(Tool):
             for line in in_fd:
                 if line[0] == ">":
                     scaffold, length = line[1:].split()
-                    print((scaffold, length))
                     length_dict[scaffold] = int(length)
                     coverage_dict[scaffold] = {}
 
@@ -45,10 +44,8 @@ class PurgeDups(Tool):
         for scaffold in coverage_dict:
             median_coverage_dict[scaffold] = MathRoutines.median_from_dict(coverage_dict[scaffold])
             mean_coverage_dict[scaffold] = MathRoutines.mean_from_dict(coverage_dict[scaffold])
-        print(length_dict)
-        stat_df = pd.DataFrame.from_dict(length_dict, columns=["length",], orient='index').sort_values(by=["length"])
+        stat_df = pd.DataFrame.from_dict(length_dict, columns=["length", ], orient='index').sort_values(by=["length"])
         stat_df.index.name = "scaffold"
-        print(stat_df)
         stat_df["mean_cov"] = pd.Series(mean_coverage_dict)
         stat_df["median_cov"] = pd.Series(median_coverage_dict)
         stat_df.to_csv(output_prefix + ".stat", sep="\t", header=False, index=True)
@@ -66,7 +63,7 @@ class PurgeDups(Tool):
         dups_bed_df["overlap_len"] = dups_bed_df["end"] - dups_bed_df["start"]
 
         dups_bed_df["scaffold_len"] = length_df["length"]
-        dups_bed_df["overlapping_scaffold_len"] = length_df["length"]
+        dups_bed_df["overlapping_scaffold_len"] = dups_bed_df["overlapping_scaffold"].apply(lambda s: length_df["length",s])
 
         dups_bed_df.to_csv(output_file, sep="\t", header=False, index=True, na_rep=".")
 
