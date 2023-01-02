@@ -26,6 +26,7 @@ class PurgeDups(Tool):
             for line in in_fd:
                 if line[0] == ">":
                     scaffold, length = line[1:].split()
+                    print((scaffold, length))
                     length_dict[scaffold] = int(length)
                     coverage_dict[scaffold] = {}
 
@@ -44,7 +45,9 @@ class PurgeDups(Tool):
         for scaffold in coverage_dict:
             median_coverage_dict[scaffold] = MathRoutines.median_from_dict(coverage_dict[scaffold])
             mean_coverage_dict[scaffold] = MathRoutines.mean_from_dict(coverage_dict[scaffold])
+
         stat_df = pd.DataFrame(length_dict, columns=["scaffold", "length"]).sort_values(by=["length"])
+        print(stat_df)
         stat_df["mean_cov"] = pd.Series(mean_coverage_dict)
         stat_df["median_cov"] = pd.Series(median_coverage_dict)
         stat_df.to_csv(output_prefix + ".stat", sep="\t", header=False, index=True)
