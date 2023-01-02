@@ -65,9 +65,12 @@ class PurgeDups(Tool):
         dups_bed_df["scaffold_len"] = length_df["length"]
         dups_bed_df["overlapping_scaffold_len"] = dups_bed_df["overlapping_scaffold"].apply(lambda s: length_df.loc[s, "length"])
 
+        dups_bed_df["overlap_faction,%"] = dups_bed_df["overlap_len"] / dups_bed_df["scaffold_len"]
+        dups_bed_df["overlap_faction_overlapping_scaffold,%"] = dups_bed_df["overlap_len"] / dups_bed_df["overlapping_scaffold_len"]
         with open(output_file, "w") as out_fd:
             out_fd.write("#{0}\n".format("\t".join(["scaffold", "start", "end", "type", "overlapping_scaffold",
-                                                    "overlap_len", "scaffold_len", "overlapping_scaffold_len"])))
+                                                    "overlap_len", "scaffold_len", "overlapping_scaffold_len",
+                                                    "overlap_faction,%", "overlap_faction_overlapping_scaffold,%"])))
             dups_bed_df.to_csv(out_fd, sep="\t", header=False, index=True, na_rep=".")
 
 
