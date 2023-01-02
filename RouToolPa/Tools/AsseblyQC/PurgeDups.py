@@ -78,10 +78,12 @@ class PurgeDups(Tool):
 
             sorted_df = df[["start", "end"]].sort_values(by=["start", "end"])
 
-            fraction_df = list(sorted_df.iloc[0])
+            fraction_df = [list(sorted_df.iloc[0])]
             print(sorted_df)
             for row in sorted_df.itertuples(index=False):
                 print(row)
+                print(row[0])
+
                 if row[0] <= fraction_df[-1][1]:
                     if row[1] > fraction_df[-1][1]:
                         fraction_df[-1][1] = row[1]
