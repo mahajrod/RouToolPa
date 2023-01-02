@@ -91,7 +91,7 @@ class PurgeDups(Tool):
 
             return sum(fraction_df["fraction"])
 
-        haplo_fraction_df = dups_bed_df[["scaffold", "start", "end", "scaffold_len"]].groupby(by='scaffold').apply(count_fraction)
+        haplo_fraction_df = dups_bed_df[["start", "end", "scaffold_len"]].groupby(by='scaffold').apply(count_fraction)
         print(haplo_fraction_df)
 
         return dups_bed_df
