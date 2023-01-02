@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from pathlib import Path
+from pathlib import PosixPath
 import pandas as pd
 import numpy as np
 from RouToolPa.Routines import MathRoutines
@@ -54,7 +54,7 @@ class PurgeDups(Tool):
         return stat_df
 
     def add_lengths_to_dups_bed(self, input_file, length_file, output_file):
-        if isinstance(length_file, [str, Path]):
+        if isinstance(length_file, [str, PosixPath]):
             length_df = pd.read_csv(length_file, sep="\t", header=None, index_col=0, names=["scaffold", "length"])
         else:
             length_df = length_file
