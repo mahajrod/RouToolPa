@@ -202,7 +202,6 @@ class CollectionSequence(FileRoutines):
         self.scaffolds = self.seq_lengths.index.values
 
         self.get_length_stats(thresholds_list=thresholds_list, count_gaps=count_gaps)
-        print(self.stats)
         return self.stats
 
     def get_length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
@@ -218,7 +217,6 @@ class CollectionSequence(FileRoutines):
                 middle_element_index = lengths_df["cumlen_longer"].idxmax()
                 L50 = lengths_df.index.get_loc(middle_element_index) + 1
                 N50 = lengths_df["length"][middle_element_index]
-
 
             stats[threshold]["Total length"] = lengths_df["length"].sum() if not_empty else 0
             stats[threshold]["Total scaffolds"] = len(lengths_df["length"]) if not_empty else 0
