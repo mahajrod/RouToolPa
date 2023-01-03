@@ -202,7 +202,7 @@ class CollectionSequence(FileRoutines):
         self.scaffolds = self.seq_lengths.index.values
 
         self.get_length_stats(thresholds_list=thresholds_list, count_gaps=count_gaps)
-
+        print(self.stats)
         return self.stats
 
     def get_length_stats(self, thresholds_list=(0, 500, 1000), count_gaps=True):
