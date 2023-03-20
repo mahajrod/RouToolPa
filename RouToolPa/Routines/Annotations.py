@@ -3,7 +3,8 @@ import os
 from copy import deepcopy
 from collections import OrderedDict
 import numpy as np
-from BCBio import GFF
+#from BCBio import GFF
+# TODO: Verify consequences of removing BCBio. It seems to be incompatible with last biopython
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from RouToolPa.Routines.Sequence import SequenceRoutines
