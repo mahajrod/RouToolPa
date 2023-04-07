@@ -11,7 +11,7 @@ import pickle
 if sys.version_info[0] == 2:
     from string import maketrans
 else:
-    maketrans = str.translate
+    maketrans = str.maketrans
 
 from random import randint
 from copy import deepcopy
@@ -2696,14 +2696,6 @@ class SequenceRoutines(FileRoutines):
         fasta_collection = CollectionSequence(in_file=input_fasta, format="fasta")
 
         fasta_collection.write_by_syn(output_fasta, syn_dict)
-
-    @staticmethod
-    def p_distance(seq_a, seq_b, seq_len):
-        dist = 0
-        for a, b in range(0, seq_len):
-            if a != b:
-                dist += 1
-        return dist
 
     @staticmethod
     def get_stats_from_assemblies(input_file_list, labels_list, output_prefix, thresholds_list=(0, 100, 250, 500, 1000)):

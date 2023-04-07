@@ -290,7 +290,7 @@ class CollectionSTR:
                                                              entry_black_list=black_list,
                                                              entry_white_list=white_list)
             #print target_scaffolds_to_keep
-            self.records = self.records[self.records["scaffold_id"].isin(target_scaffolds_to_keep)]
+            self.records = self.records[self.records["scaffold_id"].isin(scaffolds_to_keep)]
 
         if self.syn_dict:
             self.records["scaffold_id"].replace(self.syn_dict, inplace=True)
@@ -345,6 +345,10 @@ class CollectionSTR:
             sort_order = sorting_order
 
         return self.records.sort_values(by=sort_order, inplace=inplace)
+
+    #def invert_coordinates(self, scaffold_id_df, scaffold_len_df):
+    #    for scaffold in scaffold_id_list:
+    #        self.records.loc[self.records["scaffold_id"] == scaffold, "start"] = scaff
 
     def filter_str(self):
 

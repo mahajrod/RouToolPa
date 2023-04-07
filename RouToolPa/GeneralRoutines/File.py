@@ -189,13 +189,7 @@ class FileRoutines:
                 if expression:
                     if expression(os.path.abspath(entry)):
                         file_list.append(os.path.abspath(entry))
-                        """
-                        print ("BBBBBBBBBBBBBB")
-                        print (entry)
-                    else:
-                        print ("AAAAAAAAAAA")
-                        print (entry)
-                        """
+
                 else:
                     file_list.append(os.path.abspath(entry))
             else:
@@ -369,7 +363,17 @@ class FileRoutines:
         out_fd.close()
 
     @staticmethod
+    def p_distance(seq_a, seq_b, seq_len):
+        dist = 0
+        for i in range(0, seq_len):
+            if seq_a[i] != seq_b[i]:
+                dist += 1
+        return dist
+
+    @staticmethod
     def make_lists_forward_and_reverse_files(sample_dir, filename_fragment_to_mark_se_reads=".se.", input_is_se=False):
+        """Legacy function. Use FastQRoutines.make_fastq_lists() instead"""
+
         file_list = sorted(os.listdir(sample_dir))
         filtered_filelist = []
         filetypes = set()
@@ -398,6 +402,8 @@ class FileRoutines:
 
         forward_files = paired_end_filelist[::2]
         reverse_files = paired_end_filelist[1:][::2]
+        if len(forward_files) != len(reverse_files):
+            raise
 
         if len(filetypes) > 1:
             print("WARNING: mix of archives of different types and/or uncompressed files")

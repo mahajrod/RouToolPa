@@ -1,6 +1,7 @@
 __author__ = 'mahajrod'
 import os
 import datetime
+from pathlib import Path, PosixPath
 from collections import OrderedDict
 from Bio.Seq import Seq
 from RouToolPa.Collections.General import TwoLvlDict
@@ -413,3 +414,68 @@ class FastQRoutines(FileRoutines):
             forward_out_fd.close()
             reverse_out_fd.close()
 
+    def make_fastq_lists(self, fastq_dir, filename_fragment_to_mark_se_reads=".se.", input_is_se=False,
+                         fastq_extensions=(".fastq", ".fq")):
+
+        fastq_dir_path = fastq_dir if isinstance(fastq_dir, PosixPath) else Path(fastq_dir)
+
+        if not fastq_dir_path.exists():
+            raise ValueError(
+                "ERROR!!! Input for function 'make_fastq_lists' doesn't exist: {0}".format(str(fastq_dir_path)))
+
+        if not fastq_dir_path.is_dir():
+            raise ValueError("ERROR!!! Input for function 'make_fastq_lists' is not directory: {0}".format(str(fastq_dir_path)))
+
+        filtered_filelist = []
+        filetypes = set()
+
+        for filename in fastq_dir_path.iterdir():
+            suffixes = filename.suffixes()
+            for extension in fastq_extensions:
+                if extension in suffixes:
+                    break
+            else:
+                continue # skip file if no fastq extension was found in suffixes
+
+            if suffixes[-1] == ".gz":
+                filetypes.add("gziped_fastq")
+            elif suffixes[-1] == ".bz2":
+                filetypes.add("bziped_fastq")
+            else:
+                filetypes.add("fastq")
+
+            filtered_filelist.append(filename)
+
+        if len(filetypes) > 1:
+            print("WARNING: mix of archives of different types and/or uncompressed files")
+
+        if input_is_se:
+            return filetypes, [], [], filtered_filelist
+
+        single_end_filelist = []
+        paired_end_filelist = []
+
+        for entry in filtered_filelist:
+            if filename_fragment_to_mark_se_reads in entry:
+                single_end_filelist.append(entry)
+            else:
+                paired_end_filelist.append(entry)
+
+        forward_filelist = paired_end_filelist[::2]
+        reverse_filelist = paired_end_filelist[1:][::2]
+        if len(forward_filelist) != len(reverse_filelist):
+            raise ValueError(
+                             "ERROR!!! Lists of forward and reverse fastqs have different length:\n"
+                             "\tforward: {0}\n\treverse:{1}".format(
+                                                                    ",".join(list(map(str, forward_filelist))),
+                                                                    ",".join(list(map(str, reverse_filelist)))
+                                                                    )
+                             )
+        for forward, reverse in zip(forward_filelist, reverse_filelist):
+            if len(forward.name) != len(reverse.name):
+                raise ValueError("ERROR!!! Filenames of forward and reverse fastqs have different length:\n"
+                                 "\tforward: {0}\n\treverse:{1}".format(str(forward), str(reverse)))
+            if self.p_distance(forward, reverse) > 1:
+                raise ValueError("ERROR!!! Filenames of forward and reverse fastqs differ by more than one symbol:\n"
+                                 "\tforward: {0}\n\treverse:{1}".format(str(forward), str(reverse)))
+        return filetypes, forward_filelist, reverse_filelist, single_end_filelist
