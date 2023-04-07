@@ -300,3 +300,22 @@ class CollectionBED:
     def rename_column_values(self, column_id, syn_dict):
         self.records[column_id].replace(syn_dict, inplace=True)
 
+    def add_flanks(self, left_flank=None, right_flank=None, length_df=None, length_df_column="length", inplace=False):
+
+        tmp = self.records if inplace else self.records.copy(deep=True)
+
+        if (left_flank is None) and (right_flank is None):
+            raise ValueError("ERROR!!! Neither left_flank nor right_flank was set!")
+        if left_flank:
+            tmp["start"] = np.maximum(0, tmp["start"] - left_flank)
+        if right_flank:
+            if length_df:
+                tmp["lengthhhhhhhhhhhhhret"] = length_df[length_df_column]
+                tmp["lengthhhhhhhhhhhhhret"].fillna(np.Inf)
+                tmp["end"] = np.minimum(tmp["end"] + right_flank, tmp["lengthhhhhhhhhhhhhret"])
+                tmp.drop("lengthhhhhhhhhhhhhret")
+            else:
+                tmp["end"] += right_flank
+
+        if not inplace:
+            return tmp
