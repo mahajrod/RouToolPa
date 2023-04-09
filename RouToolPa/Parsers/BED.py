@@ -3,6 +3,7 @@
 Last output parser Module based on pandas
 """
 __author__ = 'Sergei F. Kliver'
+import sys
 import datetime
 from copy import deepcopy
 from collections import OrderedDict
@@ -216,8 +217,8 @@ class CollectionBED:
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
-        print("%s\tReading input..." % str(datetime.datetime.now()))
-        self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is None else 0, na_values=".",
+        sys.stderr.write("%s\tReading input...\n" % str(datetime.datetime.now()))
+        self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is False else 0, na_values=".",
                                    comment=None if (self.format =="bed_track") or (self.format =="bed_synteny_track") else "#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
@@ -225,13 +226,12 @@ class CollectionBED:
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
         if records_columns is not None:
             self.records.columns = records_columns if isinstance(pd.Index, records_columns) else pd.Index(records_columns)
-        print("%s\tReading input finished..." % str(datetime.datetime.now()))
-        print("%s\tFiltering..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tReading input finished...\n" % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tFiltering...\n" % str(datetime.datetime.now()))
         if (scaffold_white_list is not None) or (scaffold_black_list is not None):
             scaffolds_to_keep = self.get_filtered_entry_list(self.records[self.scaffold_syn].tolist(),
                                                              entry_black_list=scaffold_black_list,
                                                              entry_white_list=scaffold_white_list)
-            # print target_scaffolds_to_keep
             self.records = self.records[self.records[self.scaffold_syn].isin(scaffolds_to_keep)]
 
         columns_to_filter_set = set(white_list_dict.keys()) | set(black_list_dict.keys())
@@ -251,7 +251,7 @@ class CollectionBED:
             for column in rename_dict:
                 self.records[column].replace(rename_dict[column], inplace=True)
 
-        print("%s\tFiltering finished..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tFiltering finished...\n" % str(datetime.datetime.now()))
 
         self.scaffold_list = self.records.index.tolist()
 
@@ -289,7 +289,7 @@ class CollectionBED:
                     final_entry_list.append(entry)
                     filtered_entry_list.remove(entry)
                 else:
-                    print("WARNING!!!Entry(%s) from order list is absent in list of entries!" % entry)
+                    sys.stderr.write("WARNING!!!Entry(%s) from order list is absent in list of entries!\n" % entry)
             return final_entry_list + filtered_entry_list
         else:
             return filtered_entry_list
@@ -307,15 +307,18 @@ class CollectionBED:
         if (left_flank is None) and (right_flank is None):
             raise ValueError("ERROR!!! Neither left_flank nor right_flank was set!")
         if left_flank:
-            tmp["start"] = np.maximum(0, tmp["start"] - left_flank)
+            tmp.loc[:, self.start_index] = np.maximum(0, tmp.loc[:, self.start_index] - left_flank)
         if right_flank:
             if length_df:
                 tmp["lengthhhhhhhhhhhhhret"] = length_df[length_df_column]
                 tmp["lengthhhhhhhhhhhhhret"].fillna(np.Inf)
-                tmp["end"] = np.minimum(tmp["end"] + right_flank, tmp["lengthhhhhhhhhhhhhret"])
+                tmp.loc[:, self.end_index] = np.minimum(tmp.loc[:, self.end_index] + right_flank, tmp["lengthhhhhhhhhhhhhret"])
                 tmp.drop("lengthhhhhhhhhhhhhret")
             else:
-                tmp["end"] += right_flank
+                tmp.loc[:, self.end_index] += right_flank
 
         if not inplace:
             return tmp
+
+    def write(self, out_file, write_header=False):
+        self.records.to_csv(out_file, sep="\t", index=True, header=write_header,)
