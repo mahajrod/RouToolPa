@@ -12,10 +12,8 @@ import datetime
 from math import sqrt
 from copy import deepcopy
 
-from collections import OrderedDict, Iterable
-
-if sys.version_info[0] == 3:
-    pass
+from collections import OrderedDict
+from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
@@ -548,8 +546,11 @@ class CollectionVCF:
         if parsing_mode in self.parsing_modes_with_alt_allells:
             #print parsing_mode
             #print self.parsing_modes_with_alt_allells
-            alt = pd.DataFrame.from_records(map(lambda s: s.split(","), self.records["ALT"].to_list()),
-                                            index=self.records.index).astype("category")
+            #print(self.records.index)
+            alt = pd.DataFrame.from_records(map(lambda s: s.split(","), self.records["ALT"].to_list())).astype("category")
+            # index is added after creation of dataframe because of bug in pandas 1.5.3 - DataFrame.from_records raises issue if Multiindex is used.
+            # Other version of pandas were not tested for presence of the bug. Maybe it was fixed somewhen
+            alt.index = self.records.index
             alt_colomn_number = np.shape(alt)[1] if len(np.shape(alt)) > 1 else 1
             alt.columns = pd.MultiIndex.from_arrays([["ALT"] * alt_colomn_number,
                                                      [i for i in range(0, alt_colomn_number)]])
@@ -561,7 +562,7 @@ class CollectionVCF:
             self.records.columns = pd.MultiIndex.from_arrays([
                                                               self.records.columns,
                                                               self.records.columns,
-                                                              self.records.columns
+                                                              pd.Series(self.records.columns).replace("REF", 0)
                                                               ])
             if self.parsing_mode == "coordinates_and_genotypes":
                 self.records = self.records[["POS"]]
@@ -571,7 +572,7 @@ class CollectionVCF:
 
                 alt.columns = pd.MultiIndex.from_arrays([["ALT"] * alt_colomn_number,
                                                          ["ALT"] * alt_colomn_number,
-                                                         [i for i in range(0, alt_colomn_number)]])
+                                                         [i for i in range(1, alt_colomn_number + 1)]]) # 16.04.2023 changed to 1-based
 
                 self.records = pd.concat([self.records, alt] + sample_genotypes, axis=1)
 
@@ -580,7 +581,7 @@ class CollectionVCF:
             self.records.columns = pd.MultiIndex.from_arrays([
                                                               self.records.columns,
                                                               self.records.columns,
-                                                              self.records.columns
+                                                              pd.Series(self.records.columns).replace("REF", 0)
                                                               ])
             self.records = pd.concat([self.records[["POS"]]] + sample_data, axis=1)
             
@@ -603,11 +604,11 @@ class CollectionVCF:
             elif self.parsing_mode == "complete":
                 alt.columns = pd.MultiIndex.from_arrays([["ALT"] * alt_colomn_number,
                                                          ["ALT"] * alt_colomn_number,
-                                                         [i for i in range(0, alt_colomn_number)]])
+                                                         [i for i in range(1, alt_colomn_number + 1)]])
                 self.records.columns = pd.MultiIndex.from_arrays([
                                                                   self.records.columns,
                                                                   self.records.columns,
-                                                                  self.records.columns
+                                                                  pd.Series(self.records.columns).replace("REF", 0)
                                                                   ])
             self.records = pd.concat([self.records, alt,  info] + sample_list, axis=1)
 
