@@ -162,7 +162,6 @@ class MetadataVCF(OrderedDict):
         :param in_file:
         :return:
         """
-        #print type(in_file)
         if isinstance(in_file, str):
             with FileRoutines.metaopen(in_file, "r") as fd:
                 while True:
@@ -512,7 +511,7 @@ class CollectionVCF:
             if self.parsing_mode in ("genotypes", "coordinates_and_genotypes", "pos_gt_dp", "pos_ref_alt_id_gt_ad"):
                 self.parsing_parameters[self.parsing_mode]["cols"] += [i for i in range(9, 9 + len(self.samples))]
 
-        print("%s\tReading file..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tReading file...\n" % str(datetime.datetime.now()))
         self.records = pd.read_csv(fd, sep='\t', header=None, na_values=".",
                                    usecols=self.parsing_parameters[self.parsing_mode]["cols"],
                                    converters=self.parsing_parameters[self.parsing_mode]["converters"],
@@ -520,7 +519,7 @@ class CollectionVCF:
                                    index_col=self.VCF_COLS["CHROM"])
         self.records.index = pd.Index(list(map(str, self.records.index)))
         fd.close()
-        print("%s\tReading file finished..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tReading file finished...\n" % str(datetime.datetime.now()))
 
         # convert to 0-based representation
 
@@ -544,9 +543,6 @@ class CollectionVCF:
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("CHROM", "ROW"))
         if parsing_mode in self.parsing_modes_with_alt_allells:
-            #print parsing_mode
-            #print self.parsing_modes_with_alt_allells
-            #print(self.records.index)
             alt = pd.DataFrame.from_records(map(lambda s: s.split(","), self.records["ALT"].to_list())).astype("category")
             # index is added after creation of dataframe because of bug in pandas 1.5.3 - DataFrame.from_records raises issue if Multiindex is used.
             # Other version of pandas were not tested for presence of the bug. Maybe it was fixed somewhen
@@ -629,12 +625,8 @@ class CollectionVCF:
             if param in self.metadata.parameter_separator_reg_exp_dict:
                 col = pd.DataFrame(map(self.metadata.parameter_separator_reg_exp_dict[param].split, column.to_list()))
             else:
-                #print param
-                #print column
-                #print map(lambda s: s.split(self.metadata.parameter_separator_dict[param] if param in self.metadata.parameter_separator_dict else ",") if type(s) == str else [s], column.to_list())
                 col = pd.DataFrame.from_records(map(lambda s: s.split(self.metadata.parameter_separator_dict[param] if param in self.metadata.parameter_separator_dict else ",") if type(s) == str else [s], column.to_list()))
-                #col = column.str.split(self.metadata.parameter_separator_dict[param] if param in self.metadata.parameter_separator_dict else ",", expand=True)
-                #print col
+
             col.index = index
             if self.metadata[param_group][param]["Type"] != "Flag":
                 col.replace(self.metadata.default_replace_dict, inplace=True)
@@ -644,8 +636,7 @@ class CollectionVCF:
                 col = col.astype(self.metadata.converters[param_group][param])
             else:
                 if self.metadata.converters[param_group][param] in self.metadata.pandas_int_type_correspondence:
-                    #print self.metadata.converters[param_group][param]
-                    #print col
+
                     col = col.apply(self.metadata.pandas_int_type_correspondence[self.metadata.converters[param_group][param]]).astype(self.metadata.converters[param_group][param])
 
                 else:
@@ -656,7 +647,7 @@ class CollectionVCF:
         return col
     
     def parse_info(self):
-        print("%s\tParsing info field..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tParsing info field...\n" % str(datetime.datetime.now()))
 
         def split_info_entry(info_entry):
             tmp = info_entry.split("=")
@@ -668,20 +659,16 @@ class CollectionVCF:
         tmp_info = pd.DataFrame(map(lambda s: OrderedDict(map(split_info_entry, s.split(";"))), list(self.records["INFO"])))
         tmp_info.index = self.records.index
 
-        #print tmp_info
         info_df_list = []
         for param in self.metadata.info_flag_list + self.metadata.info_nonflag_list:
-            #print self.metadata.info_flag_list
-            #print self.metadata.info_nonflag_list
             if param in tmp_info:
-                print("%s\tParsing info parameter %s..." % (str(datetime.datetime.now()), param))
+                sys.stderr.write("%s\tParsing info parameter %s...\n" % (str(datetime.datetime.now()), param))
                 if param in self.metadata.info_nonflag_list:
                     column_df = self.parse_column(tmp_info[param], param, "INFO")
                 else:
                     column_df = deepcopy(tmp_info[[param]])
                 shape = np.shape(column_df)
                 column_number = 1 if len(shape) == 1 else shape[1]
-                # print column_number
                 if self.parsing_mode == "all":
                     column_df.columns = pd.MultiIndex.from_arrays([
                                                   ["INFO"] * column_number,
@@ -696,18 +683,17 @@ class CollectionVCF:
                                                      ])
 
                 info_df_list.append(column_df)
-        #print info_df_list
+
         info = pd.concat(info_df_list, axis=1)
         info.sort_index(level=1, inplace=True)
 
         del info_df_list
-        #print info
 
-        print("%s\tParsing info field finished..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tParsing info field finished...\n" % str(datetime.datetime.now()))
         return info
 
     def parse_samples(self, parameter_list=()):
-        print("%s\tParsing samples..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tParsing samples...\n" % str(datetime.datetime.now()))
         uniq_format_set = self.records['FORMAT'].drop_duplicates()
         uniq_format_dict = OrderedDict([(format_entry, format_entry.split(":")) for format_entry in uniq_format_set])
         sample_data_dict = {}
@@ -719,7 +705,6 @@ class CollectionVCF:
             if parameter_list:
                 for parameter in parameter_list:
                     if parameter in uniq_format_dict[format_entry]:
-                        #print parameter, uniq_format_dict[format_entry]
                         present_parameter_dict[format_entry].append(parameter)
             else:
                 present_parameter_dict[format_entry] = uniq_format_dict[format_entry]
@@ -728,7 +713,6 @@ class CollectionVCF:
             sample_data_dict[sample] = OrderedDict()
             for format_entry in uniq_format_dict:
                 sample_data_dict[sample][format_entry] = list()
-                #print(self.records[self.records['FORMAT'] == format_entry])
                 tmp = self.records[self.records['FORMAT'] == format_entry][sample]
                 tmp_index = deepcopy(tmp.index)
                 tmp = pd.DataFrame(map(lambda s: s.split(":"), list(tmp)))
@@ -737,7 +721,6 @@ class CollectionVCF:
                 sample_data_dict[sample][format_entry] = []
 
                 for parameter in present_parameter_dict[format_entry] if parameter_list else uniq_format_dict[format_entry]:
-                    #print(tmp[parameter])
                     parameter_col = self.parse_column(tmp[parameter], parameter, "FORMAT")
                     sample_data_dict[sample][format_entry].append(parameter_col)
 
@@ -766,7 +749,6 @@ class CollectionVCF:
                     """
                     sample_data_dict[sample][format_entry][i].columns = column_index
                 if sample_data_dict[sample][format_entry]:
-                    #print sample_data_dict[sample][format_entry]
                     sample_data_dict[sample][format_entry] = pd.concat(sample_data_dict[sample][format_entry],
                                                                        axis=1)
             if sample_data_dict[sample]:
@@ -782,7 +764,7 @@ class CollectionVCF:
                 sample_data_dict[sample].sort_index(level=1, inplace=True)
             else:
                 sample_data_dict.pop(sample, None)
-        print("%s\tParsing sample finished..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tParsing sample finished...\n" % str(datetime.datetime.now()))
         return list(sample_data_dict.values())
 
     @staticmethod
@@ -832,7 +814,6 @@ class CollectionVCF:
 
         elif format == "vcf":
             df["POS"] += 1
-            #print split_samples
             if split_samples:
                 for sample in samples if samples else self.samples:
                     with open("%s.%s.vcf" % (outfile, sample), "w") as out_fd:
@@ -840,8 +821,6 @@ class CollectionVCF:
                         out_fd.write("\n")
 
                         header = self.header[:9] + [sample]
-                        #print sample
-                        #print header
                         out_fd.write("#" + "\t".join(header) + "\n")
 
                         if self.parsing_mode == "read":
@@ -968,7 +947,7 @@ class CollectionVCF:
 
         """
         # TODO: add multithreading drawing if possible and multipicture drawing
-        print("Drawing rainfall plot...")
+        sys.stderr.write("Drawing rainfall plot...\n")
         plot_dir = "rainfall_plot"
 
         os.system("mkdir -p %s" % plot_dir)
@@ -994,7 +973,7 @@ class CollectionVCF:
                 masking_df.remove_small_records(min_masking_length)
 
         for scaffold in final_scaffold_list: # self.records
-            print("Handling scaffold: %s ..." % scaffold)
+            sys.stderr.write("Handling scaffold: %s ...\n" % scaffold)
             distances_dict[scaffold] = self.records.loc[scaffold, "POS"].diff()
             height = max(np.max(distances_dict[scaffold]), height)
             # pandas DataFrame diff methods return differences between consecutive elements in array,
@@ -1044,7 +1023,7 @@ class CollectionVCF:
             index += 1
 
             if ref_genome is not None:
-                print("\tScaffold length:%i" % ref_genome.seq_lengths.loc[scaffold])
+                sys.stderr.write("\tScaffold length:%i\n" % ref_genome.seq_lengths.loc[scaffold])
                 plt.gca().add_patch(plt.Rectangle((1, 0),
                                                   ref_genome.seq_lengths.loc[scaffold],
                                                   height, facecolor=facecolor, edgecolor='none', alpha=0.5))
@@ -1054,7 +1033,7 @@ class CollectionVCF:
                                                           masked_region[1] - masked_region[0],
                                                           height, facecolor=masking_color, edgecolor='none'))
 
-            print("Drawing scaffold: %s ..." % scaffold)
+            sys.stderr.write("Drawing scaffold: %s ...\n" % scaffold)
 
             if color_expression:
                 for color in color_list:
@@ -1063,10 +1042,6 @@ class CollectionVCF:
                                 color=color,
                                 marker='.', s=dot_size)
             else:
-                #print distances_dict[scaffold]
-                #print distances_dict[scaffold]['POS']
-                #print distances_dict[scaffold]['DIST']
-                #print "UUUUUUUU"
                 plt.scatter(distances_dict[scaffold]['POS'],
                             distances_dict[scaffold]['DIST'],
                             color=default_point_color,
@@ -1159,10 +1134,10 @@ class CollectionVCF:
         param_mean = param.apply(np.mean)
         param_median = param.apply(np.median)
         if verbose:
-            print("Median:")
-            print(param_median)
-            print("Mean:")
-            print(param_mean)
+            sys.stderr.write("Median:\n")
+            sys.stderr.write(param_median)
+            sys.stderr.write("Mean:\n")
+            sys.stderr.write(param_mean)
 
         if median_relative:
             param = param.astype(np.float32) / param_median
@@ -1190,9 +1165,6 @@ class CollectionVCF:
             else:
                 bins = np.arange(0, max(param_max), 0.1)
         else:
-            print(np.max(param_median))
-            print(np.max(param_median)[0])
-            print(max(param_median))
             if param_max > max(param_median) * 10:
                 bins = np.arange(1, max(param_median) * 10, bin_width)
                 bins = np.concat(bins, [max(param_max)])
@@ -1200,17 +1172,11 @@ class CollectionVCF:
                 bins = np.arange(1, max(param_max), bin_width)
         bins = np.concatenate((bins, [bins[-1] + bin_width, bins[-1] + 2 * bin_width]))
 
-        print("Bins:")
-        print(bins)
-
         figure, subplot_array = plt.subplots(nrows=n, ncols=m, sharex=True, sharey=True,
                                              figsize=(m*subplot_size, n*subplot_size), dpi=dpi)
-        #print subplot_array
-        #print np.shape(subplot_array)
-        #print n, m
+
         for row in range(0, n):
             for col in range(0, m):
-                #print row, col
                 sample_index = row * m + col
                 if ylabel and col == 0:
                     subplot_array[row][col].ylabel = ylabel
@@ -1220,7 +1186,6 @@ class CollectionVCF:
                 if sample_index >= self.sample_number:
                     continue
                 sample_id = self.samples[sample_index]
-                #print param[sample_id]
                 # TODO: adjust function to deal not only with the first column inside parameter
                 subplot_array[row][col].hist(param[sample_id][parameter][0].dropna(), bins=bins, label=sample_id)
                 if show_median:
@@ -1261,7 +1226,7 @@ class CollectionVCF:
     def get_coverage_distribution(self, output_prefix, bin_width=5, dpi=200, subplot_size=3, extension_list=("png",),
                                   verbose=False):
         if self.parsing_mode in self.parsing_modes_with_sample_coverage:
-            print("Drawing coverage distribution...")
+            sys.stderr.write("Drawing coverage distribution...\n")
             self.draw_sample_parameter_distribution("DP", bin_width, output_prefix=output_prefix,
                                                     extension_list=extension_list,
                                                     suptitle="Coverage distribution",
@@ -1269,14 +1234,14 @@ class CollectionVCF:
                                                     show_mean=True, median_relative=False, mean_relative=False,
                                                     dpi=dpi, subplot_size=subplot_size,
                                                     verbose=verbose)
-            print("Drawing coverage distribution relative to median...")
+            sys.stderr.write("Drawing coverage distribution relative to median...\n")
             self.draw_sample_parameter_distribution("DP", bin_width, output_prefix="%s.median_relative" % output_prefix,
                                                     extension_list=extension_list,
                                                     suptitle="Coverage distribution(Median relative)",
                                                     xlabel="Coverage", ylabel="Variants", show_median=True,
                                                     show_mean=True, median_relative=True, mean_relative=False,
                                                     dpi=dpi, subplot_size=subplot_size)
-            print("Drawing coverage distribution relative to mean...")
+            sys.stderr.write("Drawing coverage distribution relative to mean...\n")
             self.draw_sample_parameter_distribution("DP", bin_width, output_prefix="%s.mean_relative" % output_prefix,
                                                     extension_list=extension_list,
                                                     suptitle="Coverage distribution(Mean relative)",
@@ -1298,10 +1263,6 @@ class CollectionVCF:
                                                                [0] * len(samples_to_use)])
             else:
                 sp_coverage = coverage.apply(np.median)
-            #coverage = coverage / coverage_median
-            #print sp_coverage
-            #print "UUUU"
-            #print coverage.apply(np.median)
             boolean_array = coverage >= (max_coverage * sp_coverage)
             if min_coverage:
                 boolean_array &= coverage <= (min_coverage * sp_coverage)
@@ -1311,7 +1272,7 @@ class CollectionVCF:
             #outliers = pd.concat([self.records[self.records.index.isin(outliers.index)]["POS"], outliers], axis=1)
             outliers = self.records[self.records.index.isin(outliers.index)]["POS"]
 
-            print("%i variants were masked" % np.shape(outliers)[0])
+            sys.stderr.write("%i variants were masked\n" % np.shape(outliers)[0])
 
             self.write_df(outliers, outfile, format="simple_bed", type="1-based")
 
@@ -1362,13 +1323,9 @@ class CollectionVCF:
 
     @staticmethod
     def filter_by_filter_presence_expression(record):
-        #print record.filter_list
         for filter_entry in record.filter_list:
-            #print filter_entry
             if (filter_entry != "PASS") and (filter_entry != "."):
-                #print "FALSE"
                 return False
-        #print True
         return True
 
     def filter_by_filter_presence(self):
@@ -1517,8 +1474,6 @@ class CollectionVCF:
                                 skip_empty_windows=False, per_sample_output=False):
 
         def heterozygous_variant(record):
-            #print record.__str__()
-            #print not record.is_homozygous()
             return not record.is_homozygous()
 
         return self.count_variants_in_windows(window_size, window_step, reference_scaffold_length_dict,
@@ -1548,7 +1503,7 @@ class CollectionVCF:
 
         normalized_ylabel = "%s per %i %s" % (ylabel, mb if mb >= 1 else kb if kb >=1 else multiplier, "Mbp" if mb >= 1 else "Kbp" if kb >= 1 else "bp")
 
-        print("Parsing reference and...")
+        sys.stderr.write("Parsing reference and...\n")
         reference = ReferenceGenome(reference_genome,
                                     masked_regions=None,
                                     index_file="refgen.idx",
@@ -1556,14 +1511,14 @@ class CollectionVCF:
                                     mode=parsing_mode,
                                     black_list=[],
                                     masking_gff_list=masking_gff)
-        print("Merging gaps with masking...")
+        sys.stderr.write("Merging gaps with masking...\n")
 
         gaps_and_masked_region_window_counts = reference.count_gaped_and_masked_positions_in_windows(window_size,
                                                                                                      window_stepppp,
                                                                                                      ignore_scaffolds_shorter_than_window=True,
                                                                                                      output_prefix=output_prefix,
                                                                                                      min_gap_len=1)
-        print("Counting variants in windows...")
+        sys.stderr.write("Counting variants in windows...\n")
         variant_window_counts = self.count_variants_in_windows(window_size,
                                                                window_stepppp,
                                                                reference.region_length,
@@ -1582,11 +1537,8 @@ class CollectionVCF:
                 normalized_variant_window_counts[sample] = SynDict()
                 filtered_normalized_variant_window_counts[sample] = SynDict()
                 for scaffold_id in variant_window_counts[sample]:
-                        #print sample
-                        #print scaffold_id
-                        #print variant_window_counts[sample][scaffold_id]
                     normalized_variant_window_counts[sample][scaffold_id] = np.divide(variant_window_counts[sample][scaffold_id].astype(float), window_stepppp - gaps_and_masked_region_window_counts[scaffold_id] + 1) * multiplier
-                        #print variant_window_counts[sample][scaffold_id]
+
                     filtered_normalized_variant_window_counts[sample][scaffold_id] = []
         else:
             for scaffold_id in variant_window_counts:
@@ -1601,7 +1553,6 @@ class CollectionVCF:
                         if np.isnan(variant_window_counts[sample][scaffold_id][window_index]):
                             normalized_variant_window_counts[sample][scaffold_id][window_index] = masked_or_gaped_region_mark
                         elif float(gaps_and_masked_region_window_counts[scaffold_id][window_index])/float(window_size) > gaps_and_masked_positions_max_fraction:
-                            #print variant_window_counts.keys()
                             variant_window_counts[sample][scaffold_id][window_index] = masked_or_gaped_region_mark
                             normalized_variant_window_counts[sample][scaffold_id][window_index] = masked_or_gaped_region_mark
                         else:
@@ -1626,7 +1577,7 @@ class CollectionVCF:
             normalized_variant_window_counts.write("%s.normalized_variant_number.tab" % output_prefix, splited_values=True)
             filtered_normalized_variant_window_counts.write("%s.filtered.normalized_variant_number.tab" % output_prefix, splited_values=True)
             
-        print("Drawing...")
+        sys.stderr.write("Drawing...\n")
         if plot_type == "concatenated":
             if per_sample_output:
                 data = OrderedDict()
@@ -1640,13 +1591,10 @@ class CollectionVCF:
                         len(data[sample])
                         data[sample] += list(variant_window_counts[sample][scaffold_id]) + [0, ]
                         normalized_data[sample] += list(normalized_variant_window_counts[sample][scaffold_id]) + [0, ]
-                #print data
                 for sample in variant_window_counts:
                     data[sample] = np.array(data[sample])
                     normalized_data[sample] = np.array(normalized_data[sample])
                     bins = np.arange(len(data[sample]))
-                    #print bins
-                #print data[sample]
 
                 sample_list = list(variant_window_counts.keys())
                 sample_number = len(sample_list)
@@ -1683,11 +1631,7 @@ class CollectionVCF:
                     normalized_data += list(normalized_variant_window_counts[scaffold_id]) + [0, ]
                 data = np.array(data)
                 normalized_data = np.array(normalized_data)
-                #print normalized_data
                 bins = np.arange(len(data)) #* window_step
-                #print data
-                #print max(data)
-                #print bins
                 for column_index in 0, 1:
                     if column_index == 0:
                         subplot_list[column_index].plot(bins, data)
@@ -1706,13 +1650,9 @@ class CollectionVCF:
 
     @staticmethod
     def heterozygous_variant(record):
-        #print record.__str__()
-        #print not record.is_homozygous()
         return not record.is_homozygous()
 
     def heterozygous_sample_variant(self, record, sample_index):
-        #print record.__str__()
-        #print sample_index, self.samples[sample_index], not record.is_homozygous()
         return not record.is_homozygous_sample(sample_index)
 
     def draw_heterozygous_snps_histogram(self, window_size, window_step, output_prefix, reference_genome,
@@ -1771,7 +1711,7 @@ class CollectionVCF:
         if window_step > window_size:
             raise ValueError("ERROR!!! Window step can't be larger then window size")
 
-        print("Parsing reference...")
+        sys.stderr.write("Parsing reference...\n")
         reference = ReferenceGenome(reference_fasta,
                                     masked_regions=None,
                                     index_file="refgen.idx",
@@ -1780,7 +1720,7 @@ class CollectionVCF:
                                     black_list=reference_scaffold_black_list,
                                     masking_gff_list=masking_gff)
 
-        print("Merging gaps with masking...")
+        sys.stderr.write("Merging gaps with masking...\n")
 
         gaps_and_masked_region_window_count_dict = reference.count_gaped_and_masked_positions_in_windows(window_size,
                                                                                                          window_step,
@@ -1865,14 +1805,12 @@ class CollectionVCF:
         if draw_dendrogramm or write_correlation or write_inconsistent:
             os.system("mkdir -p %s" % clustering_dir)
         for region in positions_dict:
-            #print positions_dict[region]
             if len(positions_dict[region]) <= 1:
                 linkage_dict[region] = None
                 correlation_dict[region] = None
                 continue
             else:
                 distance_matrix = pdist(positions_dict[region])
-            #print(distance_matrix)
 
             linkage_dict[region] = linkage(distance_matrix, method=method)
             if draw_dendrogramm:
@@ -2127,7 +2065,6 @@ class CollectionVCF:
         else:
             raise ValueError("ERROR!!! Unknow SNPeff entry: %s. Only ANN or EFF are allowed..." % snpeff_entry)
 
-        #print(output_file)
         with open(output_file, "w") as out_fd:
             header_string = "#" + "\t".join(record_header_list + snpeff_header_list) + "\n"
             out_fd.write(header_string)
@@ -2191,7 +2128,6 @@ class CollectionVCF:
                             break
                     else:
                         continue
-                #print(feature.sub_features)
                 for sub_feature in feature.sub_features:
                     if sub_feature.type != "CDS":
                         continue
@@ -2207,7 +2143,6 @@ class CollectionVCF:
 
                     region_end_start = CDS_end - left if strand == +1 else CDS_end - right
                     region_end_end = CDS_end + right if strand == +1 else CDS_end + left
-                    #print("aaa")
                     start_coordinates = []
                     end_coordinates = []
                     for variant in self.records[record_id]:
@@ -2217,7 +2152,6 @@ class CollectionVCF:
                             end_coordinates.append((variant.pos - CDS_end) * strand)
                     all_variant_start_positions += start_coordinates
                     all_variant_end_positions += end_coordinates
-                    #print(feature.qualifiers)
                     gene_variants_positions.append([feature.qualifiers["Name"], strand, chrom, region_start_start,
                                                     region_start_end, start_coordinates,
                                                     region_end_start, region_end_end,
@@ -2245,13 +2179,11 @@ class CollectionVCF:
         for scaffold in self.scaffold_list:
             scaffold_distribution[scaffold] = [[], []]
             for record in self.records[scaffold]:
-                #print(scaffold)
                 if expression(record):
                     scaffold_distribution[scaffold][0] += record.info_dict[info_dict_key]
                 else:
                     scaffold_distribution[scaffold][1] += record.info_dict[info_dict_key]
 
-        #print(scaffold_distribution[scaffold][0])
         side = int(sqrt(self.number_of_scaffolds))
         if side*side != self.number_of_scaffolds:
             side += 1
@@ -2261,9 +2193,6 @@ class CollectionVCF:
 
         index = 1
         for scaffold in self.scaffold_list:
-            #print(scaffold)
-            #print(scaffold_distribution[scaffold][0])
-            #print(scaffold_distribution[scaffold][1])
             sub_plot_dict[scaffold] = plt.subplot(side, side, index, axisbg="#D6D6D6")
             #ax = plt.gca()
             #ax.set_xticks(np.arange(0.5, 2.2, 0.1))
