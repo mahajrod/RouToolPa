@@ -604,7 +604,7 @@ class SequenceRoutines(FileRoutines):
                     continue
                 converted_ids.append(syn_dict[entry])
             id_list = converted_ids
-
+        id_list = set(id_list)
         if coincidence_mode == "exact":
             if invert_match:
                 def extract(seq_id, seq):
