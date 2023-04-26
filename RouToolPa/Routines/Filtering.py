@@ -61,3 +61,12 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
             reverse_output_fd.close()
         else:
             forward_output_fd.close()
+
+    def extract_seq_ids_by_taxa_from_kraken_report(self, kraken_output, taxon_id_list, output):
+
+        with self.metaopen(kraken_output, "r", buffering=100000000) as kraken_input_fd, \
+             self.metaopen(output, "w") as out_fd:
+            for kraken_line in kraken_input_fd:
+                kraken_line_list = kraken_line.split()
+                if kraken_line_list[2] in taxon_id_list:
+                    out_fd.write(kraken_line_list[1])
