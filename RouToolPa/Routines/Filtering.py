@@ -68,5 +68,7 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
              self.metaopen(output, "w", buffering=100000000) as out_fd:
             for kraken_line in kraken_input_fd:
                 kraken_line_list = kraken_line.split()
+                print(kraken_line_list)
+                print(kraken_line_list[2])
                 if kraken_line_list[2] in taxon_id_list:
                     out_fd.write(kraken_line_list[1])
