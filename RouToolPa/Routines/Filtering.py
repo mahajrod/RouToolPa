@@ -70,5 +70,6 @@ class FilteringRoutines(SequenceRoutines, FastQRoutines):
                 kraken_line_list = kraken_line.split()
                 print(kraken_line_list)
                 print(kraken_line_list[2])
+                print(kraken_line_list[2] in taxon_id_list)
                 if kraken_line_list[2] in taxon_id_list:
-                    out_fd.write(kraken_line_list[1])
+                    out_fd.write(kraken_line_list[1] + "\n")
