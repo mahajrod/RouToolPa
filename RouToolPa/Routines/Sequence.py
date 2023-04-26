@@ -605,18 +605,28 @@ class SequenceRoutines(FileRoutines):
                 converted_ids.append(syn_dict[entry])
             id_list = converted_ids
 
-        def extract(seq_id, seq):
-            if coincidence_mode == "exact":
-                flag = seq_id in id_list
+        if coincidence_mode == "exact":
+            if invert_match:
+                def extract(seq_id, seq):
+                    return not(seq_id in id_list)
             else:
-                for entry in id_list:
-                    if entry in seq_id:
-                        flag = True
-                        break
-                else:
-                    flag = False
-
-            return (not flag) if invert_match else flag
+                def extract(seq_id, seq):
+                    return seq_id in id_list
+        else:
+            if invert_match:
+                def extract(seq_id, seq):
+                    for entry in id_list:
+                        if entry in seq_id:
+                            return False
+                    else:
+                        return True
+            else:
+                def extract(seq_id, seq):
+                    for entry in id_list:
+                        if entry in seq_id:
+                            return True
+                    else:
+                        return False
 
         if verbose:
             print("Parsing %s..." % (sequence_file if isinstance(id_file, str) else ",".join(id_file)))
