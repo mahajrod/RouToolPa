@@ -589,10 +589,12 @@ class AUGUSTUS(Tool):
                 else:
                     intron_support_list.append(intron_support_tmp[0] / intron_support_tmp[1] * 100)
 
-        print(len(total_support_list))
-        print(len(cds_support_list))
-        print(len(intron_support_list))
-        print(intron_support_list.count(-1))
+        print("Total genes: {0}".format(len(total_support_list)))
+        #print(len(cds_support_list))
+        #print(len(intron_support_list))
+        print("Genes with zero CDS support: {0}".format(cds_support_list.count(0)))
+        print("Genes without introns: {0}".format(intron_support_list.count(-1)))
+        print("Genes with introns, but with zero intron support: {0}".format(intron_support_list.count(0)))
         DrawingRoutines.draw_heatmap_and_three_percent_histograms(total_support_list, cds_support_list,
                                                                   intron_support_list, output_prefix, figsize=(8, 8),
                                                                   extensions=("png", "svg"), stats_as_legend=stats_as_legend)
