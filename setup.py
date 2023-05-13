@@ -22,7 +22,7 @@ elif sys.version_info[0] == 2:
 else:
     raise ValueError("ERROR!!! Unsupported python version: %s" % str(sys.version_info[0]))
 """
-setup(name='RouToolPa',
+setup(name='routoolpa',
       version='0.94',
       packages=find_packages(),
       author='Sergei F. Kliver',
