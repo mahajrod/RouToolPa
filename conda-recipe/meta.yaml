@@ -1,6 +1,6 @@
 package:
   name: "routoolpa"
-  version: "0.92"
+  version: "0.94"
 about:
   summary: "Routines, Tools and Parsers"
 source:
@@ -34,6 +34,7 @@ requirements:
     - biopython
     - venn
     - bcbio-gff
+    - xlsxwriter
 
 build:
   script: python setup.py install
