@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 import pandas as pd
 
-from RouToolPa.Collections.General import IdList, SynDict
+from RouToolPa.Collections.General import IdList
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Formats.VariantFormats import VCF_COLS
 
