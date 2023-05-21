@@ -21,8 +21,6 @@ if sys.version_info[0] == 2:
 else:
     import venn
 
-import scipy.stats as stats
-
 from RouToolPa.Parsers.GFF import CollectionGFF
 
 from Bio import AlignIO
@@ -473,7 +471,7 @@ class DrawingRoutines(MatplotlibRoutines, SequenceRoutines):
                   max_x=None, min_y=None, max_y=None, extensions=["png", "svg"], xlabel=None, ylabel=None,
                   title=None, width=6, height=6, markersize=2, ylogbase=10, type="plot", grid=False, 
                   correlation=False, close_plot=True):
-
+        import scipy.stats as stats
         data = np.loadtxt(input_file, comments="#", usecols=(x_column_index, y_column_index), delimiter=separator)
         plt.figure(1, figsize=(width, height), dpi=300)
         plt.subplot(1, 1, 1)
