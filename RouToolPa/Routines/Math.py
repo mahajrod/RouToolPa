@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import sys
 from math import factorial
-from statsmodels.sandbox.stats.multicomp import fdrcorrection0
+
+
 import numpy as np
 import scipy as scp
 
@@ -122,6 +124,14 @@ class MathRoutines:
 
     def adjust_pvalues_from_file(self, input_file, column_with_raw_pvalues, output_file,
                                  header=True, comments_prefix="#", separator="\t"):
+        from statsmodels.sandbox.stats.multicomp import fdrcorrection0
+
+        #try:
+        #    from statsmodels.sandbox.stats.multicomp import fdrcorrection0
+        #except:
+        #    sys.stderr.write("WARNING!!! impossible to import fdrcorrection0 from statsmodels.sandbox.stats.multicomp."
+        #                     "Related functionality will not work.")
+
         lines_list = []
         p_values = []
 

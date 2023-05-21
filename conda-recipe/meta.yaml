@@ -1,6 +1,6 @@
 package:
   name: "routoolpa"
-  version: "0.94"
+  version: "0.96"
 about:
   summary: "Routines, Tools and Parsers"
 source:
