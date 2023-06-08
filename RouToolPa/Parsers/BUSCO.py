@@ -29,7 +29,7 @@ class BUSCOtable(Parser):
         self.parsing_parameters = {"busco_table": {
 
                                            "complete": {
-                                                   "col_names": ["id", "status", "scaffold", "start", "end", "strand",
+                                                   "col_names": ["OG", "status", "scaffold", "start", "end", "strand",
                                                                  "score", "length", "url", "description"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                                                    "index_cols": ["status"],
@@ -144,11 +144,5 @@ class BUSCOtable(Parser):
             if sort:
                 self.records.sort_values(by=["scaffold", "start", "end"])
 
-    def count_statuses(self):
-        status_dict = OrderedDict()
-        count_dict = OrderedDict()
-        for status in self.status_list:
-            status_dict[status] = set(self.records.loc[status]["id"].unique())
-            count_dict[status] = len(status_dict[status])
-
-        return status_dict, count_dict
+    def count_stats(self):
+        return self.records[["OG"]].drop_duplicates().groupby(by="status").count().rename(columns={"id": "counts"})

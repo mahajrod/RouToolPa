@@ -54,6 +54,47 @@ class CollectionBED:
                     },
                 },
             },
+            "bed_graph": {
+                "coordinates_only": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  ],
+                    "cols": [0, 1, 2, ],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                    },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                    },
+                },
+                "all": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  "value",
+                                  ],
+                    "cols": [0, 1, 2, 3,],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        "valuey": str,
+                    },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "value": 3,
+                    },
+                },
+                            },
             "bed_track": {
                 "coordinates_only": {
                     "col_names": ["scaffold",
