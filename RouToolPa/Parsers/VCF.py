@@ -18,8 +18,8 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
-from scipy.spatial.distance import pdist
-from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet, fcluster
+#from scipy.spatial.distance import pdist
+#from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet, fcluster
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
@@ -1797,6 +1797,8 @@ class CollectionVCF:
         :param write_correlation:
         :return:
         """
+        from scipy.spatial.distance import pdist
+        from scipy.cluster.hierarchy import linkage, dendrogram, inconsistent, cophenet, fcluster
         positions_dict = self.get_positions()
         correlation_dict = OrderedDict({})
         linkage_dict = OrderedDict({})
