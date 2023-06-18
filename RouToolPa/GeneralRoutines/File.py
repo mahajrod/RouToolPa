@@ -7,7 +7,8 @@ import sys
 import bz2
 import gzip
 import shutil
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 
 if sys.version_info[0] == 3:
     from io import TextIOWrapper as file

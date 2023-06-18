@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 __author__ = 'Sergei F. Kliver'
 
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt

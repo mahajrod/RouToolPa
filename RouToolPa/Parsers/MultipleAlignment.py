@@ -1,7 +1,7 @@
 __author__ = 'mahajrod'
 import os
 import math
-from collections import Iterable, OrderedDict
+from collections import  OrderedDict
 from math import sqrt
 
 import matplotlib

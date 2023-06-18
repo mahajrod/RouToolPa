@@ -1,6 +1,7 @@
 __author__ = 'mahajrod'
 import os
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 from math import sqrt
 #import matplotlib
 

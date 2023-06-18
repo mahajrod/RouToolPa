@@ -4,7 +4,7 @@ import sys
 import multiprocessing as mp
 from subprocess import PIPE, Popen
 import subprocess
-from collections import Iterable
+from collections.abc import Iterable
 import numpy as np
 from RouToolPa.Routines.Sequence import SequenceRoutines
 from RouToolPa.Routines.Alignment import AlignmentRoutines
