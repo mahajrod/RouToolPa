@@ -18,7 +18,8 @@ if sys.version_info[0] == 2:
 
 from random import randint
 from copy import deepcopy
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
+from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd

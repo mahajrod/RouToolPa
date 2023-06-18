@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-from collections import OrderedDict, MutableSet, Iterable
+from collections import OrderedDict
+from collections.abc import MutableSet, Iterable
 import numpy as np
 
 if sys.version_info[0] == 3:
