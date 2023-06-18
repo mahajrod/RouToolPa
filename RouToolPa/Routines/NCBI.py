@@ -3,7 +3,7 @@ import os
 import re
 import sys
 import time
-from collections import Iterable
+from collections.abc import Iterable
 from collections import OrderedDict
 
 if sys.version_info[0] == 2:

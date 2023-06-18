@@ -3,7 +3,7 @@ import os
 import sys
 
 from itertools import cycle, islice
-from collections import Iterable
+from collections.abc import Iterable
 #import matplotlib
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt

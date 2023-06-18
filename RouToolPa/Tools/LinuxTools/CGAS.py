@@ -2,7 +2,7 @@
 __author__ = 'Sergei F. Kliver'
 
 import os
-from collections import Iterable
+from collections.abc import Iterable
 from subprocess import PIPE, Popen
 from RouToolPa.Tools.Abstract import Tool
 
