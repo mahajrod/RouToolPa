@@ -4,13 +4,10 @@ GFF Parser Module based on pandas
 """
 __author__ = 'Sergei F. Kliver'
 import datetime
-from copy import deepcopy
-from collections import OrderedDict, Iterable
 import numpy as np
 import pandas as pd
 
 from RouToolPa.Parsers.Abstract import Parser
-import RouToolPa.Formats.AnnotationFormats as AnnotationFormats
 
 
 class BUSCOtable(Parser):

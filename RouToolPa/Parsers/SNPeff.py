@@ -5,7 +5,7 @@ import os
 import re
 from math import sqrt
 from copy import deepcopy
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
 
 import numpy as np
 

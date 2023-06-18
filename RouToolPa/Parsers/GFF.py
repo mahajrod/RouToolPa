@@ -5,7 +5,7 @@ GFF Parser Module based on pandas
 __author__ = 'Sergei F. Kliver'
 import datetime
 from copy import deepcopy
-from collections import OrderedDict, Iterable
+from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
