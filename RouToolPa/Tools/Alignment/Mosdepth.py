@@ -203,7 +203,7 @@ class Mosdepth(Tool):
 
         per_scaffold_stats = pd.DataFrame.from_dict(per_scaffold_stats, orient="index", columns=["length", "min", "max", "mean", "median"])
 
-        stats.to_csv("{0}.win{1}.step{2}.stat".format(output_prefix, window_size, win_step),
+        stats.to_csv("{0}.stat".format(output_prefix),
                      sep="\t", header=True, index=True)
         summary_stats.to_csv("%s.all.stat" % output_prefix, sep="\t", index_label="#scaffold")
         per_scaffold_stats.to_csv("%s.per_scaffold.stat" % output_prefix, sep="\t", index_label="#scaffold")
