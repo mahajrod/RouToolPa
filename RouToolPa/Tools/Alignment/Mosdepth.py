@@ -105,7 +105,17 @@ class Mosdepth(Tool):
                 return float(sorted_coverage[i] + sorted_coverage[i+1]) / 2
 
     def get_coverage_stats_in_windows(self, coverage_file, window_size, output_prefix, window_step=None,
-                                      buffering=None):
+                                      buffering=None, coord_format="window"):
+        """
+
+        :param coverage_file:
+        :param window_size:
+        :param output_prefix:
+        :param window_step:
+        :param buffering:
+        :param coord_format: allowed 'window' or 'bed'
+        :return:
+        """
         win_step = window_size if window_step is None else window_step
         stats = []
         per_scaffold_stats = OrderedDict()
@@ -191,7 +201,11 @@ class Mosdepth(Tool):
         stats = pd.DataFrame.from_records(stats, index=("scaffold", "window"),
                                           columns=("scaffold", "scaffold_length", "window", "mean",
                                                    "median", "min", "max", "uncovered", "uncovered,fraction"))
-
+        if coord_format == "bed":
+            stats.reset_index(level="window", inplace=True, drop=False)
+            stats["start"] = stats["window"] * window_step
+            stats["end"] = stats["start"] + window_size
+            stats = stats[["#scaffold", "start", "end", "window", "scaffold_length",  "mean", "median", "min", "max", "uncovered", "uncovered,fraction"]]
         summary_stats["all"] = [total_length,
                                 min(list(coverage_dict.keys())),
                                 max(list(coverage_dict.keys())),
