@@ -205,7 +205,8 @@ class Mosdepth(Tool):
             stats.reset_index(level="window", inplace=True, drop=False)
             stats["start"] = stats["window"] * window_step
             stats["end"] = stats["start"] + window_size
-            stats = stats[["#scaffold", "start", "end", "window", "scaffold_length",  "mean", "median", "min", "max", "uncovered", "uncovered,fraction"]]
+            stats = stats[["start", "end", "window", "scaffold_length",  "mean", "median", "min", "max", "uncovered", "uncovered,fraction"]]
+            stats.index.name = "#scaffold"
         summary_stats["all"] = [total_length,
                                 min(list(coverage_dict.keys())),
                                 max(list(coverage_dict.keys())),
