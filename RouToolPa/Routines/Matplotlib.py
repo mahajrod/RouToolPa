@@ -761,7 +761,7 @@ class MatplotlibRoutines:
         for ext in extensions:
             plt.savefig("%s.%s" % (output_prefix, ext))
 
-        subplot.set_yscale('log', basey=logbase)
+        subplot.set_yscale('log', base=logbase)
         #subplot.set_xscale('log', basex=args.logbase)
         for ext in extensions:
             plt.savefig("%s.logscale.%s" % (output_prefix, ext))
