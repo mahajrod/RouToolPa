@@ -428,5 +428,19 @@ class CollectionSequence(FileRoutines):
 
         return distance_df
 
+    def count_masked_positions(self, out_file=None, verbose=True):
+        # all low-case letter have decimal code >96 in ASCII encoding,
+        # so to avoid multiple comparisons with ["a", "c", "g", "t", "r", "y", "s", "w", "k", "m", "b", "d", "h", "v",]
+        # a conversion into byte array is used
+        softmasked_count_df = pd.DataFrame.from_dict({seq_id: sum(np.frombuffer(bytearray(self.records[seq_id].encode('ascii')), np.int8) > 96) for seq_id in self.records},
+                                                     orient='index', columns=["scaffold", "softmasked"])
+        softmasked_count_df["total"] = pd.Series(self.seq_lengths)
+        softmasked_count_df["softmasked,fraction"] = softmasked_count_df["softmasked"] / softmasked_count_df["total"]
+        if out_file:
+            softmasked_count_df[["total", "softmasked", "softmasked,fraction"]].to_csv(out_file, sep="\t", header=True, index=True)
+        total_softmasked = sum(softmasked_count_df["total", "softmasked"])
+        if verbose:
+            print("total\tsoftmasked\tsoftmasked,fraction\n{0}\t{1}\t{2}\n".format(self.length, total_softmasked, total_softmasked / self.length))
+
 
 
