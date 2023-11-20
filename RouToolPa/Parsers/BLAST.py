@@ -19,6 +19,7 @@ class CollectionBLAST:
                  format="tab6", parsing_mode="complete",
                  target_black_list=(), target_white_list=(),
                  query_black_list=(), query_white_list=(),
+                 header=False,
                  target_syn_dict=None, query_syn_dict=None,
                  min_target_hit_len=None, min_query_hit_len=None,
                  min_target_len=None, min_query_len=None):
@@ -92,6 +93,83 @@ class CollectionBLAST:
                                                                                  "send":       9,
                                                                                  "evalue":     10,
                                                                                  "bitscore":   11
+                                                                                 },
+                                                   },
+
+                                           },
+                                   "tab6_colored": {"complete": {
+                                                   "col_names": ["query_id",
+                                                                 "target_id",
+                                                                 "identity,%%",
+                                                                 "length",
+                                                                 "mismatch",
+                                                                 "gapopen",
+                                                                 "query_start",
+                                                                 "query_end",
+                                                                 "target_start",
+                                                                 "target_end",
+                                                                 "evalue",
+                                                                 "bitscore",
+                                                                 "color"],
+                                                   "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12],
+                                                   "index_cols": ["query_id", "target_id"],
+                                                   "converters": {
+                                                                  "qseqid":     str,
+                                                                  "sseqid":     str,
+                                                                  "pident":     np.float32,
+                                                                  "length":     np.int64,
+                                                                  "mismatch":   np.int32,
+                                                                  "gapopen":    np.int32,
+                                                                  "qstart":     np.int64,
+                                                                  "qend":       np.int64,
+                                                                  "sstart":     np.int64,
+                                                                  "send":       np.int64,
+                                                                  "evalue":     np.float64,
+                                                                  "bitscore":   np.float32,
+                                                                  "color":      str,
+                                                                 },
+                                                   "col_name_indexes": {
+                                                                        "query_id":         0,
+                                                                        "target_id":         1,
+                                                                        "identity,%%":      2,
+                                                                        "length":           3,
+                                                                        "mismatch":         4,
+                                                                        "gapopen":          5,
+                                                                        "query_start":      6,
+                                                                        "query_end":        7,
+                                                                        "target_start":     8,
+                                                                        "target_end":       9,
+                                                                        "evalue":           10,
+                                                                        "bitscore":         11,
+                                                                        "color":            12
+                                                                        },
+                                                   "original_col_names": ["qseqid",
+                                                                          "sseqid",
+                                                                          "pident",
+                                                                          "length",
+                                                                          "mismatch",
+                                                                          "gapopen",
+                                                                          "qstart",
+                                                                          "qend",
+                                                                          "sstart",
+                                                                          "send",
+                                                                          "evalue",
+                                                                          "bitscore",
+                                                                          "color"],
+                                                   "original_col_name_indexes": {
+                                                                                 "qseqid":     0,
+                                                                                 "sseqid":     1,
+                                                                                 "pident":     2,
+                                                                                 "length":     3,
+                                                                                 "mismatch":   4,
+                                                                                 "gapopen":    5,
+                                                                                 "qstart":     6,
+                                                                                 "qend":       7,
+                                                                                 "sstart":     8,
+                                                                                 "send":       9,
+                                                                                 "evalue":     10,
+                                                                                 "bitscore":   11,
+                                                                                 "color":      12
                                                                                  },
                                                    },
 
@@ -219,13 +297,15 @@ class CollectionBLAST:
                       min_target_hit_len=min_target_hit_len,
                       min_query_hit_len=min_query_hit_len,
                       min_target_len=min_target_len,
-                      min_query_len=min_query_len)
+                      min_query_len=min_query_len,
+                      header=header)
 
         else:
             self.records = records
 
     def read(self, in_file,
              format="tab6", parsing_mode="all",
+             header=False,
              target_black_list=(), target_white_list=(),
              query_black_list=(), query_white_list=(),
              min_target_hit_len=None, min_query_hit_len=None,
@@ -236,7 +316,7 @@ class CollectionBLAST:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
         print("%s\tReading input..." % str(datetime.datetime.now()))
-        self.records = pd.read_csv(in_file, sep='\t', header=None, na_values=".",
+        self.records = pd.read_csv(in_file, sep='\t', header=0 if header is not None else None, na_values=".",
                                    comment="#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
