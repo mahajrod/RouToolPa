@@ -16,8 +16,8 @@ class TRF(Tool):
 
     @staticmethod
     def parse_common_options(matching_weight=2, mismatching_penalty=7, indel_penalty=7,
-                             match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
-                             report_flanking_sequences=False, make_dat_file=True, max_repeat_length=None,
+                             match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
+                             report_flanking_sequences=False, make_dat_file=True, max_repeat_length=10,
                              suppress_html_output=False):
 
         options = " %i" % matching_weight
@@ -35,9 +35,9 @@ class TRF(Tool):
         return options
 
     def search_tandem_repeats(self, query_file, matching_weight=2, mismatching_penalty=7, indel_penalty=7,
-                              match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
+                              match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
                               report_flanking_sequences=False, make_dat_file=True, disable_html_output=True,
-                              max_repeat_length=None, suppress_html_output=True):
+                              max_repeat_length=10, suppress_html_output=True):
 
         options = " %s" % query_file
         options += self.parse_common_options(matching_weight=matching_weight, mismatching_penalty=mismatching_penalty,
@@ -69,10 +69,10 @@ class TRF(Tool):
 
     def parallel_search_tandem_repeat(self, query_file, output_prefix, matching_weight=2, mismatching_penalty=7,
                                       indel_penalty=7,
-                                      match_probability=80, indel_probability=10, min_alignment_score=50, max_period=500,
+                                      match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
                                       report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
                                       splited_result_dir="splited_output", converted_output_dir="converted_output",
-                                      max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=None):
+                                      max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10):
         work_dir = os.getcwd()
         splited_filename = FileRoutines.split_filename(query_file)
         self.split_fasta_by_seq_len(query_file, splited_fasta_dir, max_len_per_file=max_len_per_file,
@@ -139,7 +139,7 @@ class TRF(Tool):
                                            match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
                                            report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
                                            splited_result_dir="splited_output", converted_output_dir="converted_output",
-                                           max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=6):
+                                           max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10):
         self.parallel_search_tandem_repeat(query_file, output_prefix, matching_weight=matching_weight,
                                            mismatching_penalty=mismatching_penalty,
                                            indel_penalty=indel_penalty,
