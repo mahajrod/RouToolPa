@@ -212,7 +212,7 @@ class CollectionSequence(FileRoutines):
             not_empty = not lengths_df.empty
             if not_empty:
                 lengths_df["cum_length"] = lengths_df["length"].cumsum()
-                half_length = float(lengths_df["cum_length"][-1]) / 2
+                half_length = float(lengths_df["cum_length"].iloc[-1]) / 2
                 lengths_df["cumlen_longer"] = lengths_df["cum_length"] >= half_length
                 middle_element_index = lengths_df["cumlen_longer"].idxmax()
                 L50 = lengths_df.index.get_loc(middle_element_index) + 1
@@ -220,7 +220,7 @@ class CollectionSequence(FileRoutines):
 
             stats[threshold]["Total length"] = lengths_df["length"].sum() if not_empty else 0
             stats[threshold]["Total scaffolds"] = len(lengths_df["length"]) if not_empty else 0
-            stats[threshold]["Longest scaffold"] = lengths_df["length"][0] if not_empty else 0
+            stats[threshold]["Longest scaffold"] = lengths_df["length"].iloc[0] if not_empty else 0
             stats[threshold]["L50"] = L50 if not_empty else 0
             stats[threshold]["N50"] = N50 if not_empty else 0
             if count_gaps:

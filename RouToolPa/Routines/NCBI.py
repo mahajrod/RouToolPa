@@ -720,7 +720,7 @@ temp_transcripts/                              Directory with downloaded transcr
                 result = entrez_function(**kwargs) #Entrez.read(Entrez.efetch(db="taxonomy", id=taxon, retmode="xml"))
                 if result:
                     return result
-            except ValueError:
+            except:
                 pass
 
         return None
