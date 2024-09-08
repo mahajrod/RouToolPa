@@ -156,7 +156,7 @@ class TRF(Tool):
                                            max_len_per_file=max_len_per_file,
                                            store_intermediate_files=store_intermediate_files,
                                            max_repeat_length=max_repeat_length,
-                                           sleep_sec=1)
+                                           sleep_sec=sleep_sec)
 
     @staticmethod
     def gff_filtering_expression(gff_description_dict, min_period=None, max_period=None, min_copy_number=None,
