@@ -3,6 +3,7 @@ __author__ = 'Sergei F. Kliver'
 
 import os
 import shutil
+import time
 from RouToolPa.Tools.Abstract import Tool
 from RouToolPa.Parsers.TRF import CollectionTRF
 from RouToolPa.GeneralRoutines import FileRoutines
@@ -72,7 +73,8 @@ class TRF(Tool):
                                       match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
                                       report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
                                       splited_result_dir="splited_output", converted_output_dir="converted_output",
-                                      max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10):
+                                      max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10,
+                                      sleep_sec=1):
         work_dir = os.getcwd()
         splited_filename = FileRoutines.split_filename(query_file)
         self.split_fasta_by_seq_len(query_file, splited_fasta_dir, max_len_per_file=max_len_per_file,
@@ -103,7 +105,7 @@ class TRF(Tool):
             options_list.append(file_options)
 
         self.parallel_execute(options_list)
-
+        time.sleep(sleep_sec)
         os.chdir(work_dir)
         trf_output_file_list = []
         for filename in splited_files:
@@ -139,7 +141,8 @@ class TRF(Tool):
                                            match_probability=80, indel_probability=10, min_alignment_score=50, max_period=2000,
                                            report_flanking_sequences=False, splited_fasta_dir="splited_fasta_dir",
                                            splited_result_dir="splited_output", converted_output_dir="converted_output",
-                                           max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10):
+                                           max_len_per_file=100000, store_intermediate_files=False, max_repeat_length=10,
+                                           sleep_sec=1):
         self.parallel_search_tandem_repeat(query_file, output_prefix, matching_weight=matching_weight,
                                            mismatching_penalty=mismatching_penalty,
                                            indel_penalty=indel_penalty,
@@ -152,7 +155,8 @@ class TRF(Tool):
                                            converted_output_dir=converted_output_dir,
                                            max_len_per_file=max_len_per_file,
                                            store_intermediate_files=store_intermediate_files,
-                                           max_repeat_length=max_repeat_length)
+                                           max_repeat_length=max_repeat_length,
+                                           sleep_sec=1)
 
     @staticmethod
     def gff_filtering_expression(gff_description_dict, min_period=None, max_period=None, min_copy_number=None,
