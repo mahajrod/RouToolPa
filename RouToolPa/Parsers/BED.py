@@ -42,6 +42,24 @@ class CollectionBED:
                         "end": 2,
                     },
                 },
+                "complete": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  ],
+                    "cols": None,
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                    },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                    },
+                },
                 "all": {
                     "col_names": None,
                     "cols": None,
@@ -260,7 +278,7 @@ class CollectionBED:
 
         sys.stderr.write("%s\tReading input...\n" % str(datetime.datetime.now()))
         self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is False else 0, na_values=".",
-                                   comment=None if (self.format =="bed_track") or (self.format =="bed_synteny_track") else "#",
+                                   comment=None if (self.format =="bed_track") or (self.format =="bed_synteny_track") or (self.format =="bed_table") else "#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],

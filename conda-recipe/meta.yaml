@@ -1,6 +1,6 @@
 package:
   name: "routoolpa"
-  version: "0.111"
+  version: "0.113"
 about:
   summary: "Routines, Tools and Parsers"
 source:
@@ -12,7 +12,7 @@ requirements:
     - setuptools
     - ete3
     - scipy
-    - numpy
+    - "numpy>=1.26"
     - pandas
     - matplotlib
     - statsmodels
@@ -24,7 +24,7 @@ requirements:
   run:
     - python
     - scipy
-    - numpy
+    - "numpy>=1.26"
     - pandas
     - matplotlib
     - ete3
