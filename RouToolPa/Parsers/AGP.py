@@ -29,7 +29,7 @@ class CollectionAGP:
                                            "all": {
                                                    "col_names": ["scaffold", "start", "end", "part_number", "part_type", "part_id/gap_length", "part_start/gap_type", "part_end/linkage", "orientation/evidence"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8],
-                                                   "index_cols": None,
+                                                   "index_cols": 0,
                                                    "converters": {
                                                                    "scaffold": str,
                                                                    "start": np.int64,
@@ -45,7 +45,7 @@ class CollectionAGP:
                                                    },
                                     },
 
-                                },
+                                }
 
         self.parsing_mode = parsing_mode
 
@@ -60,6 +60,7 @@ class CollectionAGP:
         self.query_scaffold_list = None
         self.target_scaffold_lengths = None
         self.query_scaffold_lengths = None
+        self.length_df = None
 
         if in_file:
             self.read(in_file,
@@ -80,7 +81,7 @@ class CollectionAGP:
 
     def read(self, in_file, format="agp", parsing_mode="all"):
         if format not in self.parsing_parameters:
-            raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
+            raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % format)
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
@@ -91,7 +92,9 @@ class CollectionAGP:
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
-        self.records.index.name = "row"
+        #self.records.index.name = "row"
+
+        self.get_seq_len()
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))
         """
@@ -153,3 +156,8 @@ class CollectionAGP:
         elif (self.format == "tab_mismap") and (parsing_mode == "complete"):
             self.records["mismap"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["mismap"]))
         """
+    def get_seq_len(self):
+        self.length_df = self.records.groupby(by="scaffold").apply(lambda df: df[["end"]].iloc[-1])
+        self.length_df.columns = pd.Index(["length"])
+
+        return self.length_df
