@@ -159,5 +159,5 @@ class CollectionAGP:
     def get_seq_len(self):
         self.length_df = self.records.groupby(by="scaffold").apply(lambda df: df[["end"]].iloc[-1])
         self.length_df.columns = pd.Index(["length"])
-
+        self.length_df.sort_values(by="length", ascending=False, inplace=True)
         return self.length_df
