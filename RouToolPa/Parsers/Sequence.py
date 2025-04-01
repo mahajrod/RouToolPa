@@ -30,7 +30,6 @@ class CollectionSequence(FileRoutines):
         self.seq_file_format = format
         self.white_list = white_list
         self.black_list = black_list
-        self.seq_file = in_file
         self.description = OrderedDict()
 
         if in_file:
@@ -264,6 +263,35 @@ class CollectionSequence(FileRoutines):
         else:
             return None
 
+    def reorder_records(self, by="length", orderlist=None, in_place=False):
+        tmp_dict = OrderedDict()
+        if by == "length":
+            self.seq_lengths = self.get_stats_and_features(count_gaps=False)
+
+            for scaffold_id in list(self.seq_lengths.index):
+                tmp_dict[scaffold_id] = self.records[scaffold_id]
+            if in_place:
+                self.records = tmp_dict
+            return tmp_dict
+        if by == "orderlist":
+            if orderlist is None:
+                return self.records
+            else:
+                scaffolds = list(self.records.keys())
+                orderlist_set = set(orderlist)
+
+                if len(orderlist) != len(set(orderlist)):
+                    raise ValueError("ERROR!!! Some scaffolds are repeated in the orderlist!")
+                for scaffold_id in orderlist:
+                    tmp_dict[scaffold_id] = self.records[scaffold_id]
+                for scaffold_id in scaffolds:
+                    if scaffold_id in orderlist_set:
+                        continue
+                    tmp_dict[scaffold_id] = self.records[scaffold_id]
+                if in_place:
+                    self.records = tmp_dict
+                return tmp_dict
+
     def write_splited(self, out_dir, expression=None, max_symbols_per_line=60):
         if self.parsing_mode == "parse":
             for seq_id in self.records:
@@ -285,10 +313,21 @@ class CollectionSequence(FileRoutines):
             raise ValueError("ERROR!!! Writing was implemented only for parsing mode yet!")
 
     def write(self, outfile, expression=None, out_id_expression=None, max_symbols_per_line=60, whitelist=None,
-              keep_file_open=False):
+              keep_file_open=False, orderlist=None):
+        final_orderlist = None
+        if orderlist:
+            orderlist_set = set(orderlist)
+            final_orderlist = list(orderlist)
+
+            for seq_id in self.records:
+                if seq_id in orderlist_set:
+                    continue
+                else:
+                    final_orderlist.append(seq_id)
+
         out_fd = self.metaopen(outfile, "w")
         if self.parsing_mode == "parse":
-            for seq_id in whitelist if whitelist else self.records:
+            for seq_id in whitelist if whitelist else final_orderlist if orderlist else self.records:
                 if expression:
                     if not expression(seq_id, self.records[seq_id]):
                         continue
@@ -442,5 +481,38 @@ class CollectionSequence(FileRoutines):
         if verbose:
             print("total\tsoftmasked\tsoftmasked,fraction\n{0}\t{1}\t{2}\n".format(self.length, total_softmasked, total_softmasked / self.length))
 
+    def rename_sequences(self, syn_dict, in_place=False):
 
+        tmp_dict = OrderedDict()
+        tmp_description = OrderedDict()
 
+        records_to_rename_list = list(syn_dict.keys())
+        records_to_rename_set = set(records_to_rename_list)
+        if len(records_to_rename_set) != len(records_to_rename_list):
+            raise ValueError("ERROR!!! Some keys repeat in the syn dict")
+
+        for seq_id in self.records:
+            if seq_id in syn_dict:
+                tmp_dict[syn_dict[seq_id]] = self.records[seq_id]
+            else:
+                tmp_dict[seq_id] = self.records[seq_id]
+        if in_place:
+            self.records = tmp_dict
+
+            if self.seq_lengths is not None:
+                self.seq_lengths.index.rename(syn_dict)
+
+            if self.description is not None:
+                for seq_id in self.description:
+                    if seq_id in syn_dict:
+                        tmp_description[syn_dict[seq_id]] = self.description[seq_id]
+                    else:
+                        tmp_description[seq_id] = self.description[seq_id]
+
+                self.description = tmp_description
+
+            self.scaffolds = list(self.records.keys())
+
+            #self.gaps = None  # None or pandas dataframe with seq_id as index
+
+        return tmp_dict

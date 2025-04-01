@@ -1720,7 +1720,7 @@ class SequenceRoutines(FileRoutines):
         for record_id in record_dict:
             if syn_dict:
                 if record_id not in syn_dict:
-                    print("%s was not renamed" % record_id)
+                    sys.stdout.write("%s was not renamed\n" % record_id)
                     yield record_dict[record_id]
                     continue
                 else:
