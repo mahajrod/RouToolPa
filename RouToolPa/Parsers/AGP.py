@@ -12,6 +12,8 @@ import pandas as pd
 
 import RouToolPa.Formats.ScaffoldingFormats as ScaffoldingFormats
 
+AGP_PART_TYPES_INT_COORDINATES = ["W"]
+
 
 class CollectionAGP:
 
@@ -29,7 +31,7 @@ class CollectionAGP:
                                            "all": {
                                                    "col_names": ["scaffold", "start", "end", "part_number", "part_type", "part_id/gap_length", "part_start/gap_type", "part_end/linkage", "orientation/evidence"],
                                                    "cols":      [0, 1, 2, 3, 4, 5, 6, 7, 8],
-                                                   "index_cols": 0,
+                                                   "index_cols": None,
                                                    "converters": {
                                                                    "scaffold": str,
                                                                    "start": np.int64,
@@ -46,7 +48,7 @@ class CollectionAGP:
                                     },
 
                                 }
-
+        self.format = format
         self.parsing_mode = parsing_mode
 
         self.pandas_int_type_correspondence = OrderedDict({
@@ -92,8 +94,13 @@ class CollectionAGP:
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
+        if self.parsing_parameters[format][parsing_mode]["index_cols"] is None:
+            self.records["segment_id"] = [f"SEG{i}" for i in range(1, len(self.records) + 1)]
+            self.records.set_index("segment_id", inplace=True)
         #self.records.index.name = "row"
         self.records["start"] = self.records["start"] - 1
+        self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_start/gap_type"] = self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_start/gap_type"].astype(int) - 1
+        self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_end/linkage"] = self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_end/linkage"].astype(int)
         self.get_seq_len()
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))
@@ -161,3 +168,27 @@ class CollectionAGP:
         self.length_df.columns = pd.Index(["length"])
         self.length_df.sort_values(by="length", ascending=False, inplace=True)
         return self.length_df
+
+    def get_parts_df(self, part_type_whitelist=("W",), part_type_blacklist=(), keep_index=True, sort=False):
+        if part_type_whitelist and part_type_whitelist:
+            filtered_df = self.records[self.records["part_type"].isin(part_type_whitelist) & (~self.records["part_type"].isin(part_type_blacklist))]
+        elif part_type_whitelist:
+            filtered_df = self.records[self.records["part_type"].isin(part_type_whitelist)]
+        elif part_type_blacklist:
+            filtered_df = self.records[~self.records["part_type"].isin(part_type_blacklist)]
+        else:
+            filtered_df = self.records
+
+        agp_parts_df = filtered_df[["part_id/gap_length",
+                                    "part_start/gap_type",
+                                    "part_end/linkage"]]
+        agp_parts_df.loc[:, "part_start/gap_type"] = agp_parts_df["part_start/gap_type"].astype(int)
+        agp_parts_df.loc[:, "part_end/linkage"] = agp_parts_df["part_end/linkage"].astype(int)
+
+        if sort:
+            agp_parts_df = agp_parts_df.sort_values(by=["part_id/gap_length", "part_start/gap_type", "part_end/linkage"])
+        if not keep_index:
+            agp_parts_df.set_index("part_id/gap_length", inplace=True)
+
+        return agp_parts_df
+

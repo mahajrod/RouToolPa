@@ -197,7 +197,7 @@ class CollectionSequence(FileRoutines):
                                       )
             self.gaps_bed = CollectionBED(records=pd.concat(gaps_list), format="bed", parsing_mode="coordinates_only",
                                           scaffold_black_list=self.black_list, scaffold_white_list=self.white_list)
-
+            self.gaps_bed.records["start"] = self.gaps_bed.records["start"] - 1
             self.gaps.records.sort_values(by=["scaffold", "start", "end"])
             self.gaps_bed.records.sort_values(by=["scaffold", "start", "end"])
 
