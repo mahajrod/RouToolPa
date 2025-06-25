@@ -93,7 +93,7 @@ class CollectionAGP:
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
         #self.records.index.name = "row"
-
+        self.records["start"] = self.records["start"] - 1
         self.get_seq_len()
         print("%s\tReading input finished..." % str(datetime.datetime.now()))
         print("%s\tFiltering..." % str(datetime.datetime.now()))

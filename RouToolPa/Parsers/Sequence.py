@@ -266,7 +266,7 @@ class CollectionSequence(FileRoutines):
     def reorder_records(self, by="length", orderlist=None, in_place=False):
         tmp_dict = OrderedDict()
         if by == "length":
-            self.seq_lengths = self.get_stats_and_features(count_gaps=False)
+            self.get_stats_and_features(count_gaps=False)
 
             for scaffold_id in list(self.seq_lengths.index):
                 tmp_dict[scaffold_id] = self.records[scaffold_id]
