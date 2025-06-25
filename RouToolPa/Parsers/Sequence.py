@@ -13,6 +13,7 @@ import pandas as pd
 
 from RouToolPa.GeneralRoutines.File import FileRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
+from RouToolPa.Parsers.BED import CollectionBED
 
 
 class CollectionSequence(FileRoutines):
@@ -56,7 +57,8 @@ class CollectionSequence(FileRoutines):
         self.seq_lengths = None   # None or pandas dataframe with seq_id as index
         self.length = 0
         self.scaffolds = None
-        self.gaps = None          # None or pandas dataframe with seq_id as index
+        self.gaps = None          # None or pandas dataframe with seq_id as index, 1-based, CollectionGFF
+        self.gaps_bed = None      # None or pandas dataframe with seq_id as index, 0-based, CollectionBed
         self.stats = None         # None or pandas dataframe with seq_id as index
 
         if get_stats:
@@ -193,8 +195,11 @@ class CollectionSequence(FileRoutines):
             self.gaps = CollectionGFF(records=pd.concat(gaps_list), format="gff", parsing_mode="only_coordinates",
                                       black_list=self.black_list, white_list=self.white_list
                                       )
+            self.gaps_bed = CollectionBED(records=pd.concat(gaps_list), format="bed", parsing_mode="coordinates_only",
+                                          scaffold_black_list=self.black_list, scaffold_white_list=self.white_list)
 
             self.gaps.records.sort_values(by=["scaffold", "start", "end"])
+            self.gaps_bed.records.sort_values(by=["scaffold", "start", "end"])
 
         self.seq_lengths = pd.DataFrame.from_records(length_list, columns=("scaffold", "length"), index="scaffold").sort_values(by=["length", "scaffold"], ascending=(False, True))
         self.length = np.sum(self.seq_lengths["length"])
