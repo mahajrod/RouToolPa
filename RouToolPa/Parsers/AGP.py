@@ -192,3 +192,9 @@ class CollectionAGP:
 
         return agp_parts_df
 
+    def write(self, output_agp):
+        # convert internal 0-based coordinate system to 1-based used by agp
+        tmp = deepcopy(self.records)
+        tmp.loc[:, "start"] += 1
+        tmp.loc[:, "part_start/gap_type"] += 1
+        tmp.to_csv(output_agp, "\t", index=False, header=False)
