@@ -5,6 +5,7 @@ Sequence Parser Module
 __author__ = 'Sergei F. Kliver'
 
 import re
+import sys
 from copy import deepcopy
 from collections import OrderedDict
 
@@ -14,6 +15,14 @@ import pandas as pd
 from RouToolPa.GeneralRoutines.File import FileRoutines
 from RouToolPa.Parsers.GFF import CollectionGFF
 from RouToolPa.Parsers.BED import CollectionBED
+
+if sys.version_info[0] == 2:
+    from string import maketrans
+else:
+    maketrans = str.maketrans
+
+complement_table = maketrans("ACGTRYSWKMBDHVNacgtryswkmbdhvn-",
+                             "TGCAYRSWMKVHDBNtgcayrswmkvhdbn-")
 
 
 class CollectionSequence(FileRoutines):
@@ -48,7 +57,7 @@ class CollectionSequence(FileRoutines):
         self.external_description = external_description if external_description else OrderedDict()
 
         if masking_file:
-            print("Parsing masking...")
+            sys.stderr.write("Parsing masking...\n")
             self.masking = CollectionGFF(masking_file, format=masking_filetype, parsing_mode="only_coordinates",
                                          black_list=black_list, white_list=white_list)
         else:
@@ -77,7 +86,7 @@ class CollectionSequence(FileRoutines):
                             if seq_id and (seq_id not in black_list):
                                 if (not white_list) or (seq_id in white_list):
                                     if verbose:
-                                        print("Parsing %s" % seq_id)
+                                        sys.stderr.write("Parsing %s\n" % seq_id)
                                     yield seq_id, description, seq
                             tmp = line[1:].strip().split(None, 1)
                             seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
@@ -89,7 +98,7 @@ class CollectionSequence(FileRoutines):
                         if seq_id and (seq_id not in black_list):
                             if (not white_list) or (seq_id in white_list):
                                 if verbose:
-                                    print("Parsing %s" % seq_id)
+                                    sys.stderr.write("Parsing %s\n" % seq_id)
                                 yield seq_id, description, seq
 
     def sequence_generator_with_expression(self, sequence_file, seq_expression, format="fasta",
@@ -105,7 +114,7 @@ class CollectionSequence(FileRoutines):
                             if seq_id and (seq_id not in black_list):
                                 if (not white_list) or (seq_id in white_list):
                                     if verbose:
-                                        print("Parsing %s" % seq_id)
+                                        sys.stderr.write("Parsing %s\n" % seq_id)
                                     yield seq_id, description, seq
                             tmp = line[1:].strip().split(None, 1)
                             seq_id, description = tmp if len(tmp) == 2 else (tmp[0], "")
@@ -117,7 +126,7 @@ class CollectionSequence(FileRoutines):
                         if seq_id and (seq_id not in black_list):
                             if (not white_list) or (seq_id in white_list):
                                 if verbose:
-                                    print("Parsing %s" % seq_id)
+                                    sys.stderr.write("Parsing %s\n" % seq_id)
                                 yield seq_id, description, seq_expression(seq)
 
     def sequence_tuple_generator(self):
@@ -135,7 +144,7 @@ class CollectionSequence(FileRoutines):
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         if parsing_mode == "generator":
             if verbose:
-                print("Creating sequence generator...")
+                sys.stderr.write("Creating sequence generator...\n")
             if seq_expression:
                 self.records = self.sequence_generator_with_expression(seq_file,
                                                                        seq_expression,
@@ -151,7 +160,7 @@ class CollectionSequence(FileRoutines):
                                                        verbose=verbose)
         elif parsing_mode == "parse":
             if verbose:
-                print("Parsing sequences...")
+                sys.stderr.write("Parsing sequences...\n")
             self.records = OrderedDict()
             for seq_id, description, seq in self.sequence_generator(seq_file, format=format,
                                                                     black_list=black_list,
@@ -434,7 +443,7 @@ class CollectionSequence(FileRoutines):
             collection = deepcopy(self)
 
         if collection.parsing_mode == "generator":
-            print("Creating unmasked sequence generator...")
+            sys.stderr.write("Creating unmasked sequence generator...\n")
 
             collection.records = collection.sequence_generator_with_expression(collection.seq_file,
                                                                                collection.expression_unmask,
@@ -443,7 +452,7 @@ class CollectionSequence(FileRoutines):
                                                                                white_list=collection.white_list,
                                                                                verbose=verbose)
         elif collection.parsing_mode == "parse":
-            print("Unmasking sequences...")
+            sys.stderr.write("Unmasking sequences...\n")
             for seq_id in collection.records:
                 collection.records[seq_id] = collection.records[seq_id].upper()
 
@@ -485,7 +494,7 @@ class CollectionSequence(FileRoutines):
             softmasked_count_df[["total", "softmasked", "softmasked,fraction"]].to_csv(out_file, sep="\t", header=True, index=True)
         total_softmasked = sum(softmasked_count_df["total", "softmasked"])
         if verbose:
-            print("total\tsoftmasked\tsoftmasked,fraction\n{0}\t{1}\t{2}\n".format(self.length, total_softmasked, total_softmasked / self.length))
+            sys.stderr.write("total\tsoftmasked\tsoftmasked,fraction\n{0}\t{1}\t{2}\n".format(self.length, total_softmasked, total_softmasked / self.length))
 
     def rename_sequences(self, syn_dict, in_place=False):
 
@@ -522,3 +531,53 @@ class CollectionSequence(FileRoutines):
             #self.gaps = None  # None or pandas dataframe with seq_id as index
 
         return tmp_dict
+
+    def reverse_complement(self, seq):
+        # if sys.version_info[0] == 2:
+        return seq[::-1].translate(complement_table)
+
+    def get_sequence_for_regions(self, coordinate_df,
+                                 scaffold_id_column_idx=0, start_column_idx=1,
+                                 end_column_idx=2, strand_column_idx=None, region_id_column_idx=None):
+        """INPUT COORDINATE SYSTEM MUST BE 0-BASED AND HALF-OPEN"""
+        coordinate_column_idx_list = [scaffold_id_column_idx, start_column_idx, end_column_idx]
+        coordinate_column_name_list = ["scaffold_id", "start", "end"]
+        if strand_column_idx is not None:
+            coordinate_column_idx_list.append(strand_column_idx)
+            coordinate_column_name_list.append("strand")
+        if region_id_column_idx is not None:
+            coordinate_column_idx_list.append(region_id_column_idx)
+            coordinate_column_name_list.append("id")
+
+        output_df = coordinate_df.iloc[:, coordinate_column_idx_list]
+        output_df.columns = pd.Index(coordinate_column_name_list)
+
+        if "strand" not in output_df.columns:
+            output_df["strand"] = pd.NA
+        if "id" not in output_df.columns:
+            output_df["id"] = [f"LOC{index + 1}" for index in range(0, len(output_df))]
+
+        output_df = output_df[["scaffold_id", "start", "end", "strand", "id"]]
+
+        output_df["sequence"] = pd.NA
+
+        input_record_number = len(output_df)
+
+        not_null_series = output_df["scaffold_id"].notnull() & output_df["start"].notnull() & output_df["end"].notnull()
+
+        output_df = output_df[not_null_series]
+
+        notnull_record_number = len(output_df)
+        sys.stderr.write(f"Input records: {input_record_number}\n")
+        sys.stderr.write(f"Passed records: {notnull_record_number}\n")
+
+        def get_seq(row):
+            sequence = self.records[row.iloc[0]][row.iloc[1]:row.iloc[2]]
+            if pd.notnull(row.iloc[3]) and row.iloc[3] == "-":
+                sequence = self.reverse_complement(sequence)
+
+            return sequence
+
+        output_df["sequence"] = output_df.apply(get_seq, axis=1)
+
+        return output_df
