@@ -199,7 +199,7 @@ class HaplotypeCaller4(Tool):
             options += " -O %s" % output_file
             options += " -L %s" % region_file
 
-            slurm_cmd = "gatk --java-options -Xmx%s HaplotypeCaller" % self.max_memory if self.max_memory else "gatk HaplotypeCaller"
+            slurm_cmd = f"gatk --java-options -Xmx{cpus_per_task * max_memmory_per_cpu}m HaplotypeCaller"
             slurm_cmd += " %s" % options
 
             last_job_id = self.slurm_run_job(job_name,
