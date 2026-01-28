@@ -17,12 +17,8 @@ AGP_PART_TYPES_INT_COORDINATES = ["W"]
 
 class CollectionAGP:
 
-    def __init__(self, in_file=None, records=None, format="agp", parsing_mode="all"):
-                 #target_black_list=(), target_white_list=(),
-                 #query_black_list=(), query_white_list=(),
-                 #_syn_dict=None, query_syn_dict=None):
-                 #min_target_hit_len=None, min_query_hit_len=None,
-                 #min_target_len=None, min_query_len=None, keep_seq_length_in_df=False):
+    def __init__(self, in_file=None, records=None, format="agp", parsing_mode="all",
+                 black_list=(), white_list=()):
 
         self.formats = ["agp"]
         self.TAB_COLS = ScaffoldingFormats.SCAF_FMT_COLS["agp"]
@@ -64,10 +60,15 @@ class CollectionAGP:
         self.query_scaffold_lengths = None
         self.length_df = None
 
+        self.target_black_list = black_list
+        self.target_white_list = white_list
+
         if in_file:
             self.read(in_file,
                       format=format,
-                      parsing_mode=parsing_mode,)
+                      parsing_mode=parsing_mode,
+                      black_list=black_list,
+                      white_list=white_list)
                       #target_black_list=target_black_list,
                       #target_white_list=target_white_list,
                       #query_black_list=query_black_list,
@@ -81,7 +82,40 @@ class CollectionAGP:
         else:
             self.records = records
 
-    def read(self, in_file, format="agp", parsing_mode="all"):
+    @staticmethod
+    def get_filtered_entry_list(entry_list,
+                                entry_black_list=None,
+                                sort_entries=False,
+                                entry_ordered_list=None,
+                                entry_white_list=None):
+        white_set = set(entry_white_list) if entry_white_list is not None else set()
+        black_set = set(entry_black_list) if entry_black_list is not None else set()
+        entry_set = set(entry_list)
+
+        if white_set:
+            entry_set = entry_set & white_set
+        if black_set:
+            entry_set = entry_set - black_set
+
+        filtered_entry_list = list(entry_set)
+        if sort_entries:
+            filtered_entry_list.sort()
+
+        final_entry_list = []
+
+        if entry_ordered_list is not None:
+            for entry in entry_ordered_list:
+                if entry in filtered_entry_list:
+                    final_entry_list.append(entry)
+                    filtered_entry_list.remove(entry)
+                else:
+                    print("WARNING!!!Entry(%s) from order list is absent in list of entries!" % entry)
+            return final_entry_list + filtered_entry_list
+        else:
+            return filtered_entry_list
+
+    def read(self, in_file, format="agp", parsing_mode="all",
+             black_list=None, white_list=None):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % format)
         elif parsing_mode not in self.parsing_parameters[format]:
@@ -94,9 +128,17 @@ class CollectionAGP:
                                    converters=self.parsing_parameters[format][parsing_mode]["converters"],
                                    names=self.parsing_parameters[format][parsing_mode]["col_names"],
                                    index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
+
+        if (white_list is not None) or (black_list is not None):
+            scaffolds_to_keep = self.get_filtered_entry_list(self.records["scaffold"].tolist(),
+                                                             entry_black_list=black_list,
+                                                             entry_white_list=white_list)
+            self.records = self.records[self.records["scaffold"].isin(scaffolds_to_keep)]
+
         if self.parsing_parameters[format][parsing_mode]["index_cols"] is None:
             self.records["segment_id"] = [f"SEG{i}" for i in range(1, len(self.records) + 1)]
             self.records.set_index("segment_id", inplace=True)
+
         #self.records.index.name = "row"
         self.records["start"] = self.records["start"] - 1
         self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_start/gap_type"] = self.records.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_start/gap_type"].astype(int) - 1
@@ -163,6 +205,14 @@ class CollectionAGP:
         elif (self.format == "tab_mismap") and (parsing_mode == "complete"):
             self.records["mismap"] = map(lambda s: np.float32(s.split("=")[1]), list(self.records["mismap"]))
         """
+
+    def filter_records(self, white_list=None, black_list=None):
+        if (white_list is not None) or (black_list is not None):
+            scaffolds_to_keep = self.get_filtered_entry_list(self.records["scaffold"].tolist(),
+                                                             entry_black_list=black_list,
+                                                             entry_white_list=white_list)
+            self.records = self.records[self.records["scaffold"].isin(scaffolds_to_keep)]
+
     def get_seq_len(self):
         self.length_df = self.records.groupby(by="scaffold").apply(lambda df: df[["end"]].iloc[-1])
         self.length_df.columns = pd.Index(["length"])
@@ -192,9 +242,12 @@ class CollectionAGP:
 
         return agp_parts_df
 
+    def get_nongap_records(self): # coordinates of segments are unchanged!!!!
+        return self.records[self.records["part_type"] != "U"]
+
     def write(self, output_agp):
         # convert internal 0-based coordinate system to 1-based used by agp
         tmp = deepcopy(self.records)
         tmp.loc[:, "start"] += 1
         tmp.loc[self.records["part_type"].isin(AGP_PART_TYPES_INT_COORDINATES), "part_start/gap_type"] += 1
-        tmp.to_csv(output_agp, "\t", index=False, header=False)
+        tmp.to_csv(output_agp, sep="\t", index=False, header=False)
