@@ -23,7 +23,7 @@ else:
     raise ValueError("ERROR!!! Unsupported python version: %s" % str(sys.version_info[0]))
 """
 setup(name='routoolpa',
-      version='0.122',
+      version='0.123',
       packages=find_packages(),
       author='Sergei Kliver',
       author_email='mahajrod@gmail.com',
