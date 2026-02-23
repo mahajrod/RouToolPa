@@ -368,7 +368,7 @@ class CollectionBED:
         if left_flank:
             tmp.loc[:, self.start_index] = np.maximum(0, tmp.loc[:, self.start_index] - left_flank)
         if right_flank:
-            if length_df:
+            if length_df is not None:
                 tmp["lengthhhhhhhhhhhhhret"] = length_df[length_df_column]
                 tmp["lengthhhhhhhhhhhhhret"].fillna(np.Inf)
                 tmp.loc[:, self.end_index] = np.minimum(tmp.loc[:, self.end_index] + right_flank, tmp["lengthhhhhhhhhhhhhret"])
