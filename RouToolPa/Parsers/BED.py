@@ -372,7 +372,7 @@ class CollectionBED:
                 tmp["lengthhhhhhhhhhhhhret"] = length_df[length_df_column]
                 tmp["lengthhhhhhhhhhhhhret"].fillna(np.Inf)
                 tmp.loc[:, self.end_index] = np.minimum(tmp.loc[:, self.end_index] + right_flank, tmp["lengthhhhhhhhhhhhhret"])
-                tmp.drop("lengthhhhhhhhhhhhhret")
+                tmp.drop("lengthhhhhhhhhhhhhret", axis=1, inplace=True)
             else:
                 tmp.loc[:, self.end_index] += right_flank
 
