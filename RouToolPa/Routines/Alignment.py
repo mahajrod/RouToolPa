@@ -426,3 +426,30 @@ class AlignmentRoutines(SequenceRoutines):
                                                                                            prev_start,
                                                                                            prev_end,
                                                                                            index))
+
+    @staticmethod
+    def parse_cigar(cigar_str):
+        parsed_cigar_str = []
+        num = ""
+
+        for char in cigar_str:
+            if char.isdigit():
+                num += char
+            else:
+                parsed_cigar_str.append((char, int(num)))
+                num = ""
+
+        return parsed_cigar_str
+
+    @staticmethod
+    def count_cigar_codes(parsed_cigar_str):
+        cigar_code_dict = OrderedDict()
+        #parsed_cigar_str = self.parse_cigar(cigar_str)
+
+        for cigar_code, length in parsed_cigar_str:
+            if cigar_code not in cigar_code_dict:
+                cigar_code_dict[cigar_code] = length
+            else:
+                cigar_code_dict[cigar_code] += length
+
+        return cigar_code_dict
