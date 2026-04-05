@@ -18,11 +18,122 @@ class CollectionBED:
 
     def __init__(self, in_file=None, records=None,  records_columns=None, format="bed", parsing_mode="all",
                  scaffold_black_list=None, scaffold_white_list=None, scaffold_syn_dict=None, header_in_file=False,
-                 rename_dict=None, white_list_dict={}, black_list_dict={}
+                 rename_dict=None, white_list_dict={}, black_list_dict={},
+                 scaffold_column_name=None, start_column_name=None, end_column_name=None, one_based_coordinates=False,
+                 value_column_name=None, color_column_name=None,
                  ):
 
-        self.formats = ["bed"]
+        self.formats = ["bed", "table", "bedgraph", "bed_colored", "bed_track", "bed_synteny_track"]
+        self.colored_formats = ["bed_colored", "bed_track", "bed_synteny_track"]
+        self.parsing_mode = parsing_mode
         self.parsing_parameters = {
+            "table": {
+                "coordinates_only": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  ],
+                    "cols": [0, 1, 2, ],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                    },
+                "bedgraph": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  "value"
+                                  ],
+                    "cols": [0, 1, 2, 3],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        "value": np.float64,
+                        },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "value": 3,
+                        },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                    },
+                "colored": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  "color"
+                                  ],
+                    "cols": [0, 1, 2, 3],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        "color": str,
+                        },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "color": 3,
+                        },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                    },
+                "colored_bedgraph": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  "value"
+                                  "color"
+                                  ],
+                    "cols": [0, 1, 2, 3, 4],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        "value": np.float64,
+                        "color": str,
+                        },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "value": 3,
+                        "color": 4
+                        },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                    },
+                "all": {
+                    "col_names": None,
+                    "cols": None,
+                    "index_cols": 0,
+                    "converters": {},
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                    },
+                },
             "bed": {
                 "coordinates_only": {
                     "col_names": ["scaffold",
@@ -72,7 +183,60 @@ class CollectionBED:
                     },
                 },
             },
-            "bed_graph": {
+            "bed_colored": {
+                "coordinates_only": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  ],
+                    "cols": [0, 1, 2, ],
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                    },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                    },
+                },
+                "complete": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",
+                                  "color"
+                                  ],
+                    "cols": None,
+                    "index_cols": "scaffold",
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64,
+                        "color": str
+                    },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "color": 3
+                    },
+                },
+                "all": {
+                    "col_names": None,
+                    "cols": None,
+                    "index_cols": 0,
+                    "converters": {},
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                        "color": 3
+                    },
+                },
+            },
+            "bedgraph": {
                 "coordinates_only": {
                     "col_names": ["scaffold",
                                   "start",
@@ -103,7 +267,7 @@ class CollectionBED:
                         "scaffold": str,
                         "start": np.int64,
                         "end": np.int64,
-                        "valuey": str,
+                        "value": np.float64,
                     },
                     "col_name_indexes": {
                         "scaffold": 0,
@@ -239,6 +403,8 @@ class CollectionBED:
         self.scaffold_syn = "scaffold"
         self.start_syn = "start"
         self.end_syn = "end"
+        self.value_syn = "value"
+        self.color_syn = "color"
 
         self.scaffold_syn_dict = scaffold_syn_dict
         self.scaffold_list = []
@@ -253,7 +419,13 @@ class CollectionBED:
                       records_columns=records_columns,
                       rename_dict=rename_dict,
                       white_list_dict=white_list_dict,
-                      black_list_dict=black_list_dict
+                      black_list_dict=black_list_dict,
+                      scaffold_column_name=scaffold_column_name,
+                      start_column_name=start_column_name,
+                      end_column_name=end_column_name,
+                      value_column_name=value_column_name,
+                      color_column_name=color_column_name,
+                      one_based_coordinates=one_based_coordinates
                       )
 
         else:
@@ -270,19 +442,84 @@ class CollectionBED:
              records_columns=None,
              rename_dict=None,
              white_list_dict={},
-             black_list_dict={}):
+             black_list_dict={},
+             scaffold_column_name=None,
+             start_column_name=None,
+             end_column_name=None,
+             value_column_name=None,
+             color_column_name=None,
+             one_based_coordinates=False):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
         sys.stderr.write("%s\tReading input...\n" % str(datetime.datetime.now()))
-        self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is False else 0, na_values=".",
-                                   comment=None if (self.format =="bed_track") or (self.format =="bed_synteny_track") or (self.format =="bed_table") else "#",
-                                   usecols=self.parsing_parameters[format][parsing_mode]["cols"],
-                                   converters=self.parsing_parameters[format][parsing_mode]["converters"],
-                                   names=self.parsing_parameters[format][parsing_mode]["col_names"],
-                                   index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
+        if format == "table": # comment_prefix - "#", header is expected on the first non commented line
+            if (not scaffold_column_name) or (not start_column_name) or (not end_column_name):
+                raise ValueError("ERROR!!! input in 'table' format requires to be set three parameters: 'scaffold_column_name', 'start_column_name' and 'end_column_name'")
+            column_list = [scaffold_column_name, start_column_name, end_column_name]
+            self.parsing_parameters[format][parsing_mode]["original_col_names"] = {
+                scaffold_column_name: "scaffold",
+                start_column_name: "start",
+                end_column_name: "end",
+                }
+
+            if parsing_mode == "coordinates_only":
+                pass
+            elif parsing_mode == "bedgraph":
+                if not value_column_name:
+                    raise ValueError("ERROR!!! Input in 'table' format and 'bedgraph' parsing mode "
+                                     "requires to be set one more parameter: 'value_column_name'")
+                column_list += [value_column_name]
+                self.parsing_parameters[format][parsing_mode]["original_col_names"][value_column_name] = "value"
+            elif parsing_mode == "colored":
+                if not color_column_name:
+                    raise ValueError("ERROR!!! Input in 'table' format and 'colored' parsing mode "
+                                     "requires to be set one more parameter: 'color_column_name'")
+                column_list += [color_column_name]
+                self.parsing_parameters[format][parsing_mode]["original_col_names"][color_column_name] = "color"
+
+            elif parsing_mode == "colored_bedgraph":
+                if (not value_column_name) or (not color_column_name):
+                    raise ValueError("ERROR!!! Input in 'table' format and 'colored_bedgraph' parsing mode "
+                                     "requires to be set two more parameter: 'value_column_name' and 'color_column_name'")
+                column_list += [value_column_name, color_column_name]
+                self.parsing_parameters[format][parsing_mode]["original_col_names"][value_column_name] = "value"
+                self.parsing_parameters[format][parsing_mode]["original_col_names"][color_column_name] = "color"
+            elif parsing_mode == "all":
+                pass
+            else:
+                raise ValueError(f"ERROR!!! Parsing mode '{parsing_mode}' is not a valid for 'table' input type. "
+                                 f"Use one of implemented modes: 'coordinates_only', 'bedgraph', 'color', 'colored_bedgraph' or 'all'")
+
+            converter_dict = OrderedDict()
+            for original_name in self.parsing_parameters[format][parsing_mode]["original_col_names"]:
+                converter_dict[original_name] = self.parsing_parameters[format][parsing_mode]["converters"][
+                    self.parsing_parameters[format][parsing_mode]["original_col_names"][original_name]
+                    ]
+
+            self.records = pd.read_csv(in_file, sep='\t', header=0, na_values=".",
+                                       comment=None if (self.parsing_mode == "colored_bedgraph") or (self.parsing_mode == "colored") else "#",
+                                       usecols=None if self.parsing_mode == "all" else column_list,
+                                       converters=converter_dict,
+                                       index_col=scaffold_column_name)
+            self.records.rename(self.parsing_parameters[format][parsing_mode]["original_col_names"], inplace=True, axis="columns")
+            if one_based_coordinates is None:
+                self.parsing_parameters[format][parsing_mode]["original_coord_system"] = None
+            elif one_based_coordinates:
+                self.parsing_parameters[format][parsing_mode]["original_coord_system"] = "one-based"
+                self.records[self.start_syn] = self.records[self.start_syn] - 1
+            else:
+                self.parsing_parameters[format][parsing_mode]["original_coord_system"] = "zero-based"
+
+        else:
+            self.records = pd.read_csv(in_file, sep='\t', header=None if header_in_file is False else 0, na_values=".",
+                                       comment=None if self.format in self.colored_formats else "#",
+                                       usecols=self.parsing_parameters[format][parsing_mode]["cols"],
+                                       converters=self.parsing_parameters[format][parsing_mode]["converters"],
+                                       names=self.parsing_parameters[format][parsing_mode]["col_names"],
+                                       index_col=self.parsing_parameters[format][parsing_mode]["index_cols"])
         if records_columns is not None:
             self.records.columns = records_columns if isinstance(pd.Index, records_columns) else pd.Index(records_columns)
         sys.stderr.write("%s\tReading input finished...\n" % str(datetime.datetime.now()))
