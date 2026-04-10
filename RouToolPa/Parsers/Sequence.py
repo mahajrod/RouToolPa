@@ -6,6 +6,7 @@ __author__ = 'Sergei F. Kliver'
 
 import re
 import sys
+import datetime
 from copy import deepcopy
 from collections import OrderedDict
 
@@ -144,6 +145,7 @@ class CollectionSequence(FileRoutines):
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
         if parsing_mode == "generator":
             if verbose:
+                sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
                 sys.stderr.write("Creating sequence generator...\n")
             if seq_expression:
                 self.records = self.sequence_generator_with_expression(seq_file,

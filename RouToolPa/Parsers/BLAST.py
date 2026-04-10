@@ -3,6 +3,7 @@
 Last output parser Module based on pandas
 """
 __author__ = 'Sergei F. Kliver'
+import sys
 import datetime
 from copy import deepcopy
 from collections import OrderedDict
@@ -315,7 +316,7 @@ class CollectionBLAST:
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
-        print("%s\tReading input..." % str(datetime.datetime.now()))
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
         self.records = pd.read_csv(in_file, sep='\t', header=0 if header is not None else None, na_values=".",
                                    comment="#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],

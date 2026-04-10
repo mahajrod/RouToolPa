@@ -454,7 +454,7 @@ class CollectionBED:
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
-        sys.stderr.write("%s\tReading input...\n" % str(datetime.datetime.now()))
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
         if format == "table": # comment_prefix - "#", header is expected on the first non commented line
             if (not scaffold_column_name) or (not start_column_name) or (not end_column_name):
                 raise ValueError("ERROR!!! input in 'table' format requires to be set three parameters: 'scaffold_column_name', 'start_column_name' and 'end_column_name'")

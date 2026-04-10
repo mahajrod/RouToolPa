@@ -481,7 +481,7 @@ class CollectionVCF:
     def to_numeric(value):
         return pd.to_numeric(value, errors="coerce")
 
-    def read(self, in_file, external_metadata=None, parsing_mode=None, sparse=False):
+    def read(self, in_file, external_metadata=None, format="vcf", parsing_mode=None, sparse=False):
 
         """
         Reads collection from vcf file
@@ -511,7 +511,7 @@ class CollectionVCF:
             if self.parsing_mode in ("genotypes", "coordinates_and_genotypes", "pos_gt_dp", "pos_ref_alt_id_gt_ad"):
                 self.parsing_parameters[self.parsing_mode]["cols"] += [i for i in range(9, 9 + len(self.samples))]
 
-        sys.stderr.write("%s\tReading file...\n" % str(datetime.datetime.now()))
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n" % {})
         self.records = pd.read_csv(fd, sep='\t', header=None, na_values=".",
                                    usecols=self.parsing_parameters[self.parsing_mode]["cols"],
                                    converters=self.parsing_parameters[self.parsing_mode]["converters"],

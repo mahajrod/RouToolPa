@@ -3,6 +3,7 @@
 GFF Parser Module based on pandas
 """
 __author__ = 'Sergei F. Kliver'
+import sys
 import datetime
 from copy import deepcopy
 from collections import OrderedDict
@@ -219,7 +220,7 @@ class CollectionGFF(Parser):
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
-        print("%s\tReading input..." % str(datetime.datetime.now()))
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
         self.records = pd.read_csv(in_file, sep='\t', header=None, na_values=".",
                                    comment="#",
                                    usecols=self.parsing_parameters[format][parsing_mode]["cols"],
@@ -237,7 +238,8 @@ class CollectionGFF(Parser):
 
         self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                        names=("scaffold", "row"))
-        print("%s\tReading input finished..." % str(datetime.datetime.now()))
+
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
 
         if parsing_mode in self.featuretype_parsing_modes:
             self.featuretype_list = list(self.records[["featuretype"]].iloc[:, 0].unique())
@@ -282,7 +284,7 @@ class CollectionGFF(Parser):
         return col
 
     def parse_attributes(self):
-        print("%s\tParsing attribute field..." % str(datetime.datetime.now()))
+        sys.stderr.write("%s\tParsing attribute field..." % str(datetime.datetime.now()))
         if isinstance(self.records, (OrderedDict, dict)):
             tmp_attr_dict = OrderedDict()
             for entry in self.records:
@@ -300,7 +302,7 @@ class CollectionGFF(Parser):
 
                 tmp_attr.index = self.records[entry].index
                 tmp_attr_dict[entry] = tmp_attr
-            print("%s\tParsing attribute field finished..." % str(datetime.datetime.now()))
+            sys.stderr.write("%s\tParsing attribute field finished..." % str(datetime.datetime.now()))
             return tmp_attr_dict
 
         elif isinstance(self.records, (pd.DataFrame,)):
@@ -317,7 +319,7 @@ class CollectionGFF(Parser):
             #                                              tmp_attr.columns
             #                                             ])
             tmp_attr.index = self.records.index
-            print("%s\tParsing attribute field finished..." % str(datetime.datetime.now()))
+            sys.stderr.write("%s\tParsing attribute field finished..." % str(datetime.datetime.now()))
             return tmp_attr
         else:
             raise ValueError("ERROR!!! Unknown format of the records!")
@@ -386,7 +388,7 @@ class CollectionGFF(Parser):
             self.records = pd.DataFrame.from_records(row_list, columns=self.col_names, index=self.index_cols)
 
             if verbose:
-                print("Records before collapsing: %i\nRecords after collapsing: %i" % (records_before_collapse,
+                sys.stderr.write("Records before collapsing: %i\nRecords after collapsing: %i" % (records_before_collapse,
                                                                                        len(self.records)))
 
     def remove_small_records(self, min_record_length):
@@ -396,7 +398,7 @@ class CollectionGFF(Parser):
         else:
             records_before_collapse = len(self.records)
             self.records = self.records[(self.records['end'] - self.records['start']) >= min_record_length]
-            print("Records before filtering: %i\nRecords afterfiltering: %i" % (records_before_collapse,
+            sys.stderr.write("Records before filtering: %i\nRecords afterfiltering: %i" % (records_before_collapse,
                                                                                        len(self.records)))
 
     def __add__(self, other):

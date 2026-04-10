@@ -3,6 +3,7 @@
 GFF Parser Module based on pandas
 """
 __author__ = 'Sergei F. Kliver'
+import sys
 import datetime
 import numpy as np
 import pandas as pd
@@ -119,7 +120,7 @@ class BUSCOtable(Parser):
         elif parsing_mode not in self.parsing_parameters[format]:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing in this mode(%s)!" % (format, parsing_mode))
 
-        print("%s\tReading input..." % str(datetime.datetime.now()))
+        sys.stderr.write(f"{str(datetime.datetime.now())}\tReading input: format={format}, parsing mode={parsing_mode}...\n")
         if format == "busco_table":
             self.records = pd.read_csv(in_file, sep='\t', header=None, na_values=".",
                                        comment="#",
@@ -136,7 +137,7 @@ class BUSCOtable(Parser):
             if add_row_index:
                 self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
                                                                names=("status", "row"))
-            print("%s\tReading input finished..." % str(datetime.datetime.now()))
+            sys.stderr.write("%s\tReading input finished..." % str(datetime.datetime.now()))
 
             if sort:
                 self.records.sort_values(by=["scaffold", "start", "end"])
