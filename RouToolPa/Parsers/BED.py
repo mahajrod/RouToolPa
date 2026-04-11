@@ -20,7 +20,7 @@ class CollectionBED:
                  scaffold_black_list=None, scaffold_white_list=None, scaffold_syn_dict=None, header_in_file=False,
                  rename_dict=None, white_list_dict={}, black_list_dict={},
                  scaffold_column_name=None, start_column_name=None, end_column_name=None, one_based_coordinates=False,
-                 value_column_name=None, color_column_name=None,
+                 value_column_name=None, color_column_name=None, additional_column_converter_dict=None,
                  ):
 
         self.formats = ["bed", "table", "bedgraph", "bed_colored", "bed_track", "bed_synteny_track"]
@@ -120,11 +120,35 @@ class CollectionBED:
                     "original_col_names": {},
                     "original_coord_system": None
                     },
+                "flexible": {
+                    "col_names": ["scaffold",
+                                  "start",
+                                  "end",],
+                    "cols": None,
+                    "index_cols": 0,
+                    "converters": {
+                                   "scaffold": str,
+                                   "start": np.int64,
+                                   "end": np.int64
+                                   },
+                    "col_name_indexes": {
+                        "scaffold": 0,
+                        "start": 1,
+                        "end": 2,
+                    },
+                    "original_col_names": {},
+                    "original_coord_system": None
+                },
+
                 "all": {
                     "col_names": None,
                     "cols": None,
                     "index_cols": 0,
-                    "converters": {},
+                    "converters": {
+                        "scaffold": str,
+                        "start": np.int64,
+                        "end": np.int64
+                        },
                     "col_name_indexes": {
                         "scaffold": 0,
                         "start": 1,
@@ -425,6 +449,7 @@ class CollectionBED:
                       end_column_name=end_column_name,
                       value_column_name=value_column_name,
                       color_column_name=color_column_name,
+                      additional_column_converter_dict=additional_column_converter_dict,
                       one_based_coordinates=one_based_coordinates
                       )
 
@@ -448,6 +473,7 @@ class CollectionBED:
              end_column_name=None,
              value_column_name=None,
              color_column_name=None,
+             additional_column_converter_dict=None,
              one_based_coordinates=False):
         if format not in self.parsing_parameters:
             raise ValueError("ERROR!!! This format(%s) was not implemented yet for parsing!" % parsing_mode)
@@ -487,17 +513,27 @@ class CollectionBED:
                 column_list += [value_column_name, color_column_name]
                 self.parsing_parameters[format][parsing_mode]["original_col_names"][value_column_name] = "value"
                 self.parsing_parameters[format][parsing_mode]["original_col_names"][color_column_name] = "color"
+            elif parsing_mode == "flexible":
+                if additional_column_converter_dict is None:
+                    raise ValueError("ERROR!!! Input in 'table' format and 'flexible' parsing mode "
+                                     "requires to be set one more parameter: 'additional_column_converter_dict'")
+                #print(additional_column_converter_dict)
+                column_list += list(additional_column_converter_dict.keys())
+
             elif parsing_mode == "all":
                 pass
             else:
                 raise ValueError(f"ERROR!!! Parsing mode '{parsing_mode}' is not a valid for 'table' input type. "
-                                 f"Use one of implemented modes: 'coordinates_only', 'bedgraph', 'color', 'colored_bedgraph' or 'all'")
+                                 f"Use one of implemented modes: 'coordinates_only', 'bedgraph', 'color', 'colored_bedgraph', 'flexible' or 'all'")
 
             converter_dict = OrderedDict()
             for original_name in self.parsing_parameters[format][parsing_mode]["original_col_names"]:
                 converter_dict[original_name] = self.parsing_parameters[format][parsing_mode]["converters"][
                     self.parsing_parameters[format][parsing_mode]["original_col_names"][original_name]
                     ]
+            if parsing_mode == "flexible":
+                for additional_parameter in additional_column_converter_dict:
+                    converter_dict[additional_parameter] = additional_column_converter_dict[additional_parameter]
 
             self.records = pd.read_csv(in_file, sep='\t', header=0, na_values=".",
                                        comment=None if (self.parsing_mode == "colored_bedgraph") or (self.parsing_mode == "colored") else "#",
