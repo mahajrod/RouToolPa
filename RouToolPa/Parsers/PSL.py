@@ -264,14 +264,14 @@ class CollectionPSL:
             # print query_scaffolds_to_keep
             self.records = self.records[self.records[self.query_id_syn].isin(query_scaffolds_to_keep)]
         if self.target_syn_dict is not None:
-            self.records[self.target_id_syn].replace(self.target_syn_dict, inplace=True)
+            self.records[self.target_id_syn] = self.records[self.target_id_syn].replace(self.target_syn_dict)
         if self.query_syn_dict is not None:
-            self.records[self.query_id_syn].replace(self.query_syn_dict, inplace=True)
+            self.records[self.query_id_syn] = self.records[self.query_id_syn].replace(self.query_syn_dict)
         # retain only automatically generated index by row number
         # self.records.index = pd.MultiIndex.from_arrays([self.records.index, np.arange(0, len(self.records))],
         #                                               names=("scaffold", "row"))
         print("%s\tFiltering finished..." % str(datetime.datetime.now()))
-        self.records["strand"].replace({"++": "+", "+-": "-"}, inplace=True)
+        self.records["strand"] = self.records["strand"].replace({"++": "+", "+-": "-"})
         # convert target coordinates to forward strand, where necessary
         if self.invert_coordinates_for_target_negative_strand:
             self.records.loc[self.records["strand"] == "-", "tStart"], \
@@ -357,8 +357,8 @@ class CollectionPSL:
             return filtered_entry_list
 
     def rename_target_ids(self, syn_dict):
-        self.records[self.target_id_syn].replace(syn_dict, inplace=True)
+        self.records[self.target_id_syn] = self.records[self.target_id_syn].replace(syn_dict)
 
     def rename_query_ids(self, syn_dict):
-        self.records[self.query_id_syn].replace(syn_dict, inplace=True)
+        self.records[self.query_id_syn] = self.records[self.query_id_syn].replace(syn_dict)
 
