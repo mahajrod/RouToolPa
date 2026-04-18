@@ -351,7 +351,7 @@ class CollectionSequence(FileRoutines):
                 out_seq_id = out_id_expression(seq_id) if out_id_expression else seq_id
 
                 out_fd.write(">%s\n" % out_seq_id if seq_id not in self.description else ">%s %s\n" % (out_seq_id, self.description[seq_id]))
-                length = self.seq_lengths[seq_id][0] if self.seq_lengths else len(self.records[seq_id])
+                length = len(self.records[seq_id])
                 line_number = length // max_symbols_per_line
                 index = 0
                 while index < line_number:
