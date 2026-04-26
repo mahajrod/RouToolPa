@@ -313,7 +313,6 @@ class MatplotlibRoutines:
             if max_threshold < min_threshold:
                 raise ValueError("Maximum threshold (%s) is lower than minimum threshold(%s)" % (str(max_threshold),
                                                                                                  str(min_threshold)))
-
         max_lenn = max(data_array) if (data_array.size > 0) else 0
         min_lenn = min(data_array) if (data_array.size > 0)  else 0
 
@@ -767,7 +766,7 @@ class MatplotlibRoutines:
             plt.savefig("%s.logscale.%s" % (output_prefix, ext))
 
         # save histo values
-        np.savetxt("%s.histo" % output_prefix, zip(bins[:-1], n), fmt="%i\t%i")
+        np.savetxt("%s.histo" % output_prefix, list(zip(bins[:-1], n)), fmt="%i\t%i")
         np.savetxt("%s.bins" % output_prefix, bins)
 
     @staticmethod
