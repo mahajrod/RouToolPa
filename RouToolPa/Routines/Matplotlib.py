@@ -758,12 +758,12 @@ class MatplotlibRoutines:
             plt.title(title)
 
         for ext in extensions:
-            plt.savefig("%s.%s" % (output_prefix, ext))
+            plt.savefig("%s.%s" % (output_prefix, ext), bbox_inches="tight", dpi=300)
 
         subplot.set_yscale('log', base=logbase)
         #subplot.set_xscale('log', basex=args.logbase)
         for ext in extensions:
-            plt.savefig("%s.logscale.%s" % (output_prefix, ext))
+            plt.savefig("%s.logscale.%s" % (output_prefix, ext), bbox_inches="tight", dpi=300)
 
         # save histo values
         np.savetxt("%s.histo" % output_prefix, list(zip(bins[:-1], n)), fmt="%i\t%i")
